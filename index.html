@@ -3,111 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pony Jump Party - Full Edition</title>
+    <title>Pony Jump Party - Deluxe</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        body { margin: 0; background: #f0f9ff; font-family: 'Inter', sans-serif; overflow: hidden; }
-        .pony-sprite { font-size: 40px; }
-        .mountain { position: absolute; bottom: 100px; opacity: 0.3; z-index: -1; }
+        @import url('https://fonts.googleapis.com/css2?family=Pink+Candy&display=swap');
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; }
+        .pony {
+            font-size: 60px;
+            display: inline-block;
+            transition: transform 0.1s;
+            transform: scaleX(-1); /* 向きを右向きに修正 */
+        }
+        /* 足が動くアニメーション */
+        .running { animation: gallop 0.3s infinite alternate; }
+        @keyframes gallop {
+            from { transform: scaleX(-1) scaleY(1); }
+            to { transform: scaleX(-1) scaleY(0.85) translateY(5px); }
+        }
+        .jumping { transform: scaleX(-1) scaleY(1.2) translateY(-10px); }
+        .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
     </style>
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
         const Game = () => {
+            const [ponyY, setPonyY] = useState(0);
+            const [velocity, setVelocity] = useState(0);
+            const [jumpCount, setJumpCount] = useState(0);
             const [score, setScore] = useState(0);
             const [isGameOver, setIsGameOver] = useState(false);
-            const [ponyY, setPonyY] = useState(250);
-            const [isJumping, setIsJumping] = useState(false);
             const [obstacles, setObstacles] = useState([]);
+            const gameRef = useRef();
 
-            // ゲームループ
+            const GROUND_Y = 0;
+            const GRAVITY = -0.8;
+            const JUMP_FORCE = 12;
+
+            const handleAction = useCallback(() => {
+                if (isGameOver) {
+                    location.reload();
+                    return;
+                }
+                if (jumpCount < 2) { // 2段ジャンプを許可
+                    setVelocity(JUMP_FORCE);
+                    setJumpCount(prev => prev + 1);
+                }
+            }, [jumpCount, isGameOver]);
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if (e.code === 'Space' || e.code === 'ArrowUp') handleAction();
+                };
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
+            }, [handleAction]);
+
             useEffect(() => {
                 if (isGameOver) return;
-                const timer = setInterval(() => {
-                    setObstacles(obs => obs.map(o => ({ ...o, x: o.x - 7 })).filter(o => o.x > -50));
-                    setScore(s => s + 1);
-                }, 30);
-                return () => clearInterval(timer);
-            }, [isGameOver]);
+                const interval = setInterval(() => {
+                    // ポニーの物理演算
+                    setPonyY(y => {
+                        const nextY = y + velocity;
+                        if (nextY <= GROUND_Y) {
+                            setJumpCount(0);
+                            setVelocity(0);
+                            return GROUND_Y;
+                        }
+                        return nextY;
+                    });
+                    setVelocity(v => v + GRAVITY);
 
-            // 障害物生成
-            useEffect(() => {
-                if (isGameOver) return;
-                const timer = setInterval(() => {
-                    setObstacles(obs => [...obs, { x: 800, id: Date.now() }]);
-                }, 2000);
-                return () => clearInterval(timer);
-            }, [isGameOver]);
-
-            // ジャンプ処理
-            const jump = () => {
-                if (isJumping || isGameOver) return;
-                setIsJumping(true);
-                let height = 0;
-                const up = setInterval(() => {
-                    if (height >= 120) {
-                        clearInterval(up);
-                        const down = setInterval(() => {
-                            if (height <= 0) {
-                                clearInterval(down);
-                                setIsJumping(false);
+                    // 障害物の移動
+                    setObstacles(obs => {
+                        const newObs = obs.map(o => ({ ...o, x: o.x - (6 + score / 500) }))
+                                          .filter(o => o.x > -100);
+                        
+                        // 当たり判定 (芝生の上のハードル)
+                        newObs.forEach(o => {
+                            if (o.x > 40 && o.x < 100 && ponyY < o.height) {
+                                setIsGameOver(true);
                             }
-                            height -= 5;
-                            setPonyY(250 - height);
-                        }, 15);
-                    }
-                    height += 5;
-                    setPonyY(250 - height);
-                }, 15);
-            };
+                        });
+                        return newObs;
+                    });
 
-            // 当たり判定
+                    setScore(s => s + 1);
+                }, 20);
+                return () => clearInterval(interval);
+            }, [velocity, isGameOver, ponyY, score]);
+
+            // 障害物（ハードル）の生成
             useEffect(() => {
-                obstacles.forEach(obs => {
-                    if (obs.x < 90 && obs.x > 30 && ponyY > 210) {
-                        setIsGameOver(true);
-                        confetti();
-                    }
-                });
-            }, [obstacles, ponyY]);
+                if (isGameOver) return;
+                const spawn = () => {
+                    const height = Math.random() > 0.5 ? 60 : 30; // 高い・低いの変化
+                    setObstacles(prev => [...prev, { x: window.innerWidth, height, id: Date.now() }]);
+                    setTimeout(spawn, 1500 + Math.random() * 1500);
+                };
+                const timeout = setTimeout(spawn, 1000);
+                return () => clearTimeout(timeout);
+            }, [isGameOver]);
 
             return (
-                <div className="h-screen w-screen flex flex-col items-center justify-center relative bg-sky-300" onClick={jump}>
-                    <div className="absolute top-10 text-4xl font-bold text-white drop-shadow-lg">Score: {Math.floor(score/10)}</div>
-                    
-                    {/* 背景の山 */}
-                    <div className="absolute bottom-24 w-full flex justify-around opacity-50">
-                        <div className="text-9xl">⛰️</div>
-                        <div className="text-9xl">⛰️</div>
+                <div className="relative w-screen h-screen overflow-hidden select-none" onClick={handleAction}>
+                    {/* 空とスコア */}
+                    <div className="absolute top-10 w-full text-center">
+                        <h1 className="text-white text-6xl font-black drop-shadow-md">Score: {Math.floor(score/10)}</h1>
                     </div>
 
-                    {/* 馬（ポニー） */}
-                    <div style={{ position: 'absolute', left: '50px', top: `${ponyY}px` }} className="text-6xl transition-transform">
-                        {isGameOver ? '😵' : '🐎'}
+                    {/* 山脈 */}
+                    <div className="absolute bottom-24 w-full flex justify-around opacity-40 pointer-events-none">
+                        <span className="text-[150px]">⛰️</span>
+                        <span className="text-[120px]">⛰️</span>
+                        <span className="text-[180px]">⛰️</span>
                     </div>
 
-                    {/* 障害物 */}
-                    {obstacles.map(obs => (
-                        <div key={obs.id} style={{ position: 'absolute', left: `${obs.x}px`, top: '260px' }} className="text-5xl">
-                            🚧
+                    {/* 地面（芝生） */}
+                    <div className="absolute bottom-0 w-full h-24 bg-grass border-t-4 border-green-700"></div>
+
+                    {/* ポニー */}
+                    <div 
+                        className={`pony absolute left-20 transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
+                        style={{ bottom: `${96 + ponyY}px` }}
+                    >
+                        {isGameOver ? '😵' : '🦄'}
+                    </div>
+
+                    {/* 障害物（ハードル） */}
+                    {obstacles.map(o => (
+                        <div 
+                            key={o.id}
+                            className="absolute flex items-end justify-center"
+                            style={{ 
+                                left: `${o.x}px`, 
+                                bottom: '96px', 
+                                width: '50px', 
+                                height: `${o.height}px`,
+                                background: '#b91c1c',
+                                border: '3px solid white',
+                                borderRadius: '4px'
+                            }}
+                        >
+                            <div className="w-full h-2 bg-white mb-2"></div>
                         </div>
                     ))}
 
-                    {/* 地面 */}
-                    <div className="absolute bottom-0 w-full h-24 bg-green-500 border-t-8 border-green-600"></div>
-
+                    {/* ゲームオーバー画面 */}
                     {isGameOver && (
-                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white">
-                            <h2 className="text-6xl font-bold mb-4">GAME OVER</h2>
-                            <button onClick={() => location.reload()} className="bg-white text-black px-8 py-4 rounded-full text-2xl font-bold hover:scale-110 transition">RETRY</button>
+                        <div className="absolute inset-0 bg-pink-500/40 backdrop-blur-sm flex flex-col items-center justify-center">
+                            <div className="bg-white p-10 rounded-3xl shadow-2xl text-center scale-125">
+                                <h2 className="text-5xl font-black text-pink-600 mb-6">Oops! Game Over</h2>
+                                <button className="bg-pink-500 text-white px-10 py-4 rounded-full text-2xl font-bold hover:bg-pink-600 transition-all">
+                                    Retry!
+                                </button>
+                            </div>
                         </div>
                     )}
                 </div>
