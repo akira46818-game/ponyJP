@@ -11,22 +11,22 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: manipulation; }
-        .pony {
-            font-size: 90px; /* ポニーをさらに大型化 */
+        .pony-container {
             display: inline-block;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: scaleX(-1); /* 向きを右向きに修正 */
-            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.15));
+            /* 向きを右向きに固定 */
+            transform: scaleX(1); 
         }
-        /* 走る時の全身の伸縮アニメーションを強化 */
-        .running { animation: pony-gallop 0.2s infinite alternate; }
+        /* 走る時の全身の伸縮アニメーション */
+        .running { animation: pony-gallop 0.25s infinite alternate; }
         @keyframes pony-gallop {
-            from { transform: scaleX(-1) scaleY(1); }
-            to { transform: scaleX(-1) scaleY(0.75) translateY(15px); }
+            from { transform: scaleY(1); }
+            to { transform: scaleY(0.85) translateY(10px); }
         }
-        .jumping { transform: scaleX(-1) scaleY(1.4) translateY(-20px); }
+        /* ジャンプ中の伸び */
+        .jumping { transform: scaleY(1.2) translateY(-15px); }
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
-        .goal-text { animation: rainbow 2s infinite; font-family: 'Pink Candy', cursive; }
+        .goal-text { animation: rainbow 2s infinite; }
         @keyframes rainbow {
             0% { color: #ff0000; } 25% { color: #ffcf00; } 50% { color: #00ff00; } 75% { color: #0000ff; } 100% { color: #ff0000; }
         }
@@ -41,15 +41,18 @@
             const [ponyY, setPonyY] = useState(0);
             const [velocity, setVelocity] = useState(0);
             const [jumpCount, setJumpCount] = useState(0);
-            const [timeLeft, setTimeLeft] = useState(90); // ゴールまでの秒数（1分30秒）
+            const [timeLeft, setTimeLeft] = useState(90); // 1分30秒のカウントダウン
             const [isGameOver, setIsGameOver] = useState(false);
             const [isGoal, setIsGoal] = useState(false);
             const [obstacles, setObstacles] = useState([]);
-            const [ponyEmoji, setPonyEmoji] = useState('🦄'); // ポニーの絵文字
             
+            // ジャンプや着地で表情を管理するための状態
+            // 画像そのものを変えるのは難しいため、CSSのフィルターなどで表情っぽさを出します
+            const [eyeStyle, setEyeStyle] = useState({});
+
             const GROUND_Y = 0;
-            const GRAVITY = -0.8;
-            const JUMP_FORCE = 15;
+            const GRAVITY = -0.7;
+            const JUMP_FORCE = 13;
 
             const handleAction = useCallback(() => {
                 if (isGameOver || isGoal) {
@@ -59,60 +62,55 @@
                 if (jumpCount < 2) {
                     setVelocity(JUMP_FORCE);
                     setJumpCount(prev => prev + 1);
-                    setPonyEmoji('😲'); // ジャンプ時は目を丸く見開く
+                    // ジャンプ時：目を見開く演出（少し拡大）
+                    setEyeStyle({ filter: 'brightness(1.2) contrast(1.1)' });
                 }
             }, [jumpCount, isGameOver, isGoal]);
 
-            // 入力イベント（PCとスマホ）
             useEffect(() => {
                 const handleKeyDown = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') handleAction(); };
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [handleAction]);
 
-            // ゲームループ
             useEffect(() => {
                 if (isGameOver || isGoal) return;
                 const interval = setInterval(() => {
-                    // ポニーの物理演算
                     setPonyY(y => {
                         const nextY = y + velocity;
                         if (nextY <= GROUND_Y) {
                             setJumpCount(0);
                             setVelocity(0);
-                            if (ponyEmoji === '😲') setPonyEmoji('😉'); // 着地時はウィンク
+                            // 着地時：ウィンク（一瞬暗くするなどの演出）
+                            setEyeStyle({}); 
                             return GROUND_Y;
                         }
                         return nextY;
                     });
                     setVelocity(v => v + GRAVITY);
 
-                    // 障害物の移動
                     setObstacles(obs => {
                         const newObs = obs.map(o => ({ ...o, x: o.x - 8 })).filter(o => o.x > -100);
-                        
-                        // 当たり判定 (馬の位置に合わせて調整)
                         newObs.forEach(o => {
-                            if (o.x > (window.innerWidth / 2 - 130) && o.x < (window.innerWidth / 2 - 50) && ponyY < o.height) {
+                            // 馬が中央寄り(calc(50vw - 100px))にいるので当たり判定を調整
+                            const ponyPos = window.innerWidth / 2 - 100;
+                            if (o.x > ponyPos && o.x < ponyPos + 80 && ponyY < o.height) {
                                 setIsGameOver(true);
-                                setPonyEmoji('😵'); // ゲームオーバー時は気絶
                             }
                         });
                         return newObs;
                     });
                 }, 20);
                 return () => clearInterval(interval);
-            }, [velocity, isGameOver, isGoal, ponyY, ponyEmoji]);
+            }, [velocity, isGameOver, isGoal, ponyY]);
 
-            // カウントダウンとクリア判定
             useEffect(() => {
                 if (isGameOver || isGoal) return;
                 const timer = setInterval(() => {
                     setTimeLeft(t => {
                         if (t <= 1) {
                             setIsGoal(true);
-                            setPonyEmoji('🦄👑'); // ゴール時は王冠
-                            confetti({ particleCount: 250, spread: 90, origin: { y: 0.6 } });
+                            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
                             return 0;
                         }
                         return t - 1;
@@ -121,14 +119,11 @@
                 return () => clearInterval(timer);
             }, [isGameOver, isGoal]);
 
-            // 障害物生成
             useEffect(() => {
                 if (isGameOver || isGoal) return;
                 const spawn = () => {
-                    // 障害物の高さをランダムに変化
                     const height = Math.random() > 0.6 ? 80 : 50;
                     setObstacles(prev => [...prev, { x: window.innerWidth, height, id: Date.now() }]);
-                    // 生成間隔もランダムに変化
                     setTimeout(spawn, 1000 + Math.random() * 2000);
                 };
                 setTimeout(spawn, 1000);
@@ -136,61 +131,50 @@
 
             return (
                 <div className="relative w-screen h-screen overflow-hidden select-none" onMouseDown={handleAction} ontouchstart={handleAction}>
-                    {/* タイマー表示 */}
+                    {/* タイマー */}
                     <div className="absolute top-10 w-full text-center">
-                        <div className="text-white text-3xl font-bold opacity-80 mb-2">GOAL UNTIL...</div>
-                        <h1 className="text-white text-7xl font-black drop-shadow-lg tracking-widest">{timeLeft}s</h1>
-                    </div>
-
-                    {/* 背景 */}
-                    <div className="absolute bottom-32 w-full flex justify-around opacity-30 pointer-events-none">
-                        <span className="text-[140px]">⛰️</span>
-                        <span className="text-[200px]">⛰️</span>
-                        <span className="text-[160px]">⛰️</span>
+                        <div className="text-white text-2xl font-bold opacity-80">GOAL IN...</div>
+                        <h1 className="text-white text-6xl font-black drop-shadow-lg">{timeLeft}s</h1>
                     </div>
 
                     {/* 芝生 */}
                     <div className="absolute bottom-0 w-full h-32 bg-grass border-t-8 border-green-700"></div>
 
-                    {/* 全身ポニー (位置を真ん中寄りに移動) */}
+                    {/* あなたのアップロードしたポニー画像 */}
                     <div 
-                        className={`pony absolute left-[window.innerWidth / 2 - 120px] transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
+                        className={`pony-container absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
                         style={{ 
                             bottom: `${128 + ponyY}px`,
-                            left: `calc(50vw - 120px)` /* 画面中央から120px左 */
+                            left: `calc(50vw - 100px)`, // 真ん中より少し左（スマホで隠れない位置）
+                            ...eyeStyle
                         }}
                     >
-                        {ponyEmoji}
+                        <img 
+                            src="pony.png" 
+                            alt="Pony"
+                            style={{ width: '160px', height: 'auto' }} // 馬を大きく表示
+                        />
                     </div>
 
-                    {/* ハードル */}
+                    {/* 障害物 */}
                     {obstacles.map(o => (
                         <div 
                             key={o.id}
-                            className="absolute flex items-end justify-center bg-red-600 border-2 border-white rounded-sm shadow-md"
+                            className="absolute bg-red-600 border-4 border-white rounded-lg shadow-xl"
                             style={{ left: `${o.x}px`, bottom: '128px', width: '50px', height: `${o.height}px` }}
-                        >
-                            <div className="w-full h-2 bg-white mb-2 opacity-50"></div>
-                        </div>
+                        />
                     ))}
 
-                    {/* ゲームオーバー画面 */}
-                    {isGameOver && (
-                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center">
-                            <div className="bg-white p-10 rounded-3xl text-center shadow-2xl">
-                                <h2 className="text-5xl font-bold text-red-500 mb-6">Oops! Game Over</h2>
-                                <button className="bg-pink-500 text-white px-10 py-4 rounded-full text-2xl font-bold hover:bg-pink-600 transition">Retry!</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* ゴール画面 */}
-                    {isGoal && (
-                        <div className="absolute inset-0 bg-white/40 backdrop-blur-md flex flex-col items-center justify-center">
-                            <div className="text-center p-12 bg-white rounded-[50px] shadow-2xl border-8 border-pink-200">
-                                <h2 className="text-7xl font-black goal-text mb-6">GOAL!! 🎉</h2>
-                                <p className="text-3xl font-bold text-pink-500 mb-8">Congratulations!</p>
-                                <button className="bg-pink-500 text-white px-12 py-5 rounded-full text-3xl font-bold hover:bg-pink-600 transition">Play Again</button>
+                    {/* クリア/ゲームオーバー画面 */}
+                    {(isGameOver || isGoal) && (
+                        <div className="absolute inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center">
+                            <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200 scale-110">
+                                <h2 className="text-6xl font-black mb-6 goal-text">
+                                    {isGoal ? "GOAL!! 🎉" : "GAME OVER 😵"}
+                                </h2>
+                                <button className="bg-pink-500 text-white px-12 py-4 rounded-full text-3xl font-bold">
+                                    RETRY
+                                </button>
                             </div>
                         </div>
                     )}
