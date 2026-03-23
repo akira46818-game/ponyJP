@@ -3,37 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pony Jump Party - Perfect Blend Edition</title>
+    <title>Pony Jump Party - Deluxe Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: manipulation; }
-        .pony-container {
-            display: inline-block;
-            transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        /* 白い背景を透明にする魔法のフィルター */
-        .pony-img {
-            width: 180px; /* さらに大きくしました */
-            height: auto;
-            mix-blend-mode: multiply; /* これで白い背景が透けます！ */
-        }
-        .running { animation: pony-gallop 0.25s infinite alternate; }
-        @keyframes pony-gallop {
-            from { transform: scaleY(1); }
-            to { transform: scaleY(0.9) translateY(8px); }
-        }
-        .jumping { transform: scaleY(1.1) translateY(-10px); }
+        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Comic Sans MS', sans-serif; touch-action: manipulation; }
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
+        
+        /* ポニーのアニメーション */
+        .running { animation: pony-run 0.3s infinite alternate ease-in-out; }
+        @keyframes pony-run {
+            from { transform: scale(1.0) rotate(2deg); }
+            to { transform: scale(0.95, 1.05) rotate(-2deg); }
+        }
+        .jumping { transform: scale(1.1, 0.9) translateY(-10px); }
+
+        /* キラキラエフェクト */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            animation: sparkle-fade 0.6s forwards;
+        }
+        @keyframes sparkle-fade {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(1.5) translateY(-20px); opacity: 0; }
+        }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useCallback } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
         const Game = () => {
             const [ponyY, setPonyY] = useState(0);
@@ -43,10 +46,11 @@
             const [isGameOver, setIsGameOver] = useState(false);
             const [isGoal, setIsGoal] = useState(false);
             const [obstacles, setObstacles] = useState([]);
+            const [sparkles, setSparkles] = useState([]);
             
             const GROUND_Y = 0;
-            const GRAVITY = -0.6; // 少しふわっとジャンプ
-            const JUMP_FORCE = 12;
+            const GRAVITY = -0.6;
+            const JUMP_FORCE = 13;
 
             const handleAction = useCallback(() => {
                 if (isGameOver || isGoal) {
@@ -56,8 +60,12 @@
                 if (jumpCount < 2) {
                     setVelocity(JUMP_FORCE);
                     setJumpCount(prev => prev + 1);
+                    // ジャンプ時にキラキラを追加
+                    const newSparkle = { id: Date.now(), x: window.innerWidth/2 - 50, y: window.innerHeight - 150 - ponyY };
+                    setSparkles(prev => [...prev, newSparkle]);
+                    setTimeout(() => setSparkles(prev => prev.filter(s => s.id !== newSparkle.id)), 600);
                 }
-            }, [jumpCount, isGameOver, isGoal]);
+            }, [jumpCount, isGameOver, isGoal, ponyY]);
 
             useEffect(() => {
                 const handleKeyDown = (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') handleAction(); };
@@ -80,10 +88,11 @@
                     setVelocity(v => v + GRAVITY);
 
                     setObstacles(obs => {
-                        const newObs = obs.map(o => ({ ...o, x: o.x - 7 })).filter(o => o.x > -100);
+                        const newObs = obs.map(o => ({ ...o, x: o.x - 8 })).filter(o => o.x > -100);
                         newObs.forEach(o => {
-                            const ponyPos = window.innerWidth / 2 - 90;
-                            if (o.x > ponyPos && o.x < ponyPos + 100 && ponyY < o.height) {
+                            const ponyPos = window.innerWidth / 2 - 80;
+                            // 当たり判定をポニーの見た目に合わせて微調整
+                            if (o.x > ponyPos && o.x < ponyPos + 80 && ponyY < o.height - 10) {
                                 setIsGameOver(true);
                             }
                         });
@@ -99,7 +108,7 @@
                     setTimeLeft(t => {
                         if (t <= 1) {
                             setIsGoal(true);
-                            confetti({ particleCount: 250, spread: 100, origin: { y: 0.6 } });
+                            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 }, colors: ['#ff69b4', '#ffdae0', '#ffffff'] });
                             return 0;
                         }
                         return t - 1;
@@ -111,45 +120,61 @@
             useEffect(() => {
                 if (isGameOver || isGoal) return;
                 const spawn = () => {
-                    const height = Math.random() > 0.5 ? 70 : 40;
+                    const height = Math.random() > 0.6 ? 70 : 45;
                     setObstacles(prev => [...prev, { x: window.innerWidth, height, id: Date.now() }]);
-                    setTimeout(spawn, 1200 + Math.random() * 1800);
+                    setTimeout(spawn, 1300 + Math.random() * 2000);
                 };
                 setTimeout(spawn, 1000);
             }, [isGameOver, isGoal]);
 
             return (
-                <div className="relative w-screen h-screen overflow-hidden" onMouseDown={handleAction} ontouchstart={handleAction}>
-                    <div className="absolute top-10 w-full text-center">
-                        <div className="text-white text-xl font-bold opacity-70">GOAL IN...</div>
-                        <h1 className="text-white text-6xl font-black">{timeLeft}s</h1>
+                <div className="relative w-screen h-screen overflow-hidden select-none bg-[#87CEEB]" onMouseDown={handleAction} ontouchstart={handleAction}>
+                    {/* スコア表示 */}
+                    <div className="absolute top-8 w-full text-center">
+                        <div className="text-white text-xl font-bold drop-shadow-md">TIME TO PARTY</div>
+                        <h1 className="text-white text-7xl font-black drop-shadow-xl">{timeLeft}s</h1>
                     </div>
 
-                    <div className="absolute bottom-0 w-full h-32 bg-grass border-t-8 border-green-700"></div>
+                    {/* 地面 */}
+                    <div className="absolute bottom-0 w-full h-32 bg-grass border-t-4 border-green-600"></div>
 
+                    {/* ポニー (pony 2.png を使用) */}
                     <div 
-                        className={`pony-container absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
-                        style={{ bottom: `${128 + ponyY}px`, left: `calc(50vw - 90px)` }}
+                        className={`absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
+                        style={{ bottom: `${128 + ponyY}px`, left: `calc(50vw - 90px)`, zIndex: 10 }}
                     >
-                        {/* あなたのポニー画像 */}
-                        <img src="pony.png" className="pony-img" alt="Pony" />
+                        <img src="pony 2.png" alt="Happy Pony" style={{ width: '180px', height: 'auto' }} />
                     </div>
 
+                    {/* キラキラ */}
+                    {sparkles.map(s => (
+                        <div key={s.id} className="sparkle text-3xl" style={{ left: s.x, top: s.y }}>✨</div>
+                    ))}
+
+                    {/* 障害物（プレゼントボックス風） */}
                     {obstacles.map(o => (
                         <div 
                             key={o.id}
-                            className="absolute bg-red-500 border-4 border-white rounded-lg"
-                            style={{ left: `${o.x}px`, bottom: '128px', width: '50px', height: `${o.height}px` }}
-                        />
+                            className="absolute bg-pink-400 border-2 border-white rounded-md shadow-lg"
+                            style={{ left: `${o.x}px`, bottom: '128px', width: '40px', height: `${o.height}px` }}
+                        >
+                            <div className="w-full h-2 bg-pink-200 mt-2"></div>
+                        </div>
                     ))}
 
+                    {/* 終了画面 */}
                     {(isGameOver || isGoal) && (
-                        <div className="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                            <div className="bg-white p-12 rounded-[40px] shadow-2xl text-center border-8 border-pink-100">
-                                <h2 className="text-5xl font-black mb-6 text-pink-500">
-                                    {isGoal ? "HAPPY GOAL!! 🎉" : "GAME OVER 😵"}
+                        <div className="absolute inset-0 bg-pink-500/20 backdrop-blur-md flex items-center justify-center z-50">
+                            <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200 animate-bounce">
+                                <h2 className="text-6xl font-black mb-6 text-pink-500">
+                                    {isGoal ? "YOU DID IT! 🎉" : "OOPS! 😵"}
                                 </h2>
-                                <button className="bg-pink-500 text-white px-10 py-4 rounded-full text-2xl font-bold">RETRY</button>
+                                <p className="text-2xl font-bold text-gray-500 mb-8">
+                                    {isGoal ? "You're a Jumping Master!" : "Let's Try Again!"}
+                                </p>
+                                <button className="bg-pink-500 hover:bg-pink-600 text-white px-14 py-5 rounded-full text-3xl font-bold shadow-lg transition-transform active:scale-90">
+                                    RETRY!
+                                </button>
                             </div>
                         </div>
                     )}
