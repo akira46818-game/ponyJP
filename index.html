@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pony Jump Party - Final Perfect Edition</title>
+    <title>Pony Jump Party - Final Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,22 +11,34 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: manipulation; }
+        
+        /* ポニーの外枠設定 */
         .pony-container {
             display: inline-block;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* 向きを右向きに固定 */
-            transform: scaleX(1); 
+            /* 白とグレーの市松模様を隠すためのトリミング設定 */
+            overflow: hidden; 
+            background: transparent;
         }
-        /* 走る時の全身の伸縮アニメーション */
-        .running { animation: pony-gallop 0.25s infinite alternate; }
+
+        /* 画像そのものの設定 */
+        .pony-image {
+            width: 180px; /* ポニーを大きく */
+            height: auto;
+            /* 背景の市松模様を少し飛ばして、ポニーのピンクを際立たせる魔法のフィルター */
+            filter: drop-shadow(0 0 0 white);
+            display: block;
+        }
+
+        .running { animation: pony-gallop 0.2s infinite alternate; }
         @keyframes pony-gallop {
             from { transform: scaleY(1); }
-            to { transform: scaleY(0.85) translateY(10px); }
+            to { transform: scaleY(0.9) translateY(8px); }
         }
-        /* ジャンプ中の伸び */
-        .jumping { transform: scaleY(1.2) translateY(-15px); }
+        .jumping { transform: scaleY(1.1) translateY(-15px) rotate(-5deg); }
+
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
-        .goal-text { animation: rainbow 2s infinite; }
+        .goal-text { animation: rainbow 2s infinite; font-weight: 900; }
         @keyframes rainbow {
             0% { color: #ff0000; } 25% { color: #ffcf00; } 50% { color: #00ff00; } 75% { color: #0000ff; } 100% { color: #ff0000; }
         }
@@ -35,35 +47,26 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
+        const { useState, useEffect, useCallback } = React;
 
         const Game = () => {
             const [ponyY, setPonyY] = useState(0);
             const [velocity, setVelocity] = useState(0);
             const [jumpCount, setJumpCount] = useState(0);
-            const [timeLeft, setTimeLeft] = useState(90); // 1分30秒のカウントダウン
+            const [timeLeft, setTimeLeft] = useState(90);
             const [isGameOver, setIsGameOver] = useState(false);
             const [isGoal, setIsGoal] = useState(false);
             const [obstacles, setObstacles] = useState([]);
-            
-            // ジャンプや着地で表情を管理するための状態
-            // 画像そのものを変えるのは難しいため、CSSのフィルターなどで表情っぽさを出します
-            const [eyeStyle, setEyeStyle] = useState({});
 
             const GROUND_Y = 0;
             const GRAVITY = -0.7;
             const JUMP_FORCE = 13;
 
             const handleAction = useCallback(() => {
-                if (isGameOver || isGoal) {
-                    location.reload();
-                    return;
-                }
+                if (isGameOver || isGoal) { location.reload(); return; }
                 if (jumpCount < 2) {
                     setVelocity(JUMP_FORCE);
                     setJumpCount(prev => prev + 1);
-                    // ジャンプ時：目を見開く演出（少し拡大）
-                    setEyeStyle({ filter: 'brightness(1.2) contrast(1.1)' });
                 }
             }, [jumpCount, isGameOver, isGoal]);
 
@@ -78,22 +81,15 @@
                 const interval = setInterval(() => {
                     setPonyY(y => {
                         const nextY = y + velocity;
-                        if (nextY <= GROUND_Y) {
-                            setJumpCount(0);
-                            setVelocity(0);
-                            // 着地時：ウィンク（一瞬暗くするなどの演出）
-                            setEyeStyle({}); 
-                            return GROUND_Y;
-                        }
+                        if (nextY <= GROUND_Y) { setJumpCount(0); setVelocity(0); return GROUND_Y; }
                         return nextY;
                     });
                     setVelocity(v => v + GRAVITY);
 
                     setObstacles(obs => {
                         const newObs = obs.map(o => ({ ...o, x: o.x - 8 })).filter(o => o.x > -100);
+                        const ponyPos = window.innerWidth / 2 - 90;
                         newObs.forEach(o => {
-                            // 馬が中央寄り(calc(50vw - 100px))にいるので当たり判定を調整
-                            const ponyPos = window.innerWidth / 2 - 100;
                             if (o.x > ponyPos && o.x < ponyPos + 80 && ponyY < o.height) {
                                 setIsGameOver(true);
                             }
@@ -110,7 +106,7 @@
                     setTimeLeft(t => {
                         if (t <= 1) {
                             setIsGoal(true);
-                            confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+                            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 } });
                             return 0;
                         }
                         return t - 1;
@@ -130,29 +126,27 @@
             }, [isGameOver, isGoal]);
 
             return (
-                <div className="relative w-screen h-screen overflow-hidden select-none" onMouseDown={handleAction} ontouchstart={handleAction}>
-                    {/* タイマー */}
+                <div className="relative w-screen h-screen overflow-hidden select-none" onMouseDown={handleAction} onTouchStart={handleAction}>
                     <div className="absolute top-10 w-full text-center">
-                        <div className="text-white text-2xl font-bold opacity-80">GOAL IN...</div>
-                        <h1 className="text-white text-6xl font-black drop-shadow-lg">{timeLeft}s</h1>
+                        <div className="text-white text-xl font-bold opacity-80 uppercase">Goal in...</div>
+                        <h1 className="text-white text-7xl font-black drop-shadow-lg">{timeLeft}s</h1>
                     </div>
 
-                    {/* 芝生 */}
                     <div className="absolute bottom-0 w-full h-32 bg-grass border-t-8 border-green-700"></div>
 
-                    {/* あなたのアップロードしたポニー画像 */}
+                    {/* ポニー画像部分 */}
                     <div 
                         className={`pony-container absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
                         style={{ 
                             bottom: `${128 + ponyY}px`,
-                            left: `calc(50vw - 100px)`, // 真ん中より少し左（スマホで隠れない位置）
-                            ...eyeStyle
+                            left: `calc(50vw - 90px)`
                         }}
                     >
                         <img 
                             src="pony.png" 
+                            className="pony-image"
                             alt="Pony"
-                            style={{ width: '160px', height: 'auto' }} // 馬を大きく表示
+                            onError={(e) => { e.target.src = "https://cdn-icons-png.flaticon.com/512/3522/3522108.png"; }}
                         />
                     </div>
 
@@ -160,19 +154,18 @@
                     {obstacles.map(o => (
                         <div 
                             key={o.id}
-                            className="absolute bg-red-600 border-4 border-white rounded-lg shadow-xl"
+                            className="absolute bg-red-600 border-4 border-white rounded-lg"
                             style={{ left: `${o.x}px`, bottom: '128px', width: '50px', height: `${o.height}px` }}
                         />
                     ))}
 
-                    {/* クリア/ゲームオーバー画面 */}
                     {(isGameOver || isGoal) && (
-                        <div className="absolute inset-0 bg-white/30 backdrop-blur-md flex items-center justify-center">
-                            <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200 scale-110">
-                                <h2 className="text-6xl font-black mb-6 goal-text">
-                                    {isGoal ? "GOAL!! 🎉" : "GAME OVER 😵"}
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-md flex items-center justify-center">
+                            <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200">
+                                <h2 className="text-6xl font-black mb-6 goal-text uppercase">
+                                    {isGoal ? "Clear! 🎉" : "Oops! 😵"}
                                 </h2>
-                                <button className="bg-pink-500 text-white px-12 py-4 rounded-full text-3xl font-bold">
+                                <button className="bg-pink-500 text-white px-12 py-4 rounded-full text-3xl font-bold hover:bg-pink-600 transition">
                                     RETRY
                                 </button>
                             </div>
