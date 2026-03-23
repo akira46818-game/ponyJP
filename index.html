@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pony Jump Party - Deluxe Edition</title>
+    <title>Pony Jump Party</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -12,19 +12,13 @@
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Comic Sans MS', sans-serif; touch-action: manipulation; }
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
-        
         .running { animation: pony-run 0.3s infinite alternate ease-in-out; }
         @keyframes pony-run {
             from { transform: scale(1.0) rotate(2deg); }
             to { transform: scale(0.95, 1.05) rotate(-2deg); }
         }
         .jumping { transform: scale(1.1, 0.9) translateY(-10px); }
-
-        .sparkle {
-            position: absolute;
-            pointer-events: none;
-            animation: sparkle-fade 0.6s forwards;
-        }
+        .sparkle { position: absolute; pointer-events: none; animation: sparkle-fade 0.6s forwards; }
         @keyframes sparkle-fade {
             0% { transform: scale(0); opacity: 1; }
             100% { transform: scale(1.5) translateY(-20px); opacity: 0; }
@@ -136,8 +130,8 @@
                         className={`absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
                         style={{ bottom: `${128 + ponyY}px`, left: `calc(50vw - 90px)`, zIndex: 10 }}
                     >
-                        {/* ↓ ファイル名のスペースを削除しました ↓ */}
-                        <img src="pony2.png" alt="Happy Pony" style={{ width: '180px', height: 'auto' }} />
+                        {/* ↓ お写真の実際のファイル名「pony 2 .png」に完全に合わせました ↓ */}
+                        <img src="pony 2 .png" alt="Happy Pony" style={{ width: '180px', height: 'auto' }} />
                     </div>
 
                     {sparkles.map(s => (
@@ -160,9 +154,7 @@
                                 <h2 className="text-6xl font-black mb-6 text-pink-500">
                                     {isGoal ? "YOU DID IT! 🎉" : "OOPS! 😵"}
                                 </h2>
-                                <button className="bg-pink-500 hover:bg-pink-600 text-white px-14 py-5 rounded-full text-3xl font-bold">
-                                    RETRY!
-                                </button>
+                                <button className="bg-pink-500 text-white px-14 py-5 rounded-full text-3xl font-bold">RETRY!</button>
                             </div>
                         </div>
                     )}
