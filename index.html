@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pony Jump Party - Export Edition</title>
-    <!-- Tailwind CSS -->
+    <title>Pony Jump Party - Full Edition</title>
+    <!-- Tailwind CSS (v3) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
-    <!-- React & Babel -->
+    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Framer Motion (Motion) -->
+    <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+    <!-- Lucide Icons (React version) -->
+    <script src="https://unpkg.com/lucide-react"></script>
     <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; }
         .font-space { font-family: 'Space Grotesk', sans-serif; }
+        canvas { image-rendering: pixelated; }
     </style>
 </head>
 <body class="bg-[#f0f9ff]">
@@ -29,8 +31,9 @@
     <script type="text/babel">
         const { useState, useEffect, useRef, useMemo } = React;
         const { motion, AnimatePresence } = FramerMotion;
+        const { Trophy, Users, Play, Gamepad2, Hash, ArrowRight } = LucideReact;
 
-        // --- Constants & Types ---
+        // --- Configuration & Types ---
         const HORSE_COLORS = [
             { name: 'Pinky', color: '#FFB6C1' },
             { name: 'Sky', color: '#87CEEB' },
@@ -49,8 +52,7 @@
             PONY_SIZE: 40,
         };
 
-        // --- Components ---
-
+        // --- GameCanvas Component ---
         const GameCanvas = ({ players, localPlayerId, onFinish, gameState }) => {
             const canvasRef = useRef(null);
             const requestRef = useRef(null);
@@ -59,7 +61,7 @@
             const obstaclesRef = useRef([]);
             const startTimeRef = useRef(0);
 
-            // Initialize obstacles
+            // Initialize obstacles once
             useEffect(() => {
                 const obstacles = [];
                 for (let i = 1; i < 20; i++) {
@@ -77,16 +79,13 @@
                 players.forEach(p => {
                     if (p.id !== localPlayerId) {
                         initialAiStates[p.id] = {
-                            y: 350,
-                            velocity: 0,
-                            progress: 0,
-                            isDead: false,
+                            y: 350, velocity: 0, progress: 0, isDead: false,
                             speedMult: 0.8 + Math.random() * 0.4
                         };
                     }
                 });
                 setAiStates(initialAiStates);
-            }, [players]);
+            }, [players, localPlayerId]);
 
             useEffect(() => {
                 if (gameState === 'racing' && startTimeRef.current === 0) {
@@ -103,18 +102,18 @@
                 e.stopPropagation();
                 setPonyState({ y: 350, velocity: 0, progress: 0, isDead: false });
                 startTimeRef.current = Date.now();
-                // Reset AI too for solo play
-                const resetAi = {};
-                Object.keys(aiStates).forEach(id => {
-                    resetAi[id] = { ...aiStates[id], y: 350, velocity: 0, progress: 0, isDead: false };
+                // Reset AI
+                setAiStates(prev => {
+                    const reset = {};
+                    Object.keys(prev).forEach(id => {
+                        reset[id] = { ...prev[id], y: 350, velocity: 0, progress: 0, isDead: false };
+                    });
+                    return reset;
                 });
-                setAiStates(resetAi);
             };
 
             useEffect(() => {
-                const handleKeyDown = (e) => {
-                    if (e.code === 'Space') jump();
-                };
+                const handleKeyDown = (e) => { if (e.code === 'Space') jump(); };
                 window.addEventListener('keydown', handleKeyDown);
                 return () => window.removeEventListener('keydown', handleKeyDown);
             }, [gameState, ponyState.isDead]);
@@ -176,10 +175,7 @@
                         if (currentObstacle && ai.y + GAME_CONFIG.PONY_SIZE - 10 > 400 - currentObstacle.height) {
                             ai.isDead = true;
                         }
-
-                        if (ai.progress >= GAME_CONFIG.TRACK_LENGTH) {
-                            ai.progress = GAME_CONFIG.TRACK_LENGTH;
-                        }
+                        if (ai.progress >= GAME_CONFIG.TRACK_LENGTH) ai.progress = GAME_CONFIG.TRACK_LENGTH;
                     });
                     return next;
                 });
@@ -189,44 +185,34 @@
                 ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
                 const cameraX = ponyState.progress - 100;
 
-                // Draw Background (Grass)
-                ctx.fillStyle = '#4ade80';
-                ctx.fillRect(0, 350, ctx.canvas.width, 50);
+                // Background
+                ctx.fillStyle = '#4ade80'; ctx.fillRect(0, 350, ctx.canvas.width, 50);
 
-                // Draw Obstacles
+                // Obstacles
                 obstaclesRef.current.forEach(obs => {
-                    ctx.fillStyle = '#92400e';
-                    ctx.fillRect(obs.x - cameraX, 400 - obs.height, 40, obs.height);
-                    ctx.fillStyle = '#ef4444';
-                    ctx.fillRect(obs.x - cameraX - 5, 400 - obs.height, 50, 10);
+                    ctx.fillStyle = '#92400e'; ctx.fillRect(obs.x - cameraX, 400 - obs.height, 40, obs.height);
+                    ctx.fillStyle = '#ef4444'; ctx.fillRect(obs.x - cameraX - 5, 400 - obs.height, 50, 10);
                 });
 
-                // Draw Finish Line
+                // Finish
                 ctx.fillStyle = '#000';
                 for (let i = 0; i < 10; i++) {
                     for (let j = 0; j < 2; j++) {
-                        if ((i + j) % 2 === 0) {
-                            ctx.fillRect(GAME_CONFIG.TRACK_LENGTH - cameraX + j * 20, i * 40, 20, 40);
-                        }
+                        if ((i + j) % 2 === 0) ctx.fillRect(GAME_CONFIG.TRACK_LENGTH - cameraX + j * 20, i * 40, 20, 40);
                     }
                 }
 
-                // Draw Players
+                // Players
                 players.forEach(player => {
                     const isLocal = player.id === localPlayerId;
                     let x, y, dead, progress, velocity;
                     
                     if (isLocal) {
-                        x = ponyState.progress - cameraX;
-                        y = ponyState.y;
-                        dead = ponyState.isDead;
-                        progress = ponyState.progress;
-                        velocity = ponyState.velocity;
+                        x = ponyState.progress - cameraX; y = ponyState.y; dead = ponyState.isDead;
+                        progress = ponyState.progress; velocity = ponyState.velocity;
                     } else if (aiStates[player.id]) {
-                        x = aiStates[player.id].progress - cameraX;
-                        y = aiStates[player.id].y;
-                        dead = aiStates[player.id].isDead;
-                        progress = aiStates[player.id].progress;
+                        x = aiStates[player.id].progress - cameraX; y = aiStates[player.id].y;
+                        dead = aiStates[player.id].isDead; progress = aiStates[player.id].progress;
                         velocity = aiStates[player.id].velocity;
                     } else return;
 
@@ -238,51 +224,35 @@
                     const isJumping = y < 345;
 
                     const drawLeg = (lx, ly, angle) => {
-                        ctx.save();
-                        ctx.translate(lx, ly);
-                        ctx.rotate(angle);
-                        ctx.lineWidth = 5;
-                        ctx.strokeStyle = player.color;
-                        ctx.lineCap = 'round';
+                        ctx.save(); ctx.translate(lx, ly); ctx.rotate(angle);
+                        ctx.lineWidth = 5; ctx.strokeStyle = player.color; ctx.lineCap = 'round';
                         ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 12); ctx.stroke();
-                        ctx.fillStyle = '#333'; ctx.fillRect(-3, 10, 6, 4);
-                        ctx.restore();
+                        ctx.fillStyle = '#333'; ctx.fillRect(-3, 10, 6, 4); ctx.restore();
                     };
 
-                    // Back legs
+                    // Animation logic
                     if (isJumping) {
-                        drawLeg(10, 25, 0.4 + velocity * 0.05);
-                        drawLeg(25, 25, -0.4 - velocity * 0.05);
+                        drawLeg(10, 25, 0.4 + velocity * 0.05); drawLeg(25, 25, -0.4 - velocity * 0.05);
                     } else {
-                        drawLeg(10, 25, Math.sin(legCycle + Math.PI) * 0.6);
-                        drawLeg(25, 25, Math.sin(legCycle) * 0.6);
+                        drawLeg(10, 25, Math.sin(legCycle + Math.PI) * 0.6); drawLeg(25, 25, Math.sin(legCycle) * 0.6);
                     }
 
                     // Tail
-                    ctx.save();
-                    ctx.translate(5, 15);
-                    ctx.rotate(Math.sin(legCycle) * 0.3 + (isJumping ? 0.5 : 0));
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-20, 5, -15, 25); ctx.lineTo(-5, 20); ctx.fill();
-                    ctx.restore();
+                    ctx.save(); ctx.translate(5, 15); ctx.rotate(Math.sin(legCycle) * 0.3 + (isJumping ? 0.5 : 0));
+                    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-20, 5, -15, 25); ctx.lineTo(-5, 20); ctx.fill(); ctx.restore();
 
                     // Body
-                    ctx.fillStyle = player.color;
-                    ctx.beginPath(); ctx.ellipse(20, 18, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.fillStyle = player.color; ctx.beginPath(); ctx.ellipse(20, 18, 18, 12, 0, 0, Math.PI * 2); ctx.fill();
 
                     // Front legs
                     if (isJumping) {
-                        drawLeg(12, 25, 0.6 + velocity * 0.05);
-                        drawLeg(28, 25, -0.6 - velocity * 0.05);
+                        drawLeg(12, 25, 0.6 + velocity * 0.05); drawLeg(28, 25, -0.6 - velocity * 0.05);
                     } else {
-                        drawLeg(12, 25, Math.sin(legCycle) * 0.6);
-                        drawLeg(28, 25, Math.sin(legCycle + Math.PI) * 0.6);
+                        drawLeg(12, 25, Math.sin(legCycle) * 0.6); drawLeg(28, 25, Math.sin(legCycle + Math.PI) * 0.6);
                     }
 
                     // Head
-                    ctx.save();
-                    ctx.translate(32, 12);
-                    ctx.rotate(isJumping ? -0.2 : 0);
+                    ctx.save(); ctx.translate(32, 12); ctx.rotate(isJumping ? -0.2 : 0);
                     ctx.fillStyle = player.color;
                     ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(5, -15); ctx.lineTo(15, -15); ctx.lineTo(5, 5); ctx.fill();
                     ctx.beginPath(); ctx.ellipse(12, -18, 10, 7, 0.4, 0, Math.PI * 2); ctx.fill();
@@ -292,10 +262,8 @@
                     ctx.fillStyle = player.color; ctx.beginPath(); ctx.moveTo(5, -22); ctx.lineTo(8, -28); ctx.lineTo(11, -22); ctx.fill();
                     ctx.restore();
 
-                    ctx.font = 'bold 14px Space Grotesk';
-                    ctx.fillStyle = '#000'; ctx.textAlign = 'center';
-                    ctx.fillText(player.name, 20, -25);
-                    ctx.restore();
+                    ctx.font = 'bold 14px Space Grotesk'; ctx.fillStyle = '#000'; ctx.textAlign = 'center';
+                    ctx.fillText(player.name, 20, -25); ctx.restore();
                 });
             };
 
@@ -304,8 +272,7 @@
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 if (!ctx) return;
-                update();
-                draw(ctx);
+                update(); draw(ctx);
                 requestRef.current = requestAnimationFrame(render);
             };
 
@@ -329,6 +296,7 @@
             );
         };
 
+        // --- Main App Component ---
         function App() {
             const [playerName, setPlayerName] = useState('');
             const [selectedColor, setSelectedColor] = useState(HORSE_COLORS[0].color);
@@ -359,17 +327,20 @@
                         {gameState === 'setup' && (
                             <motion.div key="setup" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-2xl border-4 border-black">
                                 <div className="text-center mb-8">
+                                    <div className="inline-block p-4 bg-yellow-400 rounded-full border-4 border-black mb-4">
+                                        <Gamepad2 size={48} className="text-black" />
+                                    </div>
                                     <h1 className="text-4xl font-black tracking-tighter uppercase italic">Pony Jump Party</h1>
-                                    <p className="text-gray-500 font-medium">Export Edition 🐴✨</p>
+                                    <p className="text-gray-500 font-medium">GitHub Pages Edition 🐴✨</p>
                                 </div>
                                 <div className="space-y-6">
                                     <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} placeholder="Your Name" className="w-full p-4 bg-gray-50 border-4 border-black rounded-2xl font-bold" />
                                     <div className="flex gap-3 flex-wrap justify-center">
                                         {HORSE_COLORS.map(hc => (
-                                            <button key={hc.color} onClick={() => setSelectedColor(hc.color)} className={`w-10 h-10 rounded-full border-4 ${selectedColor === hc.color ? 'border-black scale-110' : 'border-transparent opacity-50'}`} style={{ backgroundColor: hc.color }} />
+                                            <button key={hc.color} onClick={() => setSelectedColor(hc.color)} className={`w-10 h-10 rounded-full border-4 ${selectedColor === hc.color ? 'border-black scale-110 rotate-12' : 'border-transparent opacity-50'}`} style={{ backgroundColor: hc.color }} />
                                         ))}
                                     </div>
-                                    <button onClick={startSoloRace} className="w-full p-5 bg-yellow-400 hover:bg-yellow-300 border-4 border-black rounded-2xl font-black text-xl uppercase italic">Start Solo Race!</button>
+                                    <button onClick={startSoloRace} className="w-full p-5 bg-yellow-400 hover:bg-yellow-300 border-4 border-black rounded-2xl font-black text-xl uppercase italic flex items-center justify-center gap-2">Start Race <ArrowRight /></button>
                                 </div>
                             </motion.div>
                         )}
@@ -378,7 +349,7 @@
                             <motion.div key="racing" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full max-w-4xl">
                                 <div className="bg-white p-4 rounded-t-[2rem] border-4 border-b-0 border-black flex justify-between font-black italic">
                                     <span>RACING... 🏁</span>
-                                    <span className="text-gray-400">TAP TO JUMP</span>
+                                    <span className="text-gray-400">TAP OR SPACE TO JUMP</span>
                                 </div>
                                 <div className="border-4 border-black overflow-hidden rounded-b-[2rem] shadow-2xl">
                                     <GameCanvas players={players} localPlayerId="local-player" onFinish={handleFinish} gameState={gameState} />
@@ -388,6 +359,7 @@
 
                         {gameState === 'finished' && (
                             <motion.div key="finished" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-2xl border-4 border-black text-center">
+                                <Trophy size={64} className="mx-auto text-yellow-500 mb-4" />
                                 <h2 className="text-4xl font-black uppercase italic mb-6">Finished! 🏆</h2>
                                 <div className="space-y-3 mb-8">
                                     {results.map((res, i) => (
