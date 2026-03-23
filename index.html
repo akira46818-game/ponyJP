@@ -13,7 +13,6 @@
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Comic Sans MS', sans-serif; touch-action: manipulation; }
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
         
-        /* ポニーのアニメーション */
         .running { animation: pony-run 0.3s infinite alternate ease-in-out; }
         @keyframes pony-run {
             from { transform: scale(1.0) rotate(2deg); }
@@ -21,7 +20,6 @@
         }
         .jumping { transform: scale(1.1, 0.9) translateY(-10px); }
 
-        /* キラキラエフェクト */
         .sparkle {
             position: absolute;
             pointer-events: none;
@@ -36,7 +34,7 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
+        const { useState, useEffect, useCallback } = React;
 
         const Game = () => {
             const [ponyY, setPonyY] = useState(0);
@@ -60,7 +58,6 @@
                 if (jumpCount < 2) {
                     setVelocity(JUMP_FORCE);
                     setJumpCount(prev => prev + 1);
-                    // ジャンプ時にキラキラを追加
                     const newSparkle = { id: Date.now(), x: window.innerWidth/2 - 50, y: window.innerHeight - 150 - ponyY };
                     setSparkles(prev => [...prev, newSparkle]);
                     setTimeout(() => setSparkles(prev => prev.filter(s => s.id !== newSparkle.id)), 600);
@@ -91,7 +88,6 @@
                         const newObs = obs.map(o => ({ ...o, x: o.x - 8 })).filter(o => o.x > -100);
                         newObs.forEach(o => {
                             const ponyPos = window.innerWidth / 2 - 80;
-                            // 当たり判定をポニーの見た目に合わせて微調整
                             if (o.x > ponyPos && o.x < ponyPos + 80 && ponyY < o.height - 10) {
                                 setIsGameOver(true);
                             }
@@ -129,29 +125,25 @@
 
             return (
                 <div className="relative w-screen h-screen overflow-hidden select-none bg-[#87CEEB]" onMouseDown={handleAction} ontouchstart={handleAction}>
-                    {/* スコア表示 */}
                     <div className="absolute top-8 w-full text-center">
                         <div className="text-white text-xl font-bold drop-shadow-md">TIME TO PARTY</div>
                         <h1 className="text-white text-7xl font-black drop-shadow-xl">{timeLeft}s</h1>
                     </div>
 
-                    {/* 地面 */}
                     <div className="absolute bottom-0 w-full h-32 bg-grass border-t-4 border-green-600"></div>
 
-                    {/* ポニー (pony 2.png を使用) */}
                     <div 
                         className={`absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
                         style={{ bottom: `${128 + ponyY}px`, left: `calc(50vw - 90px)`, zIndex: 10 }}
                     >
-                        <img src="pony 2.png" alt="Happy Pony" style={{ width: '180px', height: 'auto' }} />
+                        {/* ↓ ファイル名のスペースを削除しました ↓ */}
+                        <img src="pony2.png" alt="Happy Pony" style={{ width: '180px', height: 'auto' }} />
                     </div>
 
-                    {/* キラキラ */}
                     {sparkles.map(s => (
                         <div key={s.id} className="sparkle text-3xl" style={{ left: s.x, top: s.y }}>✨</div>
                     ))}
 
-                    {/* 障害物（プレゼントボックス風） */}
                     {obstacles.map(o => (
                         <div 
                             key={o.id}
@@ -162,17 +154,13 @@
                         </div>
                     ))}
 
-                    {/* 終了画面 */}
                     {(isGameOver || isGoal) && (
                         <div className="absolute inset-0 bg-pink-500/20 backdrop-blur-md flex items-center justify-center z-50">
                             <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200 animate-bounce">
                                 <h2 className="text-6xl font-black mb-6 text-pink-500">
                                     {isGoal ? "YOU DID IT! 🎉" : "OOPS! 😵"}
                                 </h2>
-                                <p className="text-2xl font-bold text-gray-500 mb-8">
-                                    {isGoal ? "You're a Jumping Master!" : "Let's Try Again!"}
-                                </p>
-                                <button className="bg-pink-500 hover:bg-pink-600 text-white px-14 py-5 rounded-full text-3xl font-bold shadow-lg transition-transform active:scale-90">
+                                <button className="bg-pink-500 hover:bg-pink-600 text-white px-14 py-5 rounded-full text-3xl font-bold">
                                     RETRY!
                                 </button>
                             </div>
