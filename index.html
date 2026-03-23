@@ -12,30 +12,26 @@
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: sans-serif; touch-action: manipulation; }
         
-        /* ポニーの外枠設定 */
         .pony-container {
             display: inline-block;
             transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            /* 白とグレーの市松模様を隠すためのトリミング設定 */
             overflow: hidden; 
             background: transparent;
         }
 
-        /* 画像そのものの設定 */
+        /* ポニーのサイズを100pxに小さく調整 */
         .pony-image {
-            width: 180px; /* ポニーを大きく */
+            width: 100px; 
             height: auto;
-            /* 背景の市松模様を少し飛ばして、ポニーのピンクを際立たせる魔法のフィルター */
-            filter: drop-shadow(0 0 0 white);
             display: block;
         }
 
         .running { animation: pony-gallop 0.2s infinite alternate; }
         @keyframes pony-gallop {
             from { transform: scaleY(1); }
-            to { transform: scaleY(0.9) translateY(8px); }
+            to { transform: scaleY(0.9) translateY(5px); }
         }
-        .jumping { transform: scaleY(1.1) translateY(-15px) rotate(-5deg); }
+        .jumping { transform: scaleY(1.1) translateY(-10px) rotate(-5deg); }
 
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
         .goal-text { animation: rainbow 2s infinite; font-weight: 900; }
@@ -88,9 +84,10 @@
 
                     setObstacles(obs => {
                         const newObs = obs.map(o => ({ ...o, x: o.x - 8 })).filter(o => o.x > -100);
-                        const ponyPos = window.innerWidth / 2 - 90;
+                        // 当たり判定を小さいポニーに合わせて調整
+                        const ponyPos = window.innerWidth / 2 - 50;
                         newObs.forEach(o => {
-                            if (o.x > ponyPos && o.x < ponyPos + 80 && ponyY < o.height) {
+                            if (o.x > ponyPos && o.x < ponyPos + 50 && ponyY < o.height) {
                                 setIsGameOver(true);
                             }
                         });
@@ -118,9 +115,9 @@
             useEffect(() => {
                 if (isGameOver || isGoal) return;
                 const spawn = () => {
-                    const height = Math.random() > 0.6 ? 80 : 50;
+                    const height = Math.random() > 0.6 ? 70 : 40;
                     setObstacles(prev => [...prev, { x: window.innerWidth, height, id: Date.now() }]);
-                    setTimeout(spawn, 1000 + Math.random() * 2000);
+                    setTimeout(spawn, 1200 + Math.random() * 2000);
                 };
                 setTimeout(spawn, 1000);
             }, [isGameOver, isGoal]);
@@ -128,44 +125,41 @@
             return (
                 <div className="relative w-screen h-screen overflow-hidden select-none" onMouseDown={handleAction} onTouchStart={handleAction}>
                     <div className="absolute top-10 w-full text-center">
-                        <div className="text-white text-xl font-bold opacity-80 uppercase">Goal in...</div>
-                        <h1 className="text-white text-7xl font-black drop-shadow-lg">{timeLeft}s</h1>
+                        <div className="text-white text-xl font-bold opacity-80">GOAL IN...</div>
+                        <h1 className="text-white text-6xl font-black drop-shadow-lg">{timeLeft}s</h1>
                     </div>
 
                     <div className="absolute bottom-0 w-full h-32 bg-grass border-t-8 border-green-700"></div>
 
-                    {/* ポニー画像部分 */}
                     <div 
                         className={`pony-container absolute transition-all ${ponyY > 0 ? 'jumping' : 'running'}`}
                         style={{ 
                             bottom: `${128 + ponyY}px`,
-                            left: `calc(50vw - 90px)`
+                            left: `calc(50vw - 50px)`
                         }}
                     >
                         <img 
                             src="pony.png" 
                             className="pony-image"
                             alt="Pony"
-                            onError={(e) => { e.target.src = "https://cdn-icons-png.flaticon.com/512/3522/3522108.png"; }}
                         />
                     </div>
 
-                    {/* 障害物 */}
                     {obstacles.map(o => (
                         <div 
                             key={o.id}
                             className="absolute bg-red-600 border-4 border-white rounded-lg"
-                            style={{ left: `${o.x}px`, bottom: '128px', width: '50px', height: `${o.height}px` }}
+                            style={{ left: `${o.x}px`, bottom: '128px', width: '40px', height: `${o.height}px` }}
                         />
                     ))}
 
                     {(isGameOver || isGoal) && (
                         <div className="absolute inset-0 bg-white/40 backdrop-blur-md flex items-center justify-center">
                             <div className="bg-white p-12 rounded-[50px] shadow-2xl text-center border-8 border-pink-200">
-                                <h2 className="text-6xl font-black mb-6 goal-text uppercase">
+                                <h2 className="text-5xl font-black mb-6 goal-text uppercase">
                                     {isGoal ? "Clear! 🎉" : "Oops! 😵"}
                                 </h2>
-                                <button className="bg-pink-500 text-white px-12 py-4 rounded-full text-3xl font-bold hover:bg-pink-600 transition">
+                                <button className="bg-pink-500 text-white px-12 py-4 rounded-full text-2xl font-bold">
                                     RETRY
                                 </button>
                             </div>
