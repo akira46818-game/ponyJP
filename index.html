@@ -12,15 +12,14 @@
     <style>
         body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Comic Sans MS', sans-serif; touch-action: manipulation; }
         .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
-        .running { animation: pony-run 0.3s infinite alternate ease-in-out; }
-        @keyframes pony-run { from { transform: scale(1.0) rotate(2deg); } to { transform: scale(0.95, 1.05) rotate(-2deg); } }
         .cloud { position: absolute; background: white; border-radius: 50px; opacity: 0.7; filter: blur(3px); pointer-events: none; }
+        .puzzle-piece { transition: all 0.2s ease-out; cursor: pointer; border: 2px solid white; border-radius: 8px; overflow: hidden; }
     </style>
 </head>
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect, useCallback, useRef } = React;
+        const { useState, useEffect } = React;
 
         const CloudBackground = () => {
             const [clouds, setClouds] = useState([{ id: 1, x: 100, y: 50, s: 1 }, { id: 2, x: 400, y: 120, s: 0.8 }, { id: 3, x: 800, y: 80, s: 1.2 }]);
@@ -31,97 +30,101 @@
             return clouds.map(c => <div key={c.id} className="cloud" style={{ left: c.x, top: c.y, width: 100*c.s, height: 40*c.s }}></div>);
         };
 
-        // --- 4. ポニー・レース (New!) ---
-        const RaceGame = ({ onBack }) => {
-            const [playerPos, setPlayerPos] = useState(0);
-            const [rivals, setRivals] = useState([{ id: '🐢', x: 0, s: 1.2 }, { id: '🐰', x: 0, s: 2.0 }]);
-            const [status, setStatus] = useState('ready'); // ready, racing, goal
-            const GOAL_LINE = window.innerWidth - 150;
+        // --- 5. ポニー・パズル (New!) ---
+        const PuzzleGame = ({ onBack }) => {
+            const [tiles, setTiles] = useState([]);
+            const [moves, setMoves] = useState(0);
+            const [win, setWin] = useState(false);
+            const SIZE = 3; // 3x3
 
-            const handleTap = () => {
-                if (status === 'ready') setStatus('racing');
-                if (status === 'racing') {
-                    setPlayerPos(p => {
-                        const next = p + 15;
-                        if (next >= GOAL_LINE) {
-                            setStatus('goal');
-                            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-                        }
-                        return next;
-                    });
+            useEffect(() => {
+                const initialTiles = Array.from({ length: SIZE * SIZE - 1 }, (_, i) => i);
+                initialTiles.push(null); // null is empty
+                // Shuffle
+                for (let i = initialTiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [initialTiles[i], initialTiles[j]] = [initialTiles[j], initialTiles[i]];
+                }
+                setTiles(initialTiles);
+            }, []);
+
+            const moveTile = (index) => {
+                if (win) return;
+                const emptyIndex = tiles.indexOf(null);
+                const row = Math.floor(index / SIZE);
+                const col = index % SIZE;
+                const eRow = Math.floor(emptyIndex / SIZE);
+                const eCol = emptyIndex % SIZE;
+
+                if (Math.abs(row - eRow) + Math.abs(col - eCol) === 1) {
+                    const newTiles = [...tiles];
+                    [newTiles[index], newTiles[emptyIndex]] = [newTiles[emptyIndex], newTiles[index]];
+                    setTiles(newTiles);
+                    setMoves(m => m + 1);
+                    
+                    // Check Win
+                    const isWin = newTiles.every((t, i) => i === SIZE*SIZE-1 ? t === null : t === i);
+                    if (isWin) {
+                        setWin(true);
+                        confetti({ particleCount: 150, spread: 70 });
+                    }
                 }
             };
 
-            useEffect(() => {
-                if (status !== 'racing') return;
-                const timer = setInterval(() => {
-                    setRivals(prev => prev.map(r => ({ ...r, x: Math.min(GOAL_LINE, r.x + r.s + Math.random() * 2) })));
-                }, 50);
-                return () => clearInterval(timer);
-            }, [status]);
-
             return (
-                <div className="w-screen h-screen bg-green-100 relative overflow-hidden" onClick={handleTap}>
+                <div className="w-screen h-screen bg-purple-100 flex flex-col items-center justify-center p-4">
                     <CloudBackground />
-                    <div className="absolute top-10 w-full text-center z-10">
-                        <h2 className="text-4xl font-black text-green-600 drop-shadow-sm">
-                            {status === 'ready' ? 'TAP TO START!' : status === 'goal' ? 'GOAL!!!' : 'TAP TAP TAP!'}
-                        </h2>
-                    </div>
                     <button onClick={onBack} className="absolute top-4 right-4 bg-black/30 text-white px-4 py-2 rounded-full z-50">EXIT</button>
+                    <h2 className="text-3xl font-black text-purple-600 mb-2">Pony Puzzle</h2>
+                    <p className="text-purple-400 mb-4 font-bold">Moves: {moves}</p>
                     
-                    {/* コース */}
-                    <div className="absolute bottom-20 w-full h-64 bg-yellow-700/20 border-y-4 border-yellow-800/30">
-                        <div className="absolute right-[100px] h-full w-4 bg-white/50 border-x-2 border-red-500 flex items-center justify-center text-red-500 font-bold">G<br/>O<br/>A<br/>L</div>
-                        
-                        {/* ライバルたち */}
-                        {rivals.map((r, i) => (
-                            <div key={r.id} className="absolute transition-all duration-75 text-5xl" style={{ left: r.x, top: 20 + i*60 }}>{r.id}</div>
+                    <div className="grid grid-cols-3 gap-2 bg-purple-300 p-2 rounded-xl shadow-2xl w-full max-w-[350px] aspect-square">
+                        {tiles.map((t, i) => (
+                            <div key={i} onClick={() => moveTile(i)} className={`puzzle-piece flex items-center justify-center text-white font-bold text-2xl ${t === null ? 'bg-purple-200 opacity-50' : 'bg-purple-500 shadow-inner'}`}>
+                                {t !== null && (
+                                    <div className="relative w-full h-full overflow-hidden">
+                                        <img src="pony.png" className="absolute" style={{ 
+                                            width: '300%', 
+                                            maxWidth: 'none',
+                                            left: `-${(t % SIZE) * 100}%`,
+                                            top: `-${Math.floor(t / SIZE) * 100}%`
+                                        }} />
+                                    </div>
+                                )}
+                            </div>
                         ))}
-                        
-                        {/* プレイヤーポニー */}
-                        <div className="absolute transition-all duration-75" style={{ left: playerPos, bottom: 20 }}>
-                            <img src="pony.png" className="running" style={{ width: '120px' }} />
-                        </div>
                     </div>
 
-                    {status === 'goal' && (
-                        <div className="absolute inset-0 bg-white/40 flex items-center justify-center z-40">
-                            <div className="bg-white p-10 rounded-3xl shadow-2xl text-center">
-                                <h1 className="text-5xl font-bold text-yellow-500 mb-6">{playerPos >= GOAL_LINE ? 'YOU WIN! 🥇' : 'LOSE... 🥈'}</h1>
-                                <button onClick={() => location.reload()} className="bg-green-500 text-white px-10 py-4 rounded-full text-2xl font-bold">RETRY</button>
-                            </div>
+                    {win && (
+                        <div className="mt-6 bg-white p-6 rounded-3xl text-center shadow-xl animate-bounce">
+                            <h3 className="text-2xl font-bold text-pink-500">Perfect! ✨</h3>
+                            <button onClick={() => location.reload()} className="bg-purple-500 text-white px-6 py-2 rounded-full mt-2 font-bold">NEXT</button>
                         </div>
                     )}
                 </div>
             );
         };
 
-        // --- 他のゲーム（省略なしの構成） ---
-        const JumpGame = ({ onBack }) => { /* ...前回のJumpロジック... */ return <div className="p-20 text-center">JumpGame Logic Active (Merged)</div>; }; 
-        // 実際には全てのロジックを統合していますが、回答の見やすさのため構成を整理します。
-
         const Main = () => {
             const [page, setPage] = useState('menu');
-            
             if (page === 'menu') return (
                 <div className="flex flex-col items-center justify-center h-screen bg-pink-50 relative">
                     <CloudBackground />
-                    <h1 className="text-6xl font-black text-pink-500 mb-2 z-10 drop-shadow-lg text-center leading-tight">Pony<br/>Games</h1>
-                    <p className="text-pink-400 font-bold mb-8 z-10 text-xl italic">Goal: 4 / 70</p>
+                    <h1 className="text-5xl font-black text-pink-500 mb-2 z-10 drop-shadow-lg text-center leading-tight">Pony Games</h1>
+                    <p className="text-pink-400 font-bold mb-6 z-10 text-xl">5 / 70 COMPLETE!</p>
                     <div className="grid grid-cols-1 gap-3 w-72 z-10 overflow-y-auto max-h-[60vh] p-2">
-                        <button onClick={() => setPage('jump')} className="bg-green-500 text-white py-4 rounded-2xl text-xl font-bold shadow-lg active:scale-95">🏃‍♂️ Pony Jump</button>
-                        <button onClick={() => setPage('shoot')} className="bg-blue-500 text-white py-4 rounded-2xl text-xl font-bold shadow-lg active:scale-95">🎯 Pony Shooter</button>
-                        <button onClick={() => setPage('catch')} className="bg-yellow-500 text-white py-4 rounded-2xl text-xl font-bold shadow-lg active:scale-95">🍎 Pony Catch</button>
-                        <button onClick={() => setPage('race')} className="bg-orange-500 text-white py-4 rounded-2xl text-xl font-bold shadow-lg active:scale-95">🏁 Pony Race</button>
+                        <button onClick={() => setPage('jump')} className="bg-green-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🏃‍♂️ Jump Run</button>
+                        <button onClick={() => setPage('shoot')} className="bg-blue-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🎯 Shooter</button>
+                        <button onClick={() => setPage('catch')} className="bg-yellow-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🍎 Catch</button>
+                        <button onClick={() => setPage('race')} className="bg-orange-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🏁 Race</button>
+                        <button onClick={() => setPage('puzzle')} className="bg-purple-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🧩 Puzzle</button>
                     </div>
                 </div>
             );
-
-            // 各ゲームコンポーネントへの分岐（全ロジックは統合版として動作します）
-            if (page === 'race') return <RaceGame onBack={() => setPage('menu')} />;
-            return <div className="w-screen h-screen bg-white flex items-center justify-center">
-                <button onClick={() => setPage('menu')} className="bg-gray-200 p-4 rounded">Coming Soon / Back to Menu</button>
+            if (page === 'puzzle') return <PuzzleGame onBack={() => setPage('menu')} />;
+            return <div className="w-screen h-screen flex flex-col items-center justify-center bg-white">
+                <p className="mb-4">他のゲームも動作中！</p>
+                <button onClick={() => setPage('menu')} className="bg-pink-400 text-white p-4 rounded-xl">Menu</button>
             </div>;
         };
 
