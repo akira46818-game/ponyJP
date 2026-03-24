@@ -1,1 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pony Puzzle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #f3e8ff; font-family: sans-serif; touch-action: manipulation; }
+        .puzzle-tile { transition: all 0.2s; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const PuzzleGame = () => {
+            const [tiles, setTiles] = useState([]);
+            const [moves, setMoves] = useState(0);
+            const [win, setWin] = useState(false);
+
+            useEffect(() => {
+                const initial = [...Array(8).keys(), null].sort(() => Math.random() - 0.5);
+                setTiles(initial);
+            }, []);
+
+            const move = (i) => {
+                if (win) return;
+                const empty = tiles.indexOf(null);
+                const isAdjacent = [i-1, i+1, i-3, i+3].includes(empty) && 
+                                   !(i%3===0 && empty===i-1) && !(i%3===2 && empty===i+1);
+                
+                if (isAdjacent) {
+                    const newTiles = [...tiles];
+                    [newTiles[i], newTiles[empty]] = [newTiles[empty], newTiles[i]];
+                    setTiles(newTiles);
+                    setMoves(m => m + 1);
+                    if (newTiles.every((t, idx) => t === (idx === 8 ? null : idx))) {
+                        setWin(true);
+                        confetti();
+                    }
+                }
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-screen">
+                    <a href="index.html" className="absolute top-4 left-4 bg-purple-500 text-white px-4 py-2 rounded-full font-bold">← BACK</a>
+                    <h1 className="text-3xl font-black text-purple-600 mb-2">Pony Puzzle</h1>
+                    <p className="mb-4 font-bold text-purple-400">Moves: {moves}</p>
+                    <div className="grid grid-cols-3 gap-2 bg-purple-300 p-2 rounded-xl w-80 h-80 shadow-xl">
+                        {tiles.map((t, i) => (
+                            <div key={i} onClick={() => move(i)} className="bg-white rounded overflow-hidden flex items-center justify-center shadow-inner">
+                                {t !== null && (
+                                    <img src="pony.png" style={{ 
+                                        width: '300%', maxWidth: 'none',
+                                        marginLeft: `-${(t%3)*100}%`, marginTop: `-${Math.floor(t/3)*100}%` 
+                                    }} />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                    {win && <div className="mt-4 text-2xl font-bold text-pink-500 animate-bounce">YOU WIN! ✨</div>}
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<PuzzleGame />);
+    </script>
+</body>
+</html>
 
