@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy Tap Rush</title>
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  color: white;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(120,90,255,0.35), transparent 25%),
+    radial-gradient(circle at 80% 30%, rgba(0,200,255,0.28), transparent 25%),
+    radial-gradient(circle at 50% 80%, rgba(255,0,200,0.22), transparent 30%),
+    linear-gradient(180deg, #050816 0%, #0b1026 45%, #131a3a 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  padding: 24px 18px 28px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+  backdrop-filter: blur(8px);
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 32px;
+}
+
+p {
+  color: rgba(255,255,255,0.82);
+  line-height: 1.6;
+}
+
+.info {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 16px 0;
+}
+
+.tap-btn {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  border: none;
+  font-size: 28px;
+  font-weight: bold;
+  background: #ff8a2a;
+  color: white;
+  box-shadow: 0 10px 24px rgba(255,138,42,0.35);
+  margin-top: 12px;
+}
+
+.tap-btn:active {
+  transform: scale(0.97);
+}
+
+.start-btn, .retry-btn, .back-btn, .line-btn {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  border: none;
+  text-decoration: none;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.start-btn {
+  background: #06C755;
+  color: white;
+}
+
+.retry-btn {
+  background: #4a89ff;
+  color: white;
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.14);
+  color: white;
+}
+
+.line-btn {
+  background: #06C755;
+  color: white;
+}
+
+.result-box {
+  display: none;
+  margin-top: 18px;
+  padding: 18px 14px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.08);
+}
+
+.clear-box {
+  display: none;
+  margin-top: 16px;
+  padding: 18px 14px;
+  border-radius: 20px;
+  background: rgba(80, 200, 120, 0.18);
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1>⚡ Galaxy Tap Rush</h1>
+  <p>Tap as fast as you can in 10 seconds.<br>Get 20 taps or more to clear!</p>
+
+  <div class="info">Time: <span id="time">10</span>s</div>
+  <div class="info">Score: <span id="score">0</span></div>
+
+  <button class="start-btn" id="startBtn">Start</button>
+  <br>
+  <button class="tap-btn" id="tapBtn" disabled>TAP!</button>
+
+  <div class="result-box" id="resultBox">
+    <h2 id="resultTitle">Result</h2>
+    <div id="resultText"></div>
+    <button class="retry-btn" id="retryBtn">Try Again</button>
+    <a class="back-btn" href="index.html">Back</a>
+  </div>
+
+  <div class="clear-box" id="clearBox">
+    <h2>🎉 CLEAR!</h2>
+    <p>You did it! Get your reward on LINE.</p>
+    <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank">Get Reward</a>
+  </div>
+</div>
+
+<script>
+let score = 0;
+let timeLeft = 10;
+let timer = null;
+let playing = false;
+
+const timeEl = document.getElementById("time");
+const scoreEl = document.getElementById("score");
+const startBtn = document.getElementById("startBtn");
+const tapBtn = document.getElementById("tapBtn");
+const resultBox = document.getElementById("resultBox");
+const clearBox = document.getElementById("clearBox");
+const resultTitle = document.getElementById("resultTitle");
+const resultText = document.getElementById("resultText");
+const retryBtn = document.getElementById("retryBtn");
+
+function resetGame() {
+  score = 0;
+  timeLeft = 10;
+  playing = false;
+  clearInterval(timer);
+  timer = null;
+  timeEl.textContent = timeLeft;
+  scoreEl.textContent = score;
+  tapBtn.disabled = true;
+  resultBox.style.display = "none";
+  clearBox.style.display = "none";
+}
+
+function startGame() {
+  resetGame();
+  playing = true;
+  tapBtn.disabled = false;
+  startBtn.disabled = true;
+
+  timer = setInterval(() => {
+    timeLeft--;
+    timeEl.textContent = timeLeft;
+
+    if (timeLeft <= 0) {
+      endGame();
+    }
+  }, 1000);
+}
+
+function tapGame() {
+  if (!playing) return;
+  score++;
+  scoreEl.textContent = score;
+}
+
+function endGame() {
+  playing = false;
+  clearInterval(timer);
+  tapBtn.disabled = true;
+  startBtn.disabled = false;
+  resultBox.style.display = "block";
+
+  if (score >= 20) {
+    resultTitle.textContent = "🔥 Amazing!";
+    resultText.textContent = "You reached " + score + " taps.";
+    clearBox.style.display = "block";
+  } else if (score >= 15) {
+    resultTitle.textContent = "👍 Good!";
+    resultText.textContent = "You reached " + score + " taps. Almost there!";
+  } else {
+    resultTitle.textContent = "😭 Too Slow!";
+    resultText.textContent = "You reached " + score + " taps. Try again!";
+  }
+}
+
+startBtn.addEventListener("click", startGame);
+tapBtn.addEventListener("click", tapGame);
+retryBtn.addEventListener("click", resetGame);
+</script>
+
+</body>
+</html>
