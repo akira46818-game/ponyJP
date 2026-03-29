@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1秒止めチャレンジ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+        "Yu Gothic", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 90, 255, 0.25), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(0, 200, 255, 0.2), transparent 25%),
+        linear-gradient(180deg, #0b1026 0%, #141b40 100%);
+      color: #fff;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 22px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 4px 0 8px;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin: 0 0 16px;
+      font-size: 15px;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.6;
+    }
+
+    .display {
+      margin: 18px 0 14px;
+      padding: 26px 16px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .status {
+      min-height: 28px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffd36e;
+      margin-bottom: 14px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 18px 14px;
+      font-size: 22px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.2);
+    }
+
+    .start-btn {
+      background: #06C755;
+      color: white;
+    }
+
+    .stop-btn {
+      background: #ff8a2a;
+      color: white;
+    }
+
+    .retry-btn {
+      background: #4a89ff;
+      color: white;
+      margin-top: 12px;
+      width: 100%;
+    }
+
+    .judge-box,
+    .clear-box {
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 18px 14px;
+    }
+
+    .judge-box {
+      display: none;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .clear-box {
+      display: none;
+      background: rgba(80, 200, 120, 0.18);
+    }
+
+    .result-time {
+      font-size: 34px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .result-rank {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+
+    .line-btn,
+    .back-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .line-btn {
+      background: #06C755;
+      color: white;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: white;
+      margin-left: 8px;
+    }
+
+    .tip {
+      margin-top: 14px;
+      color: rgba(255,255,255,0.72);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>⏱️ 1秒止めチャレンジ</h1>
+    <p class="sub">1.00秒ピッタリを狙え！<br>スタートして、ちょうど1秒と思ったら止めてください。</p>
+
+    <div class="display" id="display">0.000</div>
+    <div class="status" id="status">準備OK</div>
+
+    <div class="buttons">
+      <button class="start-btn" id="startBtn">スタート</button>
+      <button class="stop-btn" id="stopBtn">ストップ</button>
+    </div>
+
+    <button class="retry-btn" id="retryBtn" style="display:none;">もう一回！</button>
+
+    <div class="judge-box" id="judgeBox">
+      <div class="result-time" id="resultTime">0.000秒</div>
+      <div class="result-rank" id="resultRank">😅 普通</div>
+      <div id="resultDiff">誤差: 0.000秒</div>
+    </div>
+
+    <div class="clear-box" id="clearBox">
+      <div class="result-rank">🎉 クリア！</div>
+      <div>特典はLINEで受け取れます👇</div>
+      <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">
+        🎁 LINEで受け取る
+      </a>
+      <a class="back-btn" href="index.html">一覧へ戻る</a>
+    </div>
+
+    <div class="tip">
+      目指せ1.00秒！<br>
+      かなり近い人だけ特典ゲット！
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById("display");
+    const statusEl = document.getElementById("status");
+    const startBtn = document.getElementById("startBtn");
+    const stopBtn = document.getElementById("stopBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const judgeBox = document.getElementById("judgeBox");
+    const clearBox = document.getElementById("clearBox");
+    const resultTime = document.getElementById("resultTime");
+    const resultRank = document.getElementById("resultRank");
+    const resultDiff = document.getElementById("resultDiff");
+
+    let startTime = null;
+    let timer = null;
+    let running = false;
+
+    function resetGame() {
+      startTime = null;
+      running = false;
+      clearInterval(timer);
+      timer = null;
+      display.textContent = "0.000";
+      statusEl.textContent = "準備OK";
+      judgeBox.style.display = "none";
+      clearBox.style.display = "none";
+      retryBtn.style.display = "none";
+    }
+
+    function startGame() {
+      if (running) return;
+      resetGame();
+      running = true;
+      startTime = Date.now();
+      statusEl.textContent = "測定中...";
+      timer = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        display.textContent = elapsed.toFixed(3);
+      }, 10);
+    }
+
+    function stopGame() {
+      if (!running) return;
+      running = false;
+      clearInterval(timer);
+
+      const elapsed = (Date.now() - startTime) / 1000;
+      const diff = Math.abs(1 - elapsed);
+
+      display.textContent = elapsed.toFixed(3);
+      resultTime.textContent = elapsed.toFixed(3) + "秒";
+      resultDiff.textContent = "誤差: " + diff.toFixed(3) + "秒";
+      judgeBox.style.display = "block";
+      retryBtn.style.display = "block";
+
+      if (diff < 0.01) {
+        resultRank.textContent = "👑 神!";
+        statusEl.textContent = "完璧です！";
+        clearBox.style.display = "block";
+      } else if (diff < 0.05) {
+        resultRank.textContent = "🔥 天才!";
+        statusEl.textContent = "すごい！";
+        clearBox.style.display = "block";
+      } else if (diff < 0.10) {
+        resultRank.textContent = "👍 すごい!";
+        statusEl.textContent = "かなり近い！";
+        clearBox.style.display = "block";
+      } else if (diff < 0.20) {
+        resultRank.textContent = "😅 普通";
+        statusEl.textContent = "惜しい！";
+      } else {
+        resultRank.textContent = "😭 もう一回!";
+        statusEl.textContent = "再挑戦してください";
+      }
+    }
+
+    startBtn.addEventListener("click", startGame);
+    stopBtn.addEventListener("click", stopGame);
+    retryBtn.addEventListener("click", resetGame);
+  </script>
+</body>
+</html>
