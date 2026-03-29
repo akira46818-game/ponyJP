@@ -1,76 +1,334 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pony Puzzle</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #f3e8ff; font-family: sans-serif; touch-action: manipulation; }
-        .puzzle-tile { transition: all 0.2s; border: 1px solid #ddd; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pony Puzzle</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, #efe6ff 0%, #e7dbff 100%);
+      color: #7a37d8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px 16px 40px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      text-align: center;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      background: linear-gradient(90deg, #9f5cff, #7f3fe8);
+      color: white;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 14px 24px;
+      box-shadow: 0 10px 24px rgba(127, 63, 232, 0.25);
+    }
+
+    h1 {
+      margin: 10px 0 8px;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: -1px;
+      color: #8a3ff0;
+      text-shadow: 0 3px 0 rgba(255,255,255,0.6);
+    }
+
+    .moves {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ae79f3;
+      margin-bottom: 16px;
+    }
+
+    .preview-box {
+      background: rgba(255,255,255,0.45);
+      border-radius: 22px;
+      padding: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    }
+
+    .preview-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #8b5ce6;
+      margin-bottom: 8px;
+    }
+
+    .preview {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto;
+      border-radius: 16px;
+      background-image: url("pony.png");
+      background-size: cover;
+      background-position: center;
+      border: 4px solid rgba(255,255,255,0.75);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+
+    .board-wrap {
+      background: rgba(200, 160, 255, 0.55);
+      padding: 14px;
+      border-radius: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+    }
+
+    .tile {
+      border: none;
+      border-radius: 10px;
+      background-image: url("pony.png");
+      background-size: 300% 300%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .tile.empty {
+      background: rgba(255,255,255,0.75);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.7);
+      cursor: default;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .control-btn {
+      flex: 1;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 14px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    }
+
+    .shuffle-btn {
+      background: #8a3ff0;
+      color: white;
+    }
+
+    .reset-btn {
+      background: white;
+      color: #8a3ff0;
+    }
+
+    .clear-box {
+      display: none;
+      margin-top: 18px;
+      background: #eef9ea;
+      border-radius: 22px;
+      padding: 20px 16px;
+      box-shadow: 0 12px 28px rgba(0,0,0,0.06);
+    }
+
+    .clear-title {
+      margin: 0 0 8px;
+      font-size: 32px;
+      color: #31a545;
+      font-weight: 900;
+    }
+
+    .line-btn {
+      display: inline-block;
+      margin-top: 12px;
+      text-decoration: none;
+      background: #06C755;
+      color: white;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 18px;
+    }
+
+    .note {
+      margin-top: 10px;
+      color: #9c7dcf;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <div class="wrap">
+    <div class="topbar">
+      <a class="back-btn" href="index.html">← BACK</a>
+    </div>
 
-        const PuzzleGame = () => {
-            const [tiles, setTiles] = useState([]);
-            const [moves, setMoves] = useState(0);
-            const [win, setWin] = useState(false);
+    <h1>Pony Puzzle</h1>
+    <div class="moves">Moves: <span id="moves">0</span></div>
 
-            useEffect(() => {
-                const initial = [...Array(8).keys(), null].sort(() => Math.random() - 0.5);
-                setTiles(initial);
-            }, []);
+    <div class="preview-box">
+      <div class="preview-title">Preview</div>
+      <div class="preview"></div>
+    </div>
 
-            const move = (i) => {
-                if (win) return;
-                const empty = tiles.indexOf(null);
-                const isAdjacent = [i-1, i+1, i-3, i+3].includes(empty) && 
-                                   !(i%3===0 && empty===i-1) && !(i%3===2 && empty===i+1);
-                
-                if (isAdjacent) {
-                    const newTiles = [...tiles];
-                    [newTiles[i], newTiles[empty]] = [newTiles[empty], newTiles[i]];
-                    setTiles(newTiles);
-                    setMoves(m => m + 1);
-                    if (newTiles.every((t, idx) => t === (idx === 8 ? null : idx))) {
-                        setWin(true);
-                        confetti();
-                    }
-                }
-            };
+    <div class="board-wrap">
+      <div class="board" id="board"></div>
+    </div>
 
-            return (
-                <div className="flex flex-col items-center justify-center h-screen">
-                    <a href="index.html" className="absolute top-4 left-4 bg-purple-500 text-white px-4 py-2 rounded-full font-bold">← BACK</a>
-                    <h1 className="text-3xl font-black text-purple-600 mb-2">Pony Puzzle</h1>
-                    <p className="mb-4 font-bold text-purple-400">Moves: {moves}</p>
-                    <div className="grid grid-cols-3 gap-2 bg-purple-300 p-2 rounded-xl w-80 h-80 shadow-xl">
-                        {tiles.map((t, i) => (
-                            <div key={i} onClick={() => move(i)} className="bg-white rounded overflow-hidden flex items-center justify-center shadow-inner">
-                                {t !== null && (
-                                    <img src="pony.png" style={{ 
-                                        width: '300%', maxWidth: 'none',
-                                        marginLeft: `-${(t%3)*100}%`, marginTop: `-${Math.floor(t/3)*100}%` 
-                                    }} />
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                    {win && <div className="mt-4 text-2xl font-bold text-pink-500 animate-bounce">YOU WIN! ✨</div>}
-                </div>
-            );
-        };
+    <div class="controls">
+      <button class="control-btn shuffle-btn" id="shuffleBtn">Shuffle</button>
+      <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+    </div>
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<PuzzleGame />);
-    </script>
+    <div class="clear-box" id="clearBox">
+      <div class="clear-title">🎉 CLEAR!</div>
+      <div>You solved the puzzle!</div>
+      <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">
+        🎁 Get Reward on LINE
+      </a>
+    </div>
+
+    <div class="note">
+      Tap a tile next to the empty space to move it.<br>
+      This puzzle always shuffles into a solvable pattern.
+    </div>
+  </div>
+
+  <script>
+    const board = document.getElementById("board");
+    const movesEl = document.getElementById("moves");
+    const shuffleBtn = document.getElementById("shuffleBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const clearBox = document.getElementById("clearBox");
+
+    const size = 3;
+    const solved = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+    let tiles = [...solved];
+    let moves = 0;
+
+    function render() {
+      board.innerHTML = "";
+
+      tiles.forEach((value, index) => {
+        const btn = document.createElement("button");
+        btn.className = "tile";
+
+        if (value === 8) {
+          btn.classList.add("empty");
+          btn.disabled = true;
+        } else {
+          const x = value % size;
+          const y = Math.floor(value / size);
+          btn.style.backgroundPosition = `${x * 50}% ${y * 50}%`;
+          btn.addEventListener("click", () => moveTile(index));
+        }
+
+        board.appendChild(btn);
+      });
+
+      movesEl.textContent = moves;
+    }
+
+    function getRow(index) {
+      return Math.floor(index / size);
+    }
+
+    function getCol(index) {
+      return index % size;
+    }
+
+    function isAdjacent(i1, i2) {
+      const r1 = getRow(i1);
+      const c1 = getCol(i1);
+      const r2 = getRow(i2);
+      const c2 = getCol(i2);
+      return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1;
+    }
+
+    function moveTile(index) {
+      const emptyIndex = tiles.indexOf(8);
+      if (!isAdjacent(index, emptyIndex)) return;
+
+      [tiles[index], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[index]];
+      moves++;
+      render();
+
+      if (isSolved()) {
+        clearBox.style.display = "block";
+      }
+    }
+
+    function isSolved() {
+      return tiles.every((value, index) => value === solved[index]);
+    }
+
+    function shuffleSolvable() {
+      tiles = [...solved];
+      clearBox.style.display = "none";
+      moves = 0;
+
+      let emptyIndex = tiles.indexOf(8);
+
+      for (let i = 0; i < 200; i++) {
+        const possibleMoves = [];
+        for (let j = 0; j < tiles.length; j++) {
+          if (isAdjacent(j, emptyIndex)) {
+            possibleMoves.push(j);
+          }
+        }
+
+        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+        [tiles[randomMove], tiles[emptyIndex]] = [tiles[emptyIndex], tiles[randomMove]];
+        emptyIndex = randomMove;
+      }
+
+      if (isSolved()) {
+        shuffleSolvable();
+        return;
+      }
+
+      render();
+    }
+
+    function resetSolved() {
+      tiles = [...solved];
+      moves = 0;
+      clearBox.style.display = "none";
+      render();
+    }
+
+    shuffleBtn.addEventListener("click", shuffleSolvable);
+    resetBtn.addEventListener("click", resetSolved);
+
+    shuffleSolvable();
+  </script>
 </body>
 </html>
-
