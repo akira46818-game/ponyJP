@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy Coin Game</title>
+
+<style>
+body {
+  margin: 0;
+  background: black;
+  color: white;
+  text-align: center;
+  font-family: Arial;
+}
+
+canvas {
+  background: #111;
+  display: block;
+  margin: auto;
+}
+
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🌌 Galaxy Coin Game</h2>
+<p>Move and collect coins!</p>
+
+<canvas id="game" width="300" height="400"></canvas>
+
+<p>Score: <span id="score">0</span></p>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {x: 140, y: 350, size: 20};
+let coins = [];
+let score = 0;
+
+// タッチ操作
+canvas.addEventListener("touchmove", e => {
+  let rect = canvas.getBoundingClientRect();
+  player.x = e.touches[0].clientX - rect.left;
+});
+
+// マウス操作
+canvas.addEventListener("mousemove", e => {
+  let rect = canvas.getBoundingClientRect();
+  player.x = e.clientX - rect.left;
+});
+
+// コイン生成
+function spawnCoin() {
+  coins.push({
+    x: Math.random() * 280,
+    y: 0,
+    size: 10
+  });
+}
+
+setInterval(spawnCoin, 800);
+
+// ゲームループ
+function update() {
+  ctx.clearRect(0,0,300,400);
+
+  // プレイヤー
+  ctx.fillStyle = "cyan";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // コイン
+  ctx.fillStyle = "yellow";
+  coins.forEach((coin, i) => {
+    coin.y += 3;
+    ctx.beginPath();
+    ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI*2);
+    ctx.fill();
+
+    // 当たり判定
+    if (
+      coin.x > player.x &&
+      coin.x < player.x + player.size &&
+      coin.y > player.y &&
+      coin.y < player.y + player.size
+    ) {
+      coins.splice(i,1);
+      score++;
+      document.getElementById("score").innerText = score;
+
+      // 5点でクリア
+      if(score >= 5){
+        alert("🎉 CLEAR!\nGet reward on LINE!");
+        window.location.href = "https://lin.ee/zohBFsV";
+      }
+    }
+  });
+
+  requestAnimationFrame(update);
+}
+
+update();
+</script>
+
+</body>
+</html>
