@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Galaxy Game World</title>
+  <title>ギャラクシーゲームワールド</title>
   <style>
     * {
       box-sizing: border-box;
@@ -35,7 +35,7 @@
         radial-gradient(2px 2px at 60px 220px, rgba(255,255,255,.7), transparent),
         radial-gradient(1.5px 1.5px at 280px 260px, rgba(255,255,255,.8), transparent);
       background-size: 400px 300px;
-      opacity: 0.8;
+      opacity: 0.85;
     }
 
     .wrap {
@@ -48,7 +48,19 @@
 
     .hero {
       text-align: center;
-      padding: 32px 18px 24px;
+      padding: 34px 18px 24px;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      margin-bottom: 14px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(8px);
     }
 
     .hero h1 {
@@ -65,18 +77,6 @@
       color: rgba(255,255,255,0.82);
       font-size: 16px;
       line-height: 1.7;
-    }
-
-    .hero-badge {
-      display: inline-block;
-      margin-bottom: 14px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      font-size: 13px;
-      letter-spacing: 0.5px;
-      backdrop-filter: blur(8px);
     }
 
     .section-title {
@@ -129,11 +129,6 @@
       line-height: 1.6;
     }
 
-    .soon {
-      opacity: 0.75;
-      border-style: dashed;
-    }
-
     .footer-box {
       margin-top: 28px;
       padding: 20px;
@@ -169,48 +164,30 @@
       <div class="hero-badge">GALAXY GAME WORLD</div>
       <h1>🌌 ギャラクシーゲームワールド</h1>
       <p>
-        かんたんだけどハマる、スマホで遊べるミニゲーム集。<br>
-        どんどん新しいゲームを追加していく、宇宙テーマのゲームポータルです。
+        スマホでサクッと遊べる、宇宙テーマのミニゲーム集。<br>
+        新作ゲームをどんどん追加していきます。
       </p>
     </section>
 
     <h2 class="section-title">🎮 今すぐ遊べるゲーム</h2>
 
     <div class="grid">
-      <a class="card" href="pony.html">
+      <a class="card" href="ポニー.html">
         <span class="emoji">🐴</span>
         <h3>ポニージャンプ</h3>
-        <p>右から来る障害物をジャンプでよけろ。3回成功でクリア！</p>
+        <p>障害物をジャンプでよけろ。3回成功でクリア！</p>
       </a>
 
-      <a class="card" href="stopwatch.html">
+      <a class="card" href="パズル.html">
+        <span class="emoji">🧩</span>
+        <h3>ポニーパズル</h3>
+        <p>ピースをそろえて完成を目指す定番パズル。</p>
+      </a>
+
+      <a class="card" href="ストップウォッチ.html">
         <span class="emoji">⏱️</span>
         <h3>1秒止めチャレンジ</h3>
-        <p>1.00秒ピッタリを狙う反射と集中のギャラクシーチャレンジ。</p>
-      </a>
-
-      <a class="card soon" href="#">
-        <span class="emoji">🌀</span>
-        <h3>ギャラクシー迷路</h3>
-        <p>近日追加。宇宙空間の迷路を突破する激ムズステージ。</p>
-      </a>
-
-      <a class="card soon" href="#">
-        <span class="emoji">⚡</span>
-        <h3>スピードタップ</h3>
-        <p>近日追加。10秒でどこまで連打できるか挑戦！</p>
-      </a>
-
-      <a class="card soon" href="#">
-        <span class="emoji">🌠</span>
-        <h3>スターキャッチ</h3>
-        <p>近日追加。流れ星を集める宇宙コレクションゲーム。</p>
-      </a>
-
-      <a class="card soon" href="#">
-        <span class="emoji">🛸</span>
-        <h3>UFOラン</h3>
-        <p>近日追加。障害物を避けながら宇宙船で突き進め！</p>
+        <p>1.00秒ピッタリを狙う反射と集中のチャレンジ。</p>
       </a>
     </div>
 
