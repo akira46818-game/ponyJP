@@ -1,135 +1,120 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pony 70 Games Collection</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background: #87CEEB; font-family: 'Comic Sans MS', sans-serif; touch-action: manipulation; }
-        .bg-grass { background: linear-gradient(to bottom, #4ade80 0%, #22c55e 100%); }
-        .cloud { position: absolute; background: white; border-radius: 50px; opacity: 0.7; filter: blur(3px); pointer-events: none; }
-        .puzzle-piece { transition: all 0.2s ease-out; cursor: pointer; border: 2px solid white; border-radius: 8px; overflow: hidden; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ポニーゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+        "Yu Gothic", sans-serif;
+      background: #eaf6ff;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      font-size: 40px;
+      margin: 0 0 12px;
+      color: #1f2a44;
+    }
+
+    p {
+      font-size: 18px;
+      color: #5b6475;
+      margin: 0 0 28px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      background: #ff7a00;
+      color: white;
+      font-size: 32px;
+      font-weight: 700;
+      border-radius: 999px;
+      padding: 20px 28px;
+      width: 100%;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(255, 122, 0, 0.28);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    #clearBox {
+      display: none;
+      margin-top: 28px;
+      padding: 20px;
+      background: #f6fff3;
+      border-radius: 18px;
+    }
+
+    #clearBox h2 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      color: #1d7a2f;
+    }
+
+    .line-btn {
+      display: inline-block;
+      margin-top: 12px;
+      background: #19b84a;
+      color: white;
+      text-decoration: none;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 14px 22px;
+      border-radius: 999px;
+    }
+  </style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+  <div class="card">
+    <h1>🐴 ポニーゲーム</h1>
+    <p>ジャンプ成功でクリア！</p>
 
-        const CloudBackground = () => {
-            const [clouds, setClouds] = useState([{ id: 1, x: 100, y: 50, s: 1 }, { id: 2, x: 400, y: 120, s: 0.8 }, { id: 3, x: 800, y: 80, s: 1.2 }]);
-            useEffect(() => {
-                const i = setInterval(() => setClouds(prev => prev.map(c => ({ ...c, x: c.x < -200 ? window.innerWidth + 100 : c.x - 0.5 }))), 30);
-                return () => clearInterval(i);
-            }, []);
-            return clouds.map(c => <div key={c.id} className="cloud" style={{ left: c.x, top: c.y, width: 100*c.s, height: 40*c.s }}></div>);
-        };
+    <button onclick="jumpGame()">ジャンプ！</button>
 
-        // --- 5. ポニー・パズル (New!) ---
-        const PuzzleGame = ({ onBack }) => {
-            const [tiles, setTiles] = useState([]);
-            const [moves, setMoves] = useState(0);
-            const [win, setWin] = useState(false);
-            const SIZE = 3; // 3x3
+    <div id="clearBox">
+      <h2>🎉クリア！</h2>
+      <div>限定プレゼントはこちら👇</div>
+      <a class="line-btn" href="https://lin.ee/あなたのLINE" target="_blank" rel="noopener noreferrer">
+        🎁 LINEで受け取る
+      </a>
+    </div>
+  </div>
 
-            useEffect(() => {
-                const initialTiles = Array.from({ length: SIZE * SIZE - 1 }, (_, i) => i);
-                initialTiles.push(null); // null is empty
-                // Shuffle
-                for (let i = initialTiles.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [initialTiles[i], initialTiles[j]] = [initialTiles[j], initialTiles[i]];
-                }
-                setTiles(initialTiles);
-            }, []);
+  <script>
+    function jumpGame() {
+      const success = Math.random() < 0.5;
+      const clearBox = document.getElementById("clearBox");
 
-            const moveTile = (index) => {
-                if (win) return;
-                const emptyIndex = tiles.indexOf(null);
-                const row = Math.floor(index / SIZE);
-                const col = index % SIZE;
-                const eRow = Math.floor(emptyIndex / SIZE);
-                const eCol = emptyIndex % SIZE;
-
-                if (Math.abs(row - eRow) + Math.abs(col - eCol) === 1) {
-                    const newTiles = [...tiles];
-                    [newTiles[index], newTiles[emptyIndex]] = [newTiles[emptyIndex], newTiles[index]];
-                    setTiles(newTiles);
-                    setMoves(m => m + 1);
-                    
-                    // Check Win
-                    const isWin = newTiles.every((t, i) => i === SIZE*SIZE-1 ? t === null : t === i);
-                    if (isWin) {
-                        setWin(true);
-                        confetti({ particleCount: 150, spread: 70 });
-                    }
-                }
-            };
-
-            return (
-                <div className="w-screen h-screen bg-purple-100 flex flex-col items-center justify-center p-4">
-                    <CloudBackground />
-                    <button onClick={onBack} className="absolute top-4 right-4 bg-black/30 text-white px-4 py-2 rounded-full z-50">EXIT</button>
-                    <h2 className="text-3xl font-black text-purple-600 mb-2">Pony Puzzle</h2>
-                    <p className="text-purple-400 mb-4 font-bold">Moves: {moves}</p>
-                    
-                    <div className="grid grid-cols-3 gap-2 bg-purple-300 p-2 rounded-xl shadow-2xl w-full max-w-[350px] aspect-square">
-                        {tiles.map((t, i) => (
-                            <div key={i} onClick={() => moveTile(i)} className={`puzzle-piece flex items-center justify-center text-white font-bold text-2xl ${t === null ? 'bg-purple-200 opacity-50' : 'bg-purple-500 shadow-inner'}`}>
-                                {t !== null && (
-                                    <div className="relative w-full h-full overflow-hidden">
-                                        <img src="pony.png" className="absolute" style={{ 
-                                            width: '300%', 
-                                            maxWidth: 'none',
-                                            left: `-${(t % SIZE) * 100}%`,
-                                            top: `-${Math.floor(t / SIZE) * 100}%`
-                                        }} />
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-
-                    {win && (
-                        <div className="mt-6 bg-white p-6 rounded-3xl text-center shadow-xl animate-bounce">
-                            <h3 className="text-2xl font-bold text-pink-500">Perfect! ✨</h3>
-                            <button onClick={() => location.reload()} className="bg-purple-500 text-white px-6 py-2 rounded-full mt-2 font-bold">NEXT</button>
-                        </div>
-                    )}
-                </div>
-            );
-        };
-
-        const Main = () => {
-            const [page, setPage] = useState('menu');
-            if (page === 'menu') return (
-                <div className="flex flex-col items-center justify-center h-screen bg-pink-50 relative">
-                    <CloudBackground />
-                    <h1 className="text-5xl font-black text-pink-500 mb-2 z-10 drop-shadow-lg text-center leading-tight">Pony Games</h1>
-                    <p className="text-pink-400 font-bold mb-6 z-10 text-xl">5 / 70 COMPLETE!</p>
-                    <div className="grid grid-cols-1 gap-3 w-72 z-10 overflow-y-auto max-h-[60vh] p-2">
-                        <button onClick={() => setPage('jump')} className="bg-green-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🏃‍♂️ Jump Run</button>
-                        <button onClick={() => setPage('shoot')} className="bg-blue-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🎯 Shooter</button>
-                        <button onClick={() => setPage('catch')} className="bg-yellow-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🍎 Catch</button>
-                        <button onClick={() => setPage('race')} className="bg-orange-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🏁 Race</button>
-                        <button onClick={() => setPage('puzzle')} className="bg-purple-500 text-white py-3 rounded-2xl font-bold shadow-lg active:scale-95 transition-transform text-lg">🧩 Puzzle</button>
-                    </div>
-                </div>
-            );
-            if (page === 'puzzle') return <PuzzleGame onBack={() => setPage('menu')} />;
-            return <div className="w-screen h-screen flex flex-col items-center justify-center bg-white">
-                <p className="mb-4">他のゲームも動作中！</p>
-                <button onClick={() => setPage('menu')} className="bg-pink-400 text-white p-4 rounded-xl">Menu</button>
-            </div>;
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<Main />);
-    </script>
+      if (success) {
+        clearBox.style.display = "block";
+      } else {
+        alert("失敗！もう一回！");
+      }
+    }
+  </script>
 </body>
 </html>
