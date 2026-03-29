@@ -3,363 +3,222 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ポニーゲーム</title>
+  <title>Galaxy Game World</title>
   <style>
     * {
       box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
         "Yu Gothic", sans-serif;
-      background: #dfeaf5;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      color: white;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 90, 255, 0.35), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(0, 200, 255, 0.28), transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(255, 0, 200, 0.22), transparent 30%),
+        linear-gradient(180deg, #050816 0%, #0b1026 45%, #131a3a 100%);
       min-height: 100vh;
-      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,.9), transparent),
+        radial-gradient(1.5px 1.5px at 100px 120px, rgba(255,255,255,.8), transparent),
+        radial-gradient(2px 2px at 220px 80px, rgba(255,255,255,.8), transparent),
+        radial-gradient(1.5px 1.5px at 340px 160px, rgba(255,255,255,.9), transparent),
+        radial-gradient(2px 2px at 60px 220px, rgba(255,255,255,.7), transparent),
+        radial-gradient(1.5px 1.5px at 280px 260px, rgba(255,255,255,.8), transparent);
+      background-size: 400px 300px;
+      opacity: 0.8;
     }
 
     .wrap {
-      width: 100%;
-      max-width: 420px;
-      background: #f7f7f7;
-      border-radius: 28px;
-      padding: 20px 16px 24px;
-      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
-      text-align: center;
-    }
-
-    h1 {
-      margin: 6px 0 8px;
-      font-size: 42px;
-      color: #1f274a;
-      letter-spacing: 1px;
-    }
-
-    .sub {
-      margin: 0 0 16px;
-      color: #6c7388;
-      font-size: 16px;
-    }
-
-    .score {
-      font-size: 18px;
-      font-weight: 700;
-      color: #2b355d;
-      margin-bottom: 12px;
-    }
-
-    .game-area {
       position: relative;
-      width: 100%;
-      height: 260px;
-      background: linear-gradient(to bottom, #dff1ff 0%, #dff1ff 72%, #d4efc7 72%, #d4efc7 100%);
-      border-radius: 24px;
-      overflow: hidden;
-      border: 3px solid #ffffff;
-      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 50px;
     }
 
-    .pony {
-      position: absolute;
-      left: 42px;
-      bottom: 52px;
-      width: 70px;
-      height: 70px;
-      font-size: 54px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      user-select: none;
+    .hero {
+      text-align: center;
+      padding: 32px 18px 24px;
     }
 
-    .obstacle {
-      position: absolute;
-      bottom: 52px;
-      right: -40px;
-      width: 28px;
-      height: 58px;
-      background: #8b5a2b;
-      border-radius: 8px 8px 2px 2px;
-      box-shadow: inset 0 -8px 0 rgba(0,0,0,0.08);
+    .hero h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.15;
+      letter-spacing: 1px;
+      text-shadow: 0 0 18px rgba(120, 180, 255, 0.35);
     }
 
-    .ground-line {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 52px;
-      height: 4px;
-      background: rgba(60, 110, 40, 0.25);
+    .hero p {
+      margin: 14px auto 0;
+      max-width: 720px;
+      color: rgba(255,255,255,0.82);
+      font-size: 16px;
+      line-height: 1.7;
     }
 
-    .btn {
-      margin-top: 16px;
-      width: 100%;
-      border: none;
-      border-radius: 999px;
-      background: #ee7f2f;
-      color: white;
-      font-size: 30px;
-      font-weight: 800;
-      padding: 20px 20px;
-      box-shadow: 0 10px 22px rgba(238, 127, 47, 0.28);
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .info {
-      margin-top: 12px;
-      color: #5f6475;
-      font-size: 14px;
-    }
-
-    .clear-box,
-    .gameover-box,
-    .start-box {
-      margin-top: 18px;
-      border-radius: 22px;
-      padding: 20px 16px;
-    }
-
-    .start-box {
-      background: #eef5ff;
-      color: #2b355d;
-    }
-
-    .clear-box {
-      display: none;
-      background: #edf8e8;
-    }
-
-    .gameover-box {
-      display: none;
-      background: #fff0f0;
-    }
-
-    .clear-title {
-      margin: 0 0 10px;
-      color: #2f7d32;
-      font-size: 30px;
-      font-weight: 900;
-    }
-
-    .gameover-title {
-      margin: 0 0 10px;
-      color: #c03b3b;
-      font-size: 30px;
-      font-weight: 900;
-    }
-
-    .line-btn,
-    .retry-btn {
+    .hero-badge {
       display: inline-block;
-      margin-top: 14px;
-      text-decoration: none;
-      border: none;
+      margin-bottom: 14px;
+      padding: 8px 14px;
       border-radius: 999px;
-      padding: 16px 24px;
-      font-size: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      backdrop-filter: blur(8px);
+    }
+
+    .section-title {
+      margin: 20px 0 14px;
+      font-size: 24px;
       font-weight: 800;
-      cursor: pointer;
     }
 
-    .line-btn {
-      background: #56bf55;
-      color: #fff;
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
     }
 
-    .retry-btn {
-      background: #ee7f2f;
-      color: #fff;
+    .card {
+      display: block;
+      text-decoration: none;
+      color: white;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
+      backdrop-filter: blur(10px);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .card:hover,
+    .card:active {
+      transform: translateY(-4px);
+      box-shadow: 0 18px 36px rgba(0,0,0,0.28);
+      border-color: rgba(120, 200, 255, 0.5);
+    }
+
+    .emoji {
+      font-size: 34px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .card p {
+      margin: 0;
+      color: rgba(255,255,255,0.82);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .soon {
+      opacity: 0.75;
+      border-style: dashed;
+    }
+
+    .footer-box {
+      margin-top: 28px;
+      padding: 20px;
+      text-align: center;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+    }
+
+    .footer-box a {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: #06C755;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
     }
 
     .small {
-      font-size: 14px;
-      color: #666;
-      margin-top: 6px;
+      margin-top: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
     }
   </style>
 </head>
 <body>
+  <div class="stars"></div>
+
   <div class="wrap">
-    <h1>🐴 ポニーゲーム</h1>
-    <p class="sub">障害物を3回よけたらクリア！</p>
+    <section class="hero">
+      <div class="hero-badge">GALAXY GAME WORLD</div>
+      <h1>🌌 ギャラクシーゲームワールド</h1>
+      <p>
+        かんたんだけどハマる、スマホで遊べるミニゲーム集。<br>
+        どんどん新しいゲームを追加していく、宇宙テーマのゲームポータルです。
+      </p>
+    </section>
 
-    <div class="score">クリア回数: <span id="score">0</span> / 3</div>
+    <h2 class="section-title">🎮 今すぐ遊べるゲーム</h2>
 
-    <div class="game-area" id="gameArea">
-      <div class="pony" id="pony">🐴</div>
-      <div class="ground-line"></div>
-      <div class="obstacle" id="obstacle"></div>
-    </div>
+    <div class="grid">
+      <a class="card" href="pony.html">
+        <span class="emoji">🐴</span>
+        <h3>ポニージャンプ</h3>
+        <p>右から来る障害物をジャンプでよけろ。3回成功でクリア！</p>
+      </a>
 
-    <button class="btn" id="jumpBtn">ジャンプ！</button>
-    <div class="info">ボタンを押すか、画面タップでジャンプします</div>
+      <a class="card" href="stopwatch.html">
+        <span class="emoji">⏱️</span>
+        <h3>1秒止めチャレンジ</h3>
+        <p>1.00秒ピッタリを狙う反射と集中のギャラクシーチャレンジ。</p>
+      </a>
 
-    <div class="start-box" id="startBox">
-      右からくる障害物をジャンプでよけてください
-      <div class="small">3回成功でLINEプレゼントに進めます</div>
-    </div>
+      <a class="card soon" href="#">
+        <span class="emoji">🌀</span>
+        <h3>ギャラクシー迷路</h3>
+        <p>近日追加。宇宙空間の迷路を突破する激ムズステージ。</p>
+      </a>
 
-    <div class="clear-box" id="clearBox">
-      <div class="clear-title">🎉クリア！</div>
-      <div>限定プレゼントはこちら👇</div>
-      <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">
-  🎁 LINEで受け取る
-</a>
+      <a class="card soon" href="#">
+        <span class="emoji">⚡</span>
+        <h3>スピードタップ</h3>
+        <p>近日追加。10秒でどこまで連打できるか挑戦！</p>
+      </a>
+
+      <a class="card soon" href="#">
+        <span class="emoji">🌠</span>
+        <h3>スターキャッチ</h3>
+        <p>近日追加。流れ星を集める宇宙コレクションゲーム。</p>
+      </a>
+
+      <a class="card soon" href="#">
+        <span class="emoji">🛸</span>
+        <h3>UFOラン</h3>
+        <p>近日追加。障害物を避けながら宇宙船で突き進め！</p>
       </a>
     </div>
 
-    <div class="gameover-box" id="gameoverBox">
-      <div class="gameover-title">💥ゲームオーバー</div>
-      <div>障害物に当たりました</div>
-      <button class="retry-btn" id="retryBtn">もう一回！</button>
+    <div class="footer-box">
+      <div>🎁 クリアした人向けの特典はLINEで受け取れます</div>
+      <a href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">LINEで受け取る</a>
+      <div class="small">新作ゲームも順次追加していきます</div>
     </div>
   </div>
-
-  <script>
-    const pony = document.getElementById("pony");
-    const obstacle = document.getElementById("obstacle");
-    const scoreEl = document.getElementById("score");
-    const jumpBtn = document.getElementById("jumpBtn");
-    const retryBtn = document.getElementById("retryBtn");
-    const clearBox = document.getElementById("clearBox");
-    const gameoverBox = document.getElementById("gameoverBox");
-    const startBox = document.getElementById("startBox");
-    const gameArea = document.getElementById("gameArea");
-
-    let isJumping = false;
-    let isGameOver = false;
-    let isCleared = false;
-    let score = 0;
-    let obstacleX = 340;
-    let speed = 4;
-    let animationId = null;
-
-    function jump() {
-      if (isJumping || isGameOver || isCleared) return;
-      isJumping = true;
-
-      let upCount = 0;
-      let downCount = 0;
-      let bottom = 52;
-
-      const jumpUp = setInterval(() => {
-        if (upCount >= 18) {
-          clearInterval(jumpUp);
-
-          const jumpDown = setInterval(() => {
-            if (downCount >= 18) {
-              clearInterval(jumpDown);
-              pony.style.bottom = "52px";
-              isJumping = false;
-              return;
-            }
-            bottom -= 5;
-            pony.style.bottom = bottom + "px";
-            downCount++;
-          }, 20);
-
-          return;
-        }
-
-        bottom += 5;
-        pony.style.bottom = bottom + "px";
-        upCount++;
-      }, 20);
-    }
-
-    function resetObstacle() {
-      obstacleX = 340 + Math.random() * 80;
-      obstacle.style.right = (340 - obstacleX) * -1 + "px";
-    }
-
-    function finishClear() {
-      isCleared = true;
-      clearBox.style.display = "block";
-      jumpBtn.disabled = true;
-      jumpBtn.style.opacity = "0.6";
-      cancelAnimationFrame(animationId);
-    }
-
-    function finishGameOver() {
-      isGameOver = true;
-      gameoverBox.style.display = "block";
-      jumpBtn.disabled = true;
-      jumpBtn.style.opacity = "0.6";
-      cancelAnimationFrame(animationId);
-    }
-
-    function restartGame() {
-      isGameOver = false;
-      isCleared = false;
-      isJumping = false;
-      score = 0;
-      speed = 4;
-      obstacleX = 340;
-      scoreEl.textContent = "0";
-      pony.style.bottom = "52px";
-      obstacle.style.right = "-40px";
-      clearBox.style.display = "none";
-      gameoverBox.style.display = "none";
-      startBox.style.display = "block";
-      jumpBtn.disabled = false;
-      jumpBtn.style.opacity = "1";
-      startLoop();
-    }
-
-    function gameLoop() {
-      if (isGameOver || isCleared) return;
-
-      obstacleX -= speed;
-      obstacle.style.left = obstacleX + "px";
-
-      const ponyBottom = parseInt(window.getComputedStyle(pony).bottom, 10);
-
-      if (obstacleX < -40) {
-        score++;
-        scoreEl.textContent = score;
-        if (score >= 3) {
-          finishClear();
-          return;
-        }
-        speed += 0.4;
-        resetObstacle();
-      }
-
-      const obstacleNear = obstacleX < 95 && obstacleX > 30;
-      const hit = obstacleNear && ponyBottom <= 95;
-
-      if (hit) {
-        finishGameOver();
-        return;
-      }
-
-      animationId = requestAnimationFrame(gameLoop);
-    }
-
-    function startLoop() {
-      resetObstacle();
-      animationId = requestAnimationFrame(gameLoop);
-    }
-
-    jumpBtn.addEventListener("click", jump);
-    retryBtn.addEventListener("click", restartGame);
-
-    gameArea.addEventListener("touchstart", function(e) {
-      e.preventDefault();
-      jump();
-    }, { passive: false });
-
-    gameArea.addEventListener("click", jump);
-
-    startLoop();
-  </script>
 </body>
 </html>
