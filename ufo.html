@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxy UFO Dodge</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: white;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 90, 255, 0.35), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(0, 200, 255, 0.28), transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(255, 0, 200, 0.22), transparent 30%),
+        linear-gradient(180deg, #050816 0%, #0b1026 45%, #131a3a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px 14px 32px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      text-align: center;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin: 6px 0 8px;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin: 0 0 14px;
+      color: rgba(255,255,255,0.82);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .hud div {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 10px 8px;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 3 / 4;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.9) 0 1px, transparent 2px),
+        radial-gradient(circle at 75% 15%, rgba(255,255,255,0.75) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7) 0 1px, transparent 2px),
+        radial-gradient(circle at 60% 45%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
+        linear-gradient(180deg, #050816 0%, #0f1838 55%, #10172f 100%);
+      border-radius: 24px;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.03);
+      display: block;
+      margin: 0 auto;
+      touch-action: none;
+    }
+
+    .info {
+      margin-top: 10px;
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+
+    .retry-btn {
+      background: #7f4cff;
+      color: white;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: white;
+    }
+
+    .overlay {
+      display: none;
+      margin-top: 18px;
+      border-radius: 24px;
+      padding: 20px 16px;
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    .overlay h2 {
+      margin: 0 0 10px;
+      font-size: 30px;
+    }
+
+    .clear-box {
+      background: rgba(80, 200, 120, 0.18);
+    }
+
+    .gameover-box {
+      background: rgba(255, 90, 90, 0.16);
+    }
+
+    .line-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: #06C755;
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .small {
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🛸 Galaxy UFO Dodge</h1>
+    <p class="sub">Move the pony and dodge UFOs.<br>Survive for 15 seconds to clear!</p>
+
+    <div class="hud">
+      <div>Time: <span id="time">15</span>s</div>
+      <div>Lives: <span id="lives">3</span></div>
+    </div>
+
+    <canvas id="game" width="360" height="480"></canvas>
+
+    <div class="info">
+      Drag left and right to avoid the falling UFOs.<br>
+      Survive until the timer reaches zero.
+    </div>
+
+    <div class="controls">
+      <button class="btn retry-btn" id="retryBtn">Retry</button>
+      <a class="btn back-btn" href="index.html">Back</a>
+    </div>
+
+    <div class="overlay clear-box" id="clearBox">
+      <h2>🎉 CLEAR!</h2>
+      <div>You survived the UFO storm!</div>
+      <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">
+        🎁 Get Reward on LINE
+      </a>
+      <div class="small">A special reward is waiting for you.</div>
+    </div>
+
+    <div class="overlay gameover-box" id="gameoverBox">
+      <h2>💥 GAME OVER</h2>
+      <div>You were hit too many times.</div>
+      <div class="small">Tap Retry and challenge again.</div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    const timeEl = document.getElementById("time");
+    const livesEl = document.getElementById("lives");
+    const retryBtn = document.getElementById("retryBtn");
+    const clearBox = document.getElementById("clearBox");
+    const gameoverBox = document.getElementById("gameoverBox");
+
+    const ponyImg = new Image();
+    ponyImg.src = "pony.png";
+
+    const player = {
+      x: 148,
+      y: 392,
+      width: 64,
+      height: 64
+    };
+
+    let ufos = [];
+    let sparkles = [];
+    let stars = [];
+    let lives = 3;
+    let timeLeft = 15;
+    let gameOver = false;
+    let cleared = false;
+    let spawnTimer = 0;
+    let timerInterval = null;
+    let animationId = null;
+
+    function resetGame() {
+      ufos = [];
+      sparkles = [];
+      stars = [];
+      lives = 3;
+      timeLeft = 15;
+      gameOver = false;
+      cleared = false;
+      spawnTimer = 0;
+      player.x = 148;
+      livesEl.textContent = lives;
+      timeEl.textContent = timeLeft;
+      clearBox.style.display = "none";
+      gameoverBox.style.display = "none";
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (gameOver || cleared) return;
+        timeLeft--;
+        timeEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          cleared = true;
+          clearBox.style.display = "block";
+          clearInterval(timerInterval);
+        }
+      }, 1000);
+
+      for (let i = 0; i < 30; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2 + 0.5,
+          a: Math.random() * 0.8 + 0.2
+        });
+      }
+
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function spawnUFO() {
+      ufos.push({
+        x: Math.random() * (canvas.width - 50),
+        y: -40,
+        width: 44,
+        height: 24,
+        speed: Math.random() * 1.8 + 3.2,
+        bob: Math.random() * Math.PI * 2
+      });
+    }
+
+    function addSparkles(x, y, color = "#ff6bff") {
+      for (let i = 0; i < 12; i++) {
+        sparkles.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          life: 30,
+          size: Math.random() * 4 + 2,
+          color
+        });
+      }
+    }
+
+    function drawBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (const s of stars) {
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function drawPlayer() {
+      if (ponyImg.complete && ponyImg.naturalWidth > 0) {
+        ctx.drawImage(ponyImg, player.x, player.y, player.width, player.height);
+      } else {
+        ctx.fillStyle = "#4de7ff";
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
+    }
+
+    function drawUFO(ufo) {
+      ctx.save();
+      ctx.translate(ufo.x + ufo.width / 2, ufo.y + ufo.height / 2);
+
+      ctx.fillStyle = "#a855f7";
+      ctx.beginPath();
+      ctx.ellipse(0, 4, 22, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = "#8be9fd";
+      ctx.beginPath();
+      ctx.ellipse(0, -2, 12, 8, 0, Math.PI, 0);
+      ctx.fill();
+
+      ctx.fillStyle = "rgba(255,255,180,0.8)";
+      ctx.beginPath();
+      ctx.arc(-10, 8, 2.3, 0, Math.PI * 2);
+      ctx.arc(0, 10, 2.3, 0, Math.PI * 2);
+      ctx.arc(10, 8, 2.3, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawSparkles() {
+      sparkles.forEach((sp) => {
+        ctx.fillStyle = sp.color;
+        ctx.globalAlpha = sp.life / 30;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      });
+    }
+
+    function updateUFOs() {
+      for (let i = ufos.length - 1; i >= 0; i--) {
+        const u = ufos[i];
+        u.y += u.speed;
+        u.x += Math.sin(u.bob) * 0.7;
+        u.bob += 0.08;
+
+        const hit =
+          u.x < player.x + player.width - 8 &&
+          u.x + u.width > player.x + 8 &&
+          u.y < player.y + player.height - 10 &&
+          u.y + u.height > player.y + 10;
+
+        if (hit) {
+          addSparkles(u.x + u.width / 2, u.y + u.height / 2, "#ff5ea8");
+          ufos.splice(i, 1);
+          lives--;
+          livesEl.textContent = lives;
+
+          if (lives <= 0) {
+            gameOver = true;
+            gameoverBox.style.display = "block";
+            clearInterval(timerInterval);
+          }
+          continue;
+        }
+
+        if (u.y > canvas.height + 30) {
+          ufos.splice(i, 1);
+        }
+      }
+    }
+
+    function updateSparkles() {
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        const sp = sparkles[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.life--;
+
+        if (sp.life <= 0) {
+          sparkles.splice(i, 1);
+        }
+      }
+    }
+
+    function loop() {
+      drawBackground();
+
+      if (!gameOver && !cleared) {
+        spawnTimer++;
+        if (spawnTimer > 24) {
+          spawnUFO();
+          spawnTimer = 0;
+        }
+
+        updateUFOs();
+        updateSparkles();
+      } else {
+        updateSparkles();
+      }
+
+      ufos.forEach(drawUFO);
+      drawSparkles();
+      drawPlayer();
+
+      if (!gameOver && !cleared) {
+        animationId = requestAnimationFrame(loop);
+      } else if (sparkles.length > 0) {
+        animationId = requestAnimationFrame(loop);
+      }
+    }
+
+    function setPlayerFromClientX(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      let x = (clientX - rect.left) * scaleX - player.width / 2;
+      x = Math.max(0, Math.min(canvas.width - player.width, x));
+      player.x = x;
+    }
+
+    canvas.addEventListener("mousemove", (e) => {
+      setPlayerFromClientX(e.clientX);
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        setPlayerFromClientX(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        setPlayerFromClientX(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    retryBtn.addEventListener("click", resetGame);
+
+    ponyImg.onload = () => resetGame();
+    ponyImg.onerror = () => resetGame();
+
+    if (ponyImg.complete) {
+      resetGame();
+    }
+  </script>
+</body>
+</html>
