@@ -52,16 +52,26 @@
       line-height: 1.6;
     }
 
-    .score {
+    .hud {
+      display: flex;
+      gap: 10px;
+      justify-content: space-between;
       margin-bottom: 12px;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
+    }
+
+    .hud div {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 10px 8px;
     }
 
     .game-area {
       position: relative;
       width: 100%;
-      height: 280px;
+      height: 300px;
       overflow: hidden;
       border-radius: 24px;
       background:
@@ -99,6 +109,7 @@
       width: 82px;
       height: 82px;
       pointer-events: none;
+      z-index: 5;
     }
 
     .pony img {
@@ -113,11 +124,35 @@
       position: absolute;
       left: 450px;
       bottom: 58px;
-      width: 30px;
-      height: 64px;
-      border-radius: 8px 8px 3px 3px;
+      z-index: 4;
+    }
+
+    .obstacle.low {
+      width: 34px;
+      height: 54px;
+      border-radius: 10px 10px 4px 4px;
       background: linear-gradient(180deg, #c5934d 0%, #8f5d27 100%);
       box-shadow: inset 0 -8px 0 rgba(0,0,0,0.12);
+    }
+
+    .obstacle.high {
+      width: 34px;
+      height: 88px;
+      border-radius: 10px 10px 4px 4px;
+      background: linear-gradient(180deg, #b97aff 0%, #7a38db 100%);
+      box-shadow: inset 0 -10px 0 rgba(0,0,0,0.14);
+    }
+
+    .star {
+      position: absolute;
+      left: 450px;
+      width: 30px;
+      height: 30px;
+      z-index: 3;
+      font-size: 28px;
+      line-height: 30px;
+      text-align: center;
+      filter: drop-shadow(0 0 8px rgba(255, 234, 92, 0.7));
     }
 
     .btn {
@@ -202,6 +237,17 @@
       color: #fff;
       margin-left: 8px;
     }
+
+    .sparkle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0.9;
+    }
   </style>
 </head>
 <body>
@@ -209,10 +255,13 @@
     <h1>🐴 ポニージャンプ</h1>
     <p class="sub">
       障害物を3回よけたらクリア！<br>
-      2回タップで二段ジャンプできます。
+      空中でもう1回押すと二段ジャンプできます。
     </p>
 
-    <div class="score">クリア回数: <span id="score">0</span> / 3</div>
+    <div class="hud">
+      <div>クリア回数: <span id="score">0</span> / 3</div>
+      <div>スター: <span id="starScore">0</span></div>
+    </div>
 
     <div class="game-area" id="gameArea">
       <div class="moon"></div>
@@ -220,15 +269,16 @@
         <img src="pony.png" alt="Pony">
       </div>
       <div class="ground-line"></div>
-      <div class="obstacle" id="obstacle"></div>
+      <div class="obstacle low" id="obstacle"></div>
+      <div class="star" id="star">⭐</div>
     </div>
 
     <button class="btn" id="jumpBtn">ジャンプ！</button>
     <div class="info">ボタンか画面タップでジャンプします</div>
 
     <div class="panel start-box" id="startBox">
-      タイミングよくジャンプして、障害物をよけてください。<br>
-      空中でもう1回押すと、さらに上に跳べます。
+      障害物をよけながら、空中のスターも取ってください。<br>
+      ワクワク感アップの二段ジャンプ仕様です。
     </div>
 
     <div class="panel clear-box" id="clearBox">
@@ -251,13 +301,15 @@
   <script>
     const pony = document.getElementById("pony");
     const obstacle = document.getElementById("obstacle");
+    const star = document.getElementById("star");
+    const gameArea = document.getElementById("gameArea");
     const scoreEl = document.getElementById("score");
+    const starScoreEl = document.getElementById("starScore");
     const jumpBtn = document.getElementById("jumpBtn");
     const retryBtn = document.getElementById("retryBtn");
     const clearBox = document.getElementById("clearBox");
     const gameoverBox = document.getElementById("gameoverBox");
     const startBox = document.getElementById("startBox");
-    const gameArea = document.getElementById("gameArea");
 
     const groundY = 58;
     const gravity = 0.9;
@@ -271,9 +323,15 @@
     let isGameOver = false;
     let isCleared = false;
     let score = 0;
+    let starScore = 0;
     let obstacleX = 450;
+    let obstacleType = "low";
     let speed = 5;
     let animationId = null;
+
+    let starX = 650;
+    let starY = 130;
+    let starActive = true;
 
     function setPonyPosition() {
       pony.style.bottom = ponyY + "px";
@@ -291,9 +349,54 @@
       }
     }
 
+    function randomObstacleType() {
+      return Math.random() < 0.5 ? "low" : "high";
+    }
+
+    function applyObstacleType() {
+      obstacle.classList.remove("low", "high");
+      obstacle.classList.add(obstacleType);
+    }
+
     function resetObstacle() {
-      obstacleX = 430 + Math.random() * 120;
+      obstacleType = randomObstacleType();
+      applyObstacleType();
+      obstacleX = 430 + Math.random() * 140;
       obstacle.style.left = obstacleX + "px";
+
+      if (Math.random() < 0.75) {
+        starActive = true;
+        starX = obstacleX + 80 + Math.random() * 60;
+        starY = obstacleType === "high" ? 110 : 150;
+        star.style.display = "block";
+      } else {
+        starActive = false;
+        star.style.display = "none";
+      }
+    }
+
+    function createSparkles(x, y, color = "#ffe86b", count = 10) {
+      for (let i = 0; i < count; i++) {
+        const s = document.createElement("div");
+        s.className = "sparkle";
+        s.style.background = color;
+        s.style.left = x + "px";
+        s.style.top = y + "px";
+        gameArea.appendChild(s);
+
+        const dx = (Math.random() - 0.5) * 80;
+        const dy = (Math.random() - 0.5) * 80;
+
+        s.animate(
+          [
+            { transform: "translate(0,0) scale(1)", opacity: 1 },
+            { transform: `translate(${dx}px, ${dy}px) scale(0.3)`, opacity: 0 }
+          ],
+          { duration: 600, easing: "ease-out" }
+        );
+
+        setTimeout(() => s.remove(), 600);
+      }
     }
 
     function finishClear() {
@@ -302,6 +405,8 @@
       startBox.style.display = "none";
       jumpBtn.disabled = true;
       jumpBtn.style.opacity = "0.6";
+      createSparkles(180, 80, "#fff", 18);
+      createSparkles(220, 120, "#8bffcf", 18);
       if (animationId) cancelAnimationFrame(animationId);
     }
 
@@ -318,21 +423,24 @@
       isGameOver = false;
       isCleared = false;
       score = 0;
+      starScore = 0;
       speed = 5;
       obstacleX = 450;
       ponyY = groundY;
       velocityY = 0;
       jumpCount = 0;
+      starActive = true;
 
       scoreEl.textContent = "0";
+      starScoreEl.textContent = "0";
       setPonyPosition();
-      obstacle.style.left = "450px";
       clearBox.style.display = "none";
       gameoverBox.style.display = "none";
       startBox.style.display = "block";
       jumpBtn.disabled = false;
       jumpBtn.style.opacity = "1";
 
+      resetObstacle();
       startLoop();
     }
 
@@ -349,6 +457,42 @@
       setPonyPosition();
     }
 
+    function updateStar() {
+      if (!starActive) return;
+      starX -= speed;
+      star.style.left = starX + "px";
+      star.style.top = starY + "px";
+
+      const ponyLeft = 38;
+      const ponyRight = ponyLeft + 72;
+      const ponyBottom = ponyY;
+      const ponyTop = ponyY + 72;
+
+      const starLeft = starX;
+      const starRight = starX + 30;
+      const starBottom = 300 - starY - 30;
+      const starTop = 300 - starY;
+
+      const gotStar =
+        ponyRight > starLeft &&
+        ponyLeft < starRight &&
+        ponyTop > starBottom &&
+        ponyBottom < starTop;
+
+      if (gotStar) {
+        starActive = false;
+        star.style.display = "none";
+        starScore++;
+        starScoreEl.textContent = starScore;
+        createSparkles(starX, starY, "#ffe86b", 12);
+      }
+
+      if (starX < -40) {
+        starActive = false;
+        star.style.display = "none";
+      }
+    }
+
     function gameLoop() {
       if (isGameOver || isCleared) return;
 
@@ -357,7 +501,9 @@
       obstacleX -= speed;
       obstacle.style.left = obstacleX + "px";
 
-      if (obstacleX < -40) {
+      updateStar();
+
+      if (obstacleX < -50) {
         score++;
         scoreEl.textContent = score;
 
@@ -371,14 +517,17 @@
       }
 
       const ponyLeft = 38;
-      const ponyRight = ponyLeft + 70;
+      const ponyRight = ponyLeft + 72;
       const ponyBottom = ponyY;
-      const ponyTop = ponyY + 70;
+      const ponyTop = ponyY + 72;
+
+      const obstacleWidth = 34;
+      const obstacleHeight = obstacleType === "high" ? 88 : 54;
 
       const obstacleLeft = obstacleX;
-      const obstacleRight = obstacleX + 30;
+      const obstacleRight = obstacleX + obstacleWidth;
       const obstacleBottom = groundY;
-      const obstacleTop = groundY + 64;
+      const obstacleTop = groundY + obstacleHeight;
 
       const hit =
         ponyRight > obstacleLeft &&
@@ -395,7 +544,7 @@
     }
 
     function startLoop() {
-      resetObstacle();
+      if (animationId) cancelAnimationFrame(animationId);
       animationId = requestAnimationFrame(gameLoop);
     }
 
@@ -408,6 +557,7 @@
     }, { passive: false });
 
     setPonyPosition();
+    resetObstacle();
     startLoop();
   </script>
 </body>
