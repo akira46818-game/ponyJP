@@ -36,22 +36,26 @@
       padding: 22px 16px 26px;
       box-shadow: 0 18px 40px rgba(0,0,0,0.28);
       backdrop-filter: blur(10px);
+      position: relative;
+      overflow: hidden;
     }
 
     h1 {
       margin: 0 0 10px;
       font-size: 34px;
+      line-height: 1.2;
     }
 
     .sub {
       color: rgba(255,255,255,0.84);
       line-height: 1.6;
       margin-bottom: 18px;
+      font-size: 15px;
     }
 
     .gacha-box {
       position: relative;
-      min-height: 520px;
+      min-height: 560px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -106,10 +110,11 @@
       background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 65%);
       opacity: 0;
       pointer-events: none;
+      z-index: 2;
     }
 
     .flash.show {
-      animation: flashAnim 0.7s ease-out;
+      animation: flashAnim 0.8s ease-out;
     }
 
     @keyframes flashAnim {
@@ -121,11 +126,42 @@
     .result {
       display: none;
       animation: fadeUp 0.6s ease;
+      position: relative;
+      z-index: 3;
+      width: 100%;
     }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    .rarity {
+      font-size: 30px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      color: #ffd84d;
+      text-shadow: 0 0 14px rgba(255, 216, 77, 0.35);
+    }
+
+    .rarity.sr {
+      color: #ffd84d;
+      text-shadow: 0 0 14px rgba(255,216,77,0.35);
+    }
+
+    .rarity.ssr {
+      color: #ffef99;
+      text-shadow: 0 0 18px rgba(255, 239, 153, 0.55);
+    }
+
+    .rarity.legend {
+      color: #ff9f43;
+      text-shadow: 0 0 18px rgba(255, 140, 60, 0.7);
+    }
+
+    .rarity.boss {
+      color: #ff5d73;
+      text-shadow: 0 0 18px rgba(255, 93, 115, 0.75);
     }
 
     .card {
@@ -135,14 +171,19 @@
       box-shadow: 0 0 28px rgba(255, 215, 80, 0.35);
       margin: 0 auto 16px;
       display: block;
+      background: rgba(255,255,255,0.06);
     }
 
-    .rarity {
-      font-size: 28px;
-      font-weight: 900;
-      margin-bottom: 10px;
-      color: #ffd84d;
-      text-shadow: 0 0 14px rgba(255, 216, 77, 0.35);
+    .card.legend-glow {
+      box-shadow: 0 0 36px rgba(255, 120, 40, 0.8);
+    }
+
+    .card.boss-glow {
+      box-shadow: 0 0 36px rgba(255, 60, 90, 0.8);
+    }
+
+    .card.ssr-glow {
+      box-shadow: 0 0 34px rgba(255, 225, 120, 0.7);
     }
 
     .btn {
@@ -180,6 +221,41 @@
       color: rgba(255,255,255,0.76);
       line-height: 1.6;
     }
+
+    .burst {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1;
+    }
+
+    .star {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff4a8;
+      opacity: 0;
+    }
+
+    .show-stars .star {
+      animation: sparkle 1s ease-out forwards;
+    }
+
+    @keyframes sparkle {
+      0% {
+        opacity: 0;
+        transform: scale(0.3) translate(0, 0);
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+        transform: scale(1.3) translate(var(--dx), var(--dy));
+      }
+    }
   </style>
 </head>
 <body>
@@ -189,6 +265,7 @@
 
     <div class="gacha-box">
       <div id="flash" class="flash"></div>
+      <div id="burst" class="burst"></div>
 
       <div id="loadingArea">
         <div class="capsule">🎰</div>
@@ -221,50 +298,79 @@
 
   <script>
     const cards = [
-  { file: "lumina.jpg", rarity: "SR ✨" },
-  { file: "nox.jpg", rarity: "SSR 👑" },
-  { file: "flare.jpg", rarity: "SSR 🔥" },
-  { file: "storm.jpg", rarity: "SSR ⚡" },
-  { file: "tera.jpg", rarity: "SSR 🌿" },   // ← 修正
-  { file: "stera.jpg", rarity: "SSR 💧" }, // ← 追加してもOK
-  { file: "nyago.jpg", rarity: "LEGEND 🐾" },
-  { file: "tespero.jpg", rarity: "BOSS ☠️" }
-];
-    
+      { file: "lumina.png", rarity: "SR ✨", className: "sr" },
+      { file: "nox.png", rarity: "SSR 👑", className: "ssr" },
+      { file: "flare.png", rarity: "SSR 🔥", className: "ssr" },
+      { file: "storm.png", rarity: "SSR ⚡", className: "ssr" },
+      { file: "aqua.png", rarity: "SSR 💧", className: "ssr" },
+      { file: "terra.png", rarity: "SSR 🌿", className: "ssr" },
+      { file: "nyago.png", rarity: "LEGEND 🐾", className: "legend" },
+      { file: "tespero.png", rarity: "BOSS ☠️", className: "boss" }
+    ];
 
     const flash = document.getElementById("flash");
+    const burst = document.getElementById("burst");
     const loadingArea = document.getElementById("loadingArea");
     const resultArea = document.getElementById("resultArea");
     const cardImage = document.getElementById("cardImage");
     const downloadBtn = document.getElementById("downloadBtn");
     const rarity = document.getElementById("rarity");
 
-    // 簡易ガチャ確率
+    function makeStars() {
+      burst.innerHTML = "";
+      for (let i = 0; i < 24; i++) {
+        const s = document.createElement("div");
+        s.className = "star";
+        s.style.left = "50%";
+        s.style.top = "45%";
+        s.style.setProperty("--dx", `${(Math.random() - 0.5) * 300}px`);
+        s.style.setProperty("--dy", `${(Math.random() - 0.5) * 260}px`);
+        burst.appendChild(s);
+      }
+    }
+
     function drawCard() {
       const roll = Math.random();
 
-      if (roll < 0.04) return cards.find(c => c.file === "nyago.jpg") || cards[6];
-      if (roll < 0.08) return cards.find(c => c.file === "tespero.jpg") || cards[7];
-      if (roll < 0.22) return cards.find(c => c.file === "nox.jpg") || cards[1];
-      if (roll < 0.40) return cards.find(c => c.file === "flare.jpg") || cards[2];
-      if (roll < 0.58) return cards.find(c => c.file === "storm.jpg") || cards[3];
-      if (roll < 0.76) return cards.find(c => c.file === "tera.jpg") || cards[4];
-      if (roll < 0.92) return cards.find(c => c.file === "terra.jpg") || cards[5];
-      return cards.find(c => c.file === "lumina.jpg") || cards[0];
+      if (roll < 0.04) return cards.find(c => c.file === "nyago.png");
+      if (roll < 0.08) return cards.find(c => c.file === "tespero.png");
+      if (roll < 0.22) return cards.find(c => c.file === "nox.png");
+      if (roll < 0.40) return cards.find(c => c.file === "flare.png");
+      if (roll < 0.58) return cards.find(c => c.file === "storm.png");
+      if (roll < 0.76) return cards.find(c => c.file === "aqua.png");
+      if (roll < 0.92) return cards.find(c => c.file === "terra.png");
+      return cards.find(c => c.file === "lumina.png");
     }
 
     const selected = drawCard();
 
+    makeStars();
+
     setTimeout(() => {
       flash.classList.add("show");
+      burst.classList.add("show-stars");
     }, 1800);
 
     setTimeout(() => {
       loadingArea.style.display = "none";
       resultArea.style.display = "block";
+
       cardImage.src = selected.file;
       downloadBtn.href = selected.file;
       rarity.textContent = selected.rarity;
+
+      rarity.classList.remove("sr", "ssr", "legend", "boss");
+      cardImage.classList.remove("sr-glow", "ssr-glow", "legend-glow", "boss-glow");
+
+      rarity.classList.add(selected.className);
+
+      if (selected.className === "ssr") {
+        cardImage.classList.add("ssr-glow");
+      } else if (selected.className === "legend") {
+        cardImage.classList.add("legend-glow");
+      } else if (selected.className === "boss") {
+        cardImage.classList.add("boss-glow");
+      }
     }, 2200);
   </script>
 </body>
