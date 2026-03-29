@@ -1,201 +1,98 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ギャラクシーゲームワールド</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy Game World</title>
 
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
-        "Yu Gothic", sans-serif;
-      color: white;
-      background:
-        radial-gradient(circle at 20% 20%, rgba(120, 90, 255, 0.35), transparent 25%),
-        radial-gradient(circle at 80% 30%, rgba(0, 200, 255, 0.28), transparent 25%),
-        radial-gradient(circle at 50% 80%, rgba(255, 0, 200, 0.22), transparent 30%),
-        linear-gradient(180deg, #050816 0%, #0b1026 45%, #131a3a 100%);
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: white;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(120,90,255,0.4), transparent),
+    radial-gradient(circle at 80% 30%, rgba(0,200,255,0.3), transparent),
+    radial-gradient(circle at 50% 80%, rgba(255,0,200,0.2), transparent),
+    linear-gradient(180deg, #050816, #0b1026, #131a3a);
+  text-align: center;
+}
 
-    .stars {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image:
-        radial-gradient(2px 2px at 20px 30px, rgba(255,255,255,.9), transparent),
-        radial-gradient(1.5px 1.5px at 100px 120px, rgba(255,255,255,.8), transparent),
-        radial-gradient(2px 2px at 220px 80px, rgba(255,255,255,.8), transparent),
-        radial-gradient(1.5px 1.5px at 340px 160px, rgba(255,255,255,.9), transparent),
-        radial-gradient(2px 2px at 60px 220px, rgba(255,255,255,.7), transparent),
-        radial-gradient(1.5px 1.5px at 280px 260px, rgba(255,255,255,.8), transparent);
-      background-size: 400px 300px;
-      opacity: 0.85;
-    }
+h1 {
+  margin-top: 40px;
+  font-size: 40px;
+}
 
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 28px 18px 50px;
-    }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
 
-    .hero {
-      text-align: center;
-      padding: 34px 18px 24px;
-    }
+.card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 20px;
+  text-decoration: none;
+  color: white;
+  transition: 0.2s;
+}
 
-    .hero-badge {
-      display: inline-block;
-      margin-bottom: 14px;
-      padding: 8px 14px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      font-size: 13px;
-      letter-spacing: 0.5px;
-      backdrop-filter: blur(8px);
-    }
+.card:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.2);
+}
 
-    .hero h1 {
-      margin: 0;
-      font-size: 42px;
-      line-height: 1.15;
-      letter-spacing: 1px;
-      text-shadow: 0 0 18px rgba(120, 180, 255, 0.35);
-    }
+.footer {
+  margin: 30px;
+}
 
-    .hero p {
-      margin: 14px auto 0;
-      max-width: 720px;
-      color: rgba(255,255,255,0.82);
-      font-size: 16px;
-      line-height: 1.7;
-    }
+.button {
+  display: inline-block;
+  padding: 15px 25px;
+  background: #06C755;
+  color: white;
+  text-decoration: none;
+  border-radius: 30px;
+  font-weight: bold;
+}
+</style>
 
-    .section-title {
-      margin: 20px 0 14px;
-      font-size: 24px;
-      font-weight: 800;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 16px;
-    }
-
-    .card {
-      display: block;
-      text-decoration: none;
-      color: white;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 22px;
-      padding: 18px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.22);
-      backdrop-filter: blur(10px);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    }
-
-    .card:hover,
-    .card:active {
-      transform: translateY(-4px);
-      box-shadow: 0 18px 36px rgba(0,0,0,0.28);
-      border-color: rgba(120, 200, 255, 0.5);
-    }
-
-    .emoji {
-      font-size: 34px;
-      margin-bottom: 10px;
-      display: block;
-    }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 20px;
-    }
-
-    .card p {
-      margin: 0;
-      color: rgba(255,255,255,0.82);
-      font-size: 14px;
-      line-height: 1.6;
-    }
-
-    .footer-box {
-      margin-top: 28px;
-      padding: 20px;
-      text-align: center;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.14);
-      border-radius: 20px;
-    }
-
-    .footer-box a {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 14px 22px;
-      border-radius: 999px;
-      background: #06C755;
-      color: white;
-      text-decoration: none;
-      font-weight: 800;
-    }
-
-    .small {
-      margin-top: 8px;
-      font-size: 13px;
-      color: rgba(255,255,255,0.72);
-    }
-  </style>
 </head>
+
 <body>
-  <div class="stars"></div>
 
-  <div class="wrap">
-    <section class="hero">
-      <div class="hero-badge">GALAXY GAME WORLD</div>
-      <h1>🌌 ギャラクシーゲームワールド</h1>
-      <p>
-        スマホでサクッと遊べる、宇宙テーマのミニゲーム集。<br>
-        新作ゲームをどんどん追加していきます。
-      </p>
-    </section>
+<h1>🌌 Galaxy Game World</h1>
 
-    <h2 class="section-title">🎮 今すぐ遊べるゲーム</h2>
+<div class="grid">
 
-    <div class="grid">
-      <a class="card" href="ポニー.html">
-        <span class="emoji">🐴</span>
-        <h3>ポニージャンプ</h3>
-        <p>障害物をジャンプでよけろ。3回成功でクリア！</p>
-      </a>
+<a class="card" href="pony.html">
+🐴<br><br>
+<h3>Pony Jump</h3>
+<p>Jump and avoid obstacles!</p>
+</a>
 
-      <a class="card" href="パズル.html">
-        <span class="emoji">🧩</span>
-        <h3>ポニーパズル</h3>
-        <p>ピースをそろえて完成を目指す定番パズル。</p>
-      </a>
+<a class="card" href="puzzle.html">
+🧩<br><br>
+<h3>Puzzle Game</h3>
+<p>Complete the puzzle!</p>
+</a>
 
-      <a class="card" href="ストップウォッチ.html">
-        <span class="emoji">⏱️</span>
-        <h3>1秒止めチャレンジ</h3>
-        <p>1.00秒ピッタリを狙う反射と集中のチャレンジ。</p>
-      </a>
-    </div>
+<a class="card" href="stopwatch.html">
+⏱️<br><br>
+<h3>1 Second Challenge</h3>
+<p>Stop exactly at 1.00s!</p>
+</a>
 
-    <div class="footer-box">
-      <div>🎁 クリアした人向けの特典はLINEで受け取れます</div>
-      <a href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">LINEで受け取る</a>
-      <div class="small">新作ゲームも順次追加していきます</div>
-    </div>
-  </div>
+</div>
+
+<div class="footer">
+<p>🎁 Get rewards after clearing!</p>
+<a class="button" href="https://lin.ee/zohBFsV" target="_blank">
+Get Reward on LINE
+</a>
+</div>
+
 </body>
 </html>
