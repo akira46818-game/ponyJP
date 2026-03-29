@@ -1,112 +1,453 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Galaxy Coin Game</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Galaxy Pony Coin</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
 
-<style>
-body {
-  margin: 0;
-  background: black;
-  color: white;
-  text-align: center;
-  font-family: Arial;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: white;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 90, 255, 0.35), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(0, 200, 255, 0.28), transparent 25%),
+        radial-gradient(circle at 50% 80%, rgba(255, 0, 200, 0.22), transparent 30%),
+        linear-gradient(180deg, #050816 0%, #0b1026 45%, #131a3a 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px 14px 32px;
+    }
 
-canvas {
-  background: #111;
-  display: block;
-  margin: auto;
-}
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      text-align: center;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(10px);
+    }
 
-button {
-  padding: 10px 20px;
-  margin-top: 10px;
-}
-</style>
+    h1 {
+      margin: 6px 0 8px;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin: 0 0 14px;
+      color: rgba(255,255,255,0.82);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .hud {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-weight: 800;
+      font-size: 17px;
+    }
+
+    .hud div {
+      flex: 1;
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 10px 8px;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 360px;
+      aspect-ratio: 3 / 4;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255,255,255,0.9) 0 1px, transparent 2px),
+        radial-gradient(circle at 75% 15%, rgba(255,255,255,0.75) 0 1.5px, transparent 2px),
+        radial-gradient(circle at 35% 30%, rgba(255,255,255,0.7) 0 1px, transparent 2px),
+        radial-gradient(circle at 60% 45%, rgba(255,255,255,0.8) 0 1px, transparent 2px),
+        linear-gradient(180deg, #050816 0%, #0f1838 55%, #10172f 100%);
+      border-radius: 24px;
+      border: 2px solid rgba(255,255,255,0.12);
+      box-shadow: inset 0 0 30px rgba(255,255,255,0.03);
+      display: block;
+      margin: 0 auto;
+      touch-action: none;
+    }
+
+    .info {
+      margin-top: 10px;
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 14px 22px;
+      font-size: 17px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.14);
+    }
+
+    .retry-btn {
+      background: #7f4cff;
+      color: white;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: white;
+    }
+
+    .overlay {
+      display: none;
+      margin-top: 18px;
+      border-radius: 24px;
+      padding: 20px 16px;
+      background: rgba(255,255,255,0.09);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    }
+
+    .overlay h2 {
+      margin: 0 0 10px;
+      font-size: 30px;
+    }
+
+    .clear-box {
+      background: rgba(80, 200, 120, 0.18);
+    }
+
+    .gameover-box {
+      background: rgba(255, 90, 90, 0.16);
+    }
+
+    .line-btn {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      background: #06C755;
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .small {
+      margin-top: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.75);
+    }
+  </style>
 </head>
-
 <body>
+  <div class="wrap">
+    <h1>💰 Galaxy Pony Coin</h1>
+    <p class="sub">Move the pony and collect 10 coins.<br>Catch them before they fall away.</p>
 
-<h2>🌌 Galaxy Coin Game</h2>
-<p>Move and collect coins!</p>
+    <div class="hud">
+      <div>Score: <span id="score">0</span> / 10</div>
+      <div>Lives: <span id="lives">3</span></div>
+    </div>
 
-<canvas id="game" width="300" height="400"></canvas>
+    <canvas id="game" width="360" height="480"></canvas>
 
-<p>Score: <span id="score">0</span></p>
+    <div class="info">
+      Move left and right by dragging on the screen.<br>
+      Catch 10 coins to clear the stage.
+    </div>
 
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+    <div class="controls">
+      <button class="btn retry-btn" id="retryBtn">Retry</button>
+      <a class="btn back-btn" href="index.html">Back</a>
+    </div>
 
-let player = {x: 140, y: 350, size: 20};
-let coins = [];
-let score = 0;
+    <div class="overlay clear-box" id="clearBox">
+      <h2>🎉 CLEAR!</h2>
+      <div>You collected all the galaxy coins!</div>
+      <a class="line-btn" href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">
+        🎁 Get Reward on LINE
+      </a>
+      <div class="small">A special reward is waiting for you.</div>
+    </div>
 
-// タッチ操作
-canvas.addEventListener("touchmove", e => {
-  let rect = canvas.getBoundingClientRect();
-  player.x = e.touches[0].clientX - rect.left;
-});
+    <div class="overlay gameover-box" id="gameoverBox">
+      <h2>💥 GAME OVER</h2>
+      <div>You missed too many coins.</div>
+      <div class="small">Tap Retry and challenge again.</div>
+    </div>
+  </div>
 
-// マウス操作
-canvas.addEventListener("mousemove", e => {
-  let rect = canvas.getBoundingClientRect();
-  player.x = e.clientX - rect.left;
-});
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-// コイン生成
-function spawnCoin() {
-  coins.push({
-    x: Math.random() * 280,
-    y: 0,
-    size: 10
-  });
-}
+    const scoreEl = document.getElementById("score");
+    const livesEl = document.getElementById("lives");
+    const retryBtn = document.getElementById("retryBtn");
+    const clearBox = document.getElementById("clearBox");
+    const gameoverBox = document.getElementById("gameoverBox");
 
-setInterval(spawnCoin, 800);
+    const ponyImg = new Image();
+    ponyImg.src = "pony.png";
 
-// ゲームループ
-function update() {
-  ctx.clearRect(0,0,300,400);
+    const player = {
+      x: 150,
+      y: 400,
+      width: 64,
+      height: 64
+    };
 
-  // プレイヤー
-  ctx.fillStyle = "cyan";
-  ctx.fillRect(player.x, player.y, player.size, player.size);
+    let coins = [];
+    let sparkles = [];
+    let stars = [];
+    let score = 0;
+    let lives = 3;
+    let gameOver = false;
+    let cleared = false;
+    let spawnTimer = 0;
+    let animationId = null;
 
-  // コイン
-  ctx.fillStyle = "yellow";
-  coins.forEach((coin, i) => {
-    coin.y += 3;
-    ctx.beginPath();
-    ctx.arc(coin.x, coin.y, coin.size, 0, Math.PI*2);
-    ctx.fill();
+    function resetGame() {
+      coins = [];
+      sparkles = [];
+      stars = [];
+      score = 0;
+      lives = 3;
+      gameOver = false;
+      cleared = false;
+      spawnTimer = 0;
+      player.x = 150;
+      scoreEl.textContent = score;
+      livesEl.textContent = lives;
+      clearBox.style.display = "none";
+      gameoverBox.style.display = "none";
 
-    // 当たり判定
-    if (
-      coin.x > player.x &&
-      coin.x < player.x + player.size &&
-      coin.y > player.y &&
-      coin.y < player.y + player.size
-    ) {
-      coins.splice(i,1);
-      score++;
-      document.getElementById("score").innerText = score;
+      for (let i = 0; i < 30; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: Math.random() * 2 + 0.5,
+          a: Math.random() * 0.8 + 0.2
+        });
+      }
 
-      // 5点でクリア
-      if(score >= 5){
-        alert("🎉 CLEAR!\nGet reward on LINE!");
-        window.location.href = "https://lin.ee/zohBFsV";
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(loop);
+    }
+
+    function spawnCoin() {
+      coins.push({
+        x: Math.random() * (canvas.width - 30) + 15,
+        y: -20,
+        r: 11,
+        speed: Math.random() * 1.5 + 2.5,
+        rot: 0
+      });
+    }
+
+    function addSparkles(x, y) {
+      for (let i = 0; i < 10; i++) {
+        sparkles.push({
+          x,
+          y,
+          vx: (Math.random() - 0.5) * 4,
+          vy: (Math.random() - 0.5) * 4,
+          life: 30,
+          size: Math.random() * 4 + 2
+        });
       }
     }
-  });
 
-  requestAnimationFrame(update);
-}
+    function drawBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-update();
-</script>
+      for (const s of stars) {
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
 
+    function drawPlayer() {
+      if (ponyImg.complete && ponyImg.naturalWidth > 0) {
+        ctx.drawImage(ponyImg, player.x, player.y, player.width, player.height);
+      } else {
+        ctx.fillStyle = "#4de7ff";
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+      }
+    }
+
+    function drawCoin(coin) {
+      ctx.save();
+      ctx.translate(coin.x, coin.y);
+      ctx.rotate(coin.rot);
+      ctx.beginPath();
+      ctx.fillStyle = "#ffd84d";
+      ctx.arc(0, 0, coin.r, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "#fff2a8";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.strokeStyle = "#fff8d6";
+      ctx.lineWidth = 1.5;
+      ctx.moveTo(-4, 0);
+      ctx.lineTo(4, 0);
+      ctx.moveTo(0, -4);
+      ctx.lineTo(0, 4);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSparkles() {
+      sparkles.forEach((sp) => {
+        ctx.fillStyle = `rgba(255,255,255,${sp.life / 30})`;
+        ctx.beginPath();
+        ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function updateCoins() {
+      for (let i = coins.length - 1; i >= 0; i--) {
+        const c = coins[i];
+        c.y += c.speed;
+        c.rot += 0.08;
+
+        const hit =
+          c.x > player.x &&
+          c.x < player.x + player.width &&
+          c.y + c.r > player.y &&
+          c.y - c.r < player.y + player.height;
+
+        if (hit) {
+          addSparkles(c.x, c.y);
+          coins.splice(i, 1);
+          score++;
+          scoreEl.textContent = score;
+
+          if (score >= 10) {
+            cleared = true;
+            clearBox.style.display = "block";
+          }
+          continue;
+        }
+
+        if (c.y > canvas.height + 20) {
+          coins.splice(i, 1);
+          lives--;
+          livesEl.textContent = lives;
+
+          if (lives <= 0) {
+            gameOver = true;
+            gameoverBox.style.display = "block";
+          }
+        }
+      }
+    }
+
+    function updateSparkles() {
+      for (let i = sparkles.length - 1; i >= 0; i--) {
+        const sp = sparkles[i];
+        sp.x += sp.vx;
+        sp.y += sp.vy;
+        sp.life--;
+
+        if (sp.life <= 0) {
+          sparkles.splice(i, 1);
+        }
+      }
+    }
+
+    function loop() {
+      drawBackground();
+
+      if (!gameOver && !cleared) {
+        spawnTimer++;
+        if (spawnTimer > 30) {
+          spawnCoin();
+          spawnTimer = 0;
+        }
+
+        updateCoins();
+        updateSparkles();
+      } else {
+        updateSparkles();
+      }
+
+      coins.forEach(drawCoin);
+      drawSparkles();
+      drawPlayer();
+
+      if (!gameOver && !cleared) {
+        animationId = requestAnimationFrame(loop);
+      } else if (sparkles.length > 0) {
+        animationId = requestAnimationFrame(loop);
+      }
+    }
+
+    function setPlayerFromClientX(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      let x = (clientX - rect.left) * scaleX - player.width / 2;
+      x = Math.max(0, Math.min(canvas.width - player.width, x));
+      player.x = x;
+    }
+
+    canvas.addEventListener("mousemove", (e) => {
+      setPlayerFromClientX(e.clientX);
+    });
+
+    canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        setPlayerFromClientX(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    canvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      if (e.touches.length > 0) {
+        setPlayerFromClientX(e.touches[0].clientX);
+      }
+    }, { passive: false });
+
+    retryBtn.addEventListener("click", resetGame);
+
+    ponyImg.onload = () => resetGame();
+    ponyImg.onerror = () => resetGame();
+
+    if (ponyImg.complete) {
+      resetGame();
+    }
+  </script>
 </body>
 </html>
