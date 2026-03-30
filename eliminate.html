@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>消し馬ゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 120, 120, 0.18), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(120, 150, 255, 0.16), transparent 25%),
+        linear-gradient(180deg, #111833 0%, #1c2758 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .horse-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .horse-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .horse-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .info-line {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🚫 消し馬ゲーム</h1>
+    <div class="sub">
+      4頭の中から、<br>
+      <b>今回は危ない1頭</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+      <div class="choice-title">今回、消したい馬はどれ？</div>
+      <div class="horse-list" id="horseList"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      人気でも危険な条件はあります。<br>
+      「買う力」より「消す力」が回収率を守ります。
+    </div>
+  </div>
+
+  <script>
+    const quizzes = [
+      {
+        title: "第1問",
+        horses: [
+          {
+            name: "フレア",
+            info: "前走1着 / 今回1番人気 / 距離延長 / 前走が激走",
+            danger: true,
+            reason: "前走で強く走りすぎた反動に加えて距離延長。人気ほど信頼しにくい危険パターンです。"
+          },
+          {
+            name: "ルミナ",
+            info: "近2走安定 / 同距離 / 先行しやすい枠",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "アクア",
+            info: "末脚安定 / 距離合う / 相手弱化",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "崩れにくい / 相手なり / 3着候補",
+            danger: false,
+            reason: ""
+          }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第2問",
+        horses: [
+          {
+            name: "ノクス",
+            info: "前走2着 / 同条件 / 調教強め / 人気ほどでもない",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "ストーム",
+            info: "追込型 / 逃げ馬不在 / スローペース濃厚 / 2番人気",
+            danger: true,
+            reason: "追込型なのにスローペース濃厚。展開が向きにくく、人気ほど期待しづらいです。"
+          },
+          {
+            name: "ルミナ",
+            info: "先行型 / 自分の形に持ち込みやすい / 安定",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "相手弱め / 位置取り自在 / 押さえ向き",
+            danger: false,
+            reason: ""
+          }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第3問",
+        horses: [
+          {
+            name: "アクア",
+            info: "休み明け2走目 / 体調上向き / 距離ぴったり",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "前走大敗 / 今回も外枠 / 先行厳しい条件 / 3番人気",
+            danger: true,
+            reason: "前走内容が悪く、今回も外枠で先行しづらい条件。人気があるなら危険です。"
+          },
+          {
+            name: "フレア",
+            info: "内枠 / 先行有利コース / 同距離",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "器用さあり / 展開待ちでも対応可",
+            danger: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第4問",
+        horses: [
+          {
+            name: "ルミナ",
+            info: "前走楽勝 / 今回も同条件 / スピード上位",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "近走安定 / 人気薄 / 相手なり",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "調教軽め / コメント弱気 / 次走本番気配 / 2番人気",
+            danger: true,
+            reason: "調教軽めでコメントも弱気。今回は叩き台の可能性が高く、人気なら消したいです。"
+          },
+          {
+            name: "アクア",
+            info: "展開待ちだが能力足りる / 押さえ可",
+            danger: false,
+            reason: ""
+          }
+        ],
+        answer: "ノクス"
+      },
+      {
+        title: "第5問",
+        horses: [
+          {
+            name: "ステラ",
+            info: "差し脚堅実 / ハイペース濃厚 / 展開向く",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "ストーム",
+            info: "能力高い / ただし気分屋 / 人気薄なら面白い",
+            danger: false,
+            reason: ""
+          },
+          {
+            name: "フレア",
+            info: "逃げ型 / 逃げ馬3頭 / 外枠 / 1番人気",
+            danger: true,
+            reason: "逃げ馬が多く外枠。前で脚を使いすぎる可能性が高く、人気なら危険です。"
+          },
+          {
+            name: "テラ",
+            info: "堅実 / バテ比べ歓迎 / 相手候補",
+            danger: false,
+            reason: ""
+          }
+        ],
+        answer: "フレア"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const horseList = document.getElementById("horseList");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = quizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = quiz.title;
+
+      horseList.innerHTML = "";
+      quiz.horses.forEach(horse => {
+        const btn = document.createElement("button");
+        btn.className = "horse-btn";
+        btn.innerHTML = `
+          <div class="horse-name">🐴 ${horse.name}</div>
+          <div class="info-line">${horse.info}</div>
+        `;
+        btn.onclick = () => answer(horse.name);
+        horseList.appendChild(btn);
+      });
+    }
+
+    function answer(selectedName) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = quizzes[current];
+      const correct = selectedName === quiz.answer;
+      const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
+
+      if (current === quizzes.length - 1) {
+        nextBtn.style.display = "none";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
