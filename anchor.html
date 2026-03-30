@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>軸馬選びゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 220, 255, 0.18), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255, 210, 120, 0.16), transparent 25%),
+        linear-gradient(180deg, #102041 0%, #1a2d63 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .horse-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .horse-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .horse-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .info-line {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎯 軸馬選びゲーム</h1>
+    <div class="sub">
+      4頭の中から、<br>
+      <b>一番軸に向いている馬</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+      <div class="choice-title">今回はどの馬を軸にしたい？</div>
+      <div class="horse-list" id="horseList"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      軸馬は「一番強い馬」ではなく、<br>
+      「一番崩れにくい馬」を選ぶのが基本です。
+    </div>
+  </div>
+
+  <script>
+    const quizzes = [
+      {
+        title: "第1問",
+        horses: [
+          {
+            name: "ルミナ",
+            info: "近3走すべて3着以内 / 同距離 / 先行しやすい枠 / 2番人気",
+            anchor: true,
+            reason: "安定感が高く、条件も向いています。1着固定までは断言しづらくても、連軸としては最適です。"
+          },
+          {
+            name: "ストーム",
+            info: "破壊力は高い / 気分屋 / 展開待ち / 5番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "フレア",
+            info: "逃げ切り型 / 同型多い / 1番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "ハマれば強い / ただし相手依存 / 4番人気",
+            anchor: false,
+            reason: ""
+          }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第2問",
+        horses: [
+          {
+            name: "テラ",
+            info: "崩れにくい / バテ比べ歓迎 / 近走すべて掲示板内 / 3番人気",
+            anchor: true,
+            reason: "派手さはないですが崩れにくく、軸向きです。こういうタイプを拾えると馬券が安定します。"
+          },
+          {
+            name: "フレア",
+            info: "逃げ型 / 外枠 / 競り合い濃厚 / 1番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "ストーム",
+            info: "一発ある / 追込 / ハマるかどうか / 6番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "相手なり / 3着候補 / 人気薄",
+            anchor: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第3問",
+        horses: [
+          {
+            name: "アクア",
+            info: "差し安定 / 相手弱化 / 同条件向き / 2番人気",
+            anchor: true,
+            reason: "派手さよりも安定感。大崩れしにくく、相手関係も楽なので軸向きです。"
+          },
+          {
+            name: "ノクス",
+            info: "調教軽め / コメント弱気 / 1番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "フレア",
+            info: "逃げられれば強い / ただし同型あり / 3番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "展開待ち / 脚質的に届かない可能性あり / 5番人気",
+            anchor: false,
+            reason: ""
+          }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第4問",
+        horses: [
+          {
+            name: "ルミナ",
+            info: "先行安定 / 距離ベスト / 近走内容上位 / 1番人気",
+            anchor: true,
+            reason: "人気でも軸にしてよいパターンです。近走安定、条件合う、先行しやすい。典型的な連軸向きです。"
+          },
+          {
+            name: "ストーム",
+            info: "能力は高い / でもハイペース待ち / 4番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "安定型 / ただし相手強い / 3番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "相手を崩す形向き / 自分で勝ち切るタイプではない / 5番人気",
+            anchor: false,
+            reason: ""
+          }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第5問",
+        horses: [
+          {
+            name: "アクア",
+            info: "差し安定 / 外しても3着候補 / 2番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "とにかく崩れにくい / コース合う / 馬場も向く / 3番人気",
+            anchor: true,
+            reason: "軸馬は『1着の可能性』より『飛びにくさ』が重要です。テラは典型的な連軸向きです。"
+          },
+          {
+            name: "フレア",
+            info: "逃げ切りか凡走かの両極端 / 1番人気",
+            anchor: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "押さえ向き / 人気薄 / 善戦型",
+            anchor: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const horseList = document.getElementById("horseList");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = quizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = quiz.title;
+
+      horseList.innerHTML = "";
+      quiz.horses.forEach(horse => {
+        const btn = document.createElement("button");
+        btn.className = "horse-btn";
+        btn.innerHTML = `
+          <div class="horse-name">🐴 ${horse.name}</div>
+          <div class="info-line">${horse.info}</div>
+        `;
+        btn.onclick = () => answer(horse.name);
+        horseList.appendChild(btn);
+      });
+    }
+
+    function answer(selectedName) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = quizzes[current];
+      const correct = selectedName === quiz.answer;
+      const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
+
+      if (current === quizzes.length - 1) {
+        nextBtn.style.display = "none";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
