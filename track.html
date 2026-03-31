@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>馬場適性ゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 220, 255, 0.18), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(120, 255, 170, 0.16), transparent 25%),
+        linear-gradient(180deg, #0f1c33 0%, #1b3558 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .track-banner {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 12px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .horse-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .horse-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .horse-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .info-line {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🌧️ 馬場適性ゲーム</h1>
+    <div class="sub">
+      今日の馬場状態を見て、<br>
+      <b>一番向く馬</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+      <div class="track-banner" id="trackBanner">馬場：重馬場</div>
+      <div class="horse-list" id="horseList"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      良馬場では瞬発力、重馬場ではパワーと持続力が重要になりやすいです。<br>
+      馬場を読めると人気馬の取捨が上手くなります。
+    </div>
+  </div>
+
+  <script>
+    const quizzes = [
+      {
+        title: "第1問",
+        track: "重馬場",
+        horses: [
+          {
+            name: "テラ",
+            info: "パワー型 / バテ比べ歓迎 / 渋った馬場が得意",
+            fit: true,
+            reason: "重馬場はパワーと持続力が重要です。テラは脚を取られる馬場でもバテにくく、最も向きます。"
+          },
+          {
+            name: "ルミナ",
+            info: "スピード型 / 良馬場向き / 切れ味勝負で強い",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "差し脚型 / 軽い馬場の瞬発力勝負向き",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "フレア",
+            info: "先行型 / スピード勝負寄り / 馬場悪化は微妙",
+            fit: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第2問",
+        track: "良馬場",
+        horses: [
+          {
+            name: "ルミナ",
+            info: "スピード型 / 軽い芝向き / 瞬発力勝負歓迎",
+            fit: true,
+            reason: "良馬場はスピードと切れ味が活きやすいです。ルミナの持ち味が最も出やすい条件です。"
+          },
+          {
+            name: "テラ",
+            info: "パワー型 / 渋った馬場歓迎 / 切れ負けしやすい",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "アクア",
+            info: "持続型 / 安定感はあるが決め手勝負は少し劣る",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "差し型 / 相手弱体化向き / 良の高速決着は微妙",
+            fit: false,
+            reason: ""
+          }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第3問",
+        track: "稍重",
+        horses: [
+          {
+            name: "アクア",
+            info: "バランス型 / 少し時計がかかる馬場向き / 安定感あり",
+            fit: true,
+            reason: "稍重は極端なパワー型や極端な瞬発型より、バランス型が走りやすいです。アクアが最も向きます。"
+          },
+          {
+            name: "フレア",
+            info: "先行スピード型 / 時計が速い方がいい",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ストーム",
+            info: "爆発型 / ハマり待ち / 馬場適性より展開依存",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "切れ味寄り / 少し馬場が悪いと威力減",
+            fit: false,
+            reason: ""
+          }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第4問",
+        track: "不良馬場",
+        horses: [
+          {
+            name: "テラ",
+            info: "パワー最上位 / 泥んこ馬場歓迎 / 消耗戦向き",
+            fit: true,
+            reason: "不良馬場ではスタミナとパワーが最優先です。テラは最も信頼しやすい適性です。"
+          },
+          {
+            name: "ルミナ",
+            info: "スピード型 / 馬場悪化で持ち味半減",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "差し脚型 / 切れ味を活かしにくい",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "器用さはある / ただし絶対能力では劣る",
+            fit: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第5問",
+        track: "高速良馬場",
+        horses: [
+          {
+            name: "フレア",
+            info: "先行スピード型 / 開幕週向き / 前残り歓迎",
+            fit: true,
+            reason: "高速良馬場は前に行けるスピード型が有利になりやすいです。フレアが最も条件に合います。"
+          },
+          {
+            name: "テラ",
+            info: "パワー型 / 時計勝負では分が悪い",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "差し寄り / 流れが速くならないと届きにくい",
+            fit: false,
+            reason: ""
+          },
+          {
+            name: "アクア",
+            info: "安定型 / 相手候補には良いが最適ではない",
+            fit: false,
+            reason: ""
+          }
+        ],
+        answer: "フレア"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const horseList = document.getElementById("horseList");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const trackBanner = document.getElementById("trackBanner");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = quizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = quiz.title;
+      trackBanner.textContent = `馬場：${quiz.track}`;
+
+      horseList.innerHTML = "";
+      quiz.horses.forEach(horse => {
+        const btn = document.createElement("button");
+        btn.className = "horse-btn";
+        btn.innerHTML = `
+          <div class="horse-name">🐴 ${horse.name}</div>
+          <div class="info-line">${horse.info}</div>
+        `;
+        btn.onclick = () => answer(horse.name);
+        horseList.appendChild(btn);
+      });
+    }
+
+    function answer(selectedName) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = quizzes[current];
+      const correct = selectedName === quiz.answer;
+      const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
+
+      if (current === quizzes.length - 1) {
+        nextBtn.style.display = "none";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
