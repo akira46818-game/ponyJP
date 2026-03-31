@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>期待値ジャッジ！買う？見送る？</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: linear-gradient(180deg, #fff8f3 0%, #ffe9d9 100%);
+      color: #4b2e1f;
+    }
+
+    .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 16px 14px 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      background: #fff;
+      color: #7a4b2b;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .badge {
+      background: #ffb36b;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 22px;
+      padding: 18px 16px 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .sub {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #7a5a46;
+      margin-bottom: 10px;
+    }
+
+    .pony-box {
+      text-align: center;
+      font-size: 52px;
+      margin: 8px 0 12px;
+    }
+
+    .question-no {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #b46a2d;
+      margin-bottom: 10px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .info-item {
+      background: #fff8f2;
+      border-radius: 18px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid #ffd8b6;
+    }
+
+    .info-label {
+      font-size: 13px;
+      color: #8b684e;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .info-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #7d3d16;
+    }
+
+    .hint {
+      background: #fff2cc;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #6d4f12;
+      margin-bottom: 14px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 16px 12px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      transition: transform 0.08s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .buy-btn {
+      background: #ffb347;
+      color: #fff;
+    }
+
+    .skip-btn {
+      background: #7ec8ff;
+      color: #fff;
+    }
+
+    .next-btn {
+      width: 100%;
+      background: #7a4b2b;
+      color: #fff;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .result {
+      min-height: 104px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      line-height: 1.7;
+      font-size: 15px;
+      border: 2px solid #f3e2d4;
+    }
+
+    .result strong {
+      font-size: 16px;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .score-box {
+      flex: 1;
+      text-align: center;
+      background: #fff8f2;
+      border-radius: 16px;
+      padding: 12px 8px;
+      border: 2px solid #ffd8b6;
+    }
+
+    .score-box .label {
+      font-size: 12px;
+      color: #8b684e;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .score-box .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #7d3d16;
+    }
+
+    .final-screen {
+      display: none;
+    }
+
+    .rank {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      margin: 14px 0 6px;
+      color: #b85c1e;
+    }
+
+    .learn-box {
+      background: #fff7ea;
+      border-radius: 16px;
+      padding: 14px;
+      line-height: 1.8;
+      font-size: 14px;
+      color: #6c4b35;
+      margin: 14px 0;
+    }
+
+    .restart-btn {
+      width: 100%;
+      background: #ff8f5a;
+      color: #fff;
+    }
+
+    .small-note {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #8b6e5e;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 380px) {
+      h1 {
+        font-size: 21px;
+      }
+
+      .info-value {
+        font-size: 24px;
+      }
+
+      button {
+        font-size: 16px;
+        padding: 14px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a href="index.html" class="back-btn">← 一覧へ戻る</a>
+      <div class="badge">回収率アップ系</div>
+    </div>
+
+    <div id="gameScreen">
+      <div class="card">
+        <h1>期待値ジャッジ！</h1>
+        <div class="sub">
+          勝率とオッズを見て、<br>
+          「買う」か「見送る」か判断しよう！
+        </div>
+
+        <div class="pony-box">🐴✨</div>
+
+        <div class="question-no" id="questionNo">第1問 / 10問</div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-label">想定勝率</div>
+            <div class="info-value" id="winRate">25%</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">単勝オッズ</div>
+            <div class="info-value" id="odds">4.8</div>
+          </div>
+        </div>
+
+        <div class="hint">
+          ヒント：<strong>勝率 × オッズ</strong> をざっくり考えよう。<br>
+          1.00以上なら「買う」候補になりやすい！
+        </div>
+
+        <div class="buttons">
+          <button class="buy-btn" id="buyBtn">買う！</button>
+          <button class="skip-btn" id="skipBtn">見送る！</button>
+        </div>
+
+        <div class="result" id="resultBox">
+          下のボタンを押して判定してみよう！
+        </div>
+
+        <button class="next-btn" id="nextBtn">次の問題へ</button>
+
+        <div class="score-row">
+          <div class="score-box">
+            <div class="label">正解数</div>
+            <div class="value" id="correctCount">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">スコア</div>
+            <div class="value" id="score">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">連勝</div>
+            <div class="value" id="streak">0</div>
+          </div>
+        </div>
+
+        <div class="small-note">
+          ※ 実際の競馬では展開・馬場・相手関係も重要です。<br>
+          まずは「オッズと確率の感覚」を鍛える練習ゲームです。
+        </div>
+      </div>
+    </div>
+
+    <div id="finalScreen" class="final-screen">
+      <div class="card">
+        <h1>ゲーム終了！</h1>
+        <div class="pony-box">🏆🐎</div>
+
+        <div class="rank" id="rankText">Bランク</div>
+
+        <div class="score-row">
+          <div class="score-box">
+            <div class="label">正解数</div>
+            <div class="value" id="finalCorrect">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">最終スコア</div>
+            <div class="value" id="finalScore">0</div>
+          </div>
+        </div>
+
+        <div class="learn-box" id="learnComment">
+          学びコメントがここに表示されます。
+        </div>
+
+        <button class="restart-btn" id="restartBtn">もう一度チャレンジ</button>
+        <a href="index.html" class="back-btn" style="display:block; text-align:center; margin-top:12px;">ゲーム一覧へ戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const totalQuestions = 10;
+    let currentQuestion = 0;
+    let correct = 0;
+    let score = 0;
+    let streak = 0;
+    let currentData = null;
+    let answered = false;
+
+    const questionNo = document.getElementById("questionNo");
+    const winRateEl = document.getElementById("winRate");
+    const oddsEl = document.getElementById("odds");
+    const resultBox = document.getElementById("resultBox");
+    const correctCountEl = document.getElementById("correctCount");
+    const scoreEl = document.getElementById("score");
+    const streakEl = document.getElementById("streak");
+    const nextBtn = document.getElementById("nextBtn");
+    const buyBtn = document.getElementById("buyBtn");
+    const skipBtn = document.getElementById("skipBtn");
+    const gameScreen = document.getElementById("gameScreen");
+    const finalScreen = document.getElementById("finalScreen");
+
+    const finalCorrect = document.getElementById("finalCorrect");
+    const finalScore = document.getElementById("finalScore");
+    const rankText = document.getElementById("rankText");
+    const learnComment = document.getElementById("learnComment");
+    const restartBtn = document.getElementById("restartBtn");
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function randomDecimal(min, max, digits = 1) {
+      const value = Math.random() * (max - min) + min;
+      return Number(value.toFixed(digits));
+    }
+
+    function createQuestion() {
+      const patterns = [
+        { rateMin: 8, rateMax: 18, oddsMin: 2.0, oddsMax: 6.5 },
+        { rateMin: 10, rateMax: 25, oddsMin: 3.0, oddsMax: 10.0 },
+        { rateMin: 20, rateMax: 45, oddsMin: 1.4, oddsMax: 5.5 },
+        { rateMin: 5, rateMax: 15, oddsMin: 7.0, oddsMax: 18.0 },
+        { rateMin: 15, rateMax: 35, oddsMin: 2.0, oddsMax: 8.5 }
+      ];
+
+      const p = patterns[randomInt(0, patterns.length - 1)];
+      const rate = randomInt(p.rateMin, p.rateMax);
+      const odds = randomDecimal(p.oddsMin, p.oddsMax, 1);
+
+      const ev = (rate / 100) * odds;
+      const shouldBuy = ev >= 1.0;
+
+      return {
+        rate,
+        odds,
+        ev,
+        shouldBuy
+      };
+    }
+
+    function loadQuestion() {
+      answered = false;
+      currentData = createQuestion();
+      currentQuestion++;
+
+      questionNo.textContent = `第${currentQuestion}問 / ${totalQuestions}問`;
+      winRateEl.textContent = `${currentData.rate}%`;
+      oddsEl.textContent = currentData.odds.toFixed(1);
+      resultBox.innerHTML = `下のボタンを押して判定してみよう！`;
+      nextBtn.style.display = "none";
+      buyBtn.disabled = false;
+      skipBtn.disabled = false;
+    }
+
+    function judge(choice) {
+      if (answered) return;
+      answered = true;
+
+      const isCorrect = choice === currentData.shouldBuy;
+      const evText = currentData.ev.toFixed(2);
+
+      if (isCorrect) {
+        correct++;
+        streak++;
+        score += 100 + (streak - 1) * 20;
+
+        resultBox.innerHTML = `
+          <strong>正解！🎉</strong><br>
+          この馬の期待値は <strong>${evText}</strong> です。<br>
+          ${currentData.shouldBuy ? "1.00以上なので、オッズ的には「買う」寄りです。" : "1.00未満なので、オッズ的には「見送る」寄りです。"}<br>
+          <br>
+          <strong>学び：</strong>
+          ${currentData.shouldBuy
+            ? "『当たりそうか』だけでなく、『そのオッズで買う価値があるか』を見るのが大切です。"
+            : "人気や雰囲気で飛びつかず、割に合わない馬を避けるのも回収率アップの技術です。"}
+        `;
+      } else {
+        streak = 0;
+        score = Math.max(0, score - 30);
+
+        resultBox.innerHTML = `
+          <strong>不正解！😿</strong><br>
+          この馬の期待値は <strong>${evText}</strong> です。<br>
+          正解は <strong>${currentData.shouldBuy ? "買う" : "見送る"}</strong> でした。<br>
+          <br>
+          <strong>学び：</strong>
+          ${currentData.shouldBuy
+            ? "勝率がそこまで高く見えなくても、オッズが高ければ買える場面があります。"
+            : "強そうに見えても、オッズが低すぎると長期的には苦しくなりやすいです。"}
+        `;
+      }
+
+      correctCountEl.textContent = correct;
+      scoreEl.textContent = score;
+      streakEl.textContent = streak;
+
+      buyBtn.disabled = true;
+      skipBtn.disabled = true;
+      nextBtn.style.display = "block";
+    }
+
+    function finishGame() {
+      gameScreen.style.display = "none";
+      finalScreen.style.display = "block";
+
+      finalCorrect.textContent = correct;
+      finalScore.textContent = score;
+
+      let rank = "Cランク";
+      let comment = "まずは良いスタートです。『強い馬探し』ではなく『割に合う馬探し』に意識を向けていきましょう。";
+
+      if (correct >= 9) {
+        rank = "SSランク";
+        comment = "素晴らしいです。期待値思考がかなり身についています。実戦ではここに展開・馬場・騎手・相手関係を足すと、さらに精度が上がります。";
+      } else if (correct >= 8) {
+        rank = "Sランク";
+        comment = "かなり良い感覚です。人気に流されず、オッズとのバランスを見られています。回収率アップの土台ができています。";
+      } else if (correct >= 6) {
+        rank = "Aランク";
+        comment = "いい流れです。迷う場面でも『勝率×オッズ』を意識できるようになると、さらに安定します。";
+      } else if (correct >= 4) {
+        rank = "Bランク";
+        comment = "感覚は育ってきています。次は『当たりそう』と『買う価値がある』を分けて考える練習を続けると伸びます。";
+      }
+
+      rankText.textContent = rank;
+      learnComment.textContent = comment;
+    }
+
+    buyBtn.addEventListener("click", () => judge(true));
+    skipBtn.addEventListener("click", () => judge(false));
+
+    nextBtn.addEventListener("click", () => {
+      if (currentQuestion >= totalQuestions) {
+        finishGame();
+      } else {
+        loadQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", () => {
+      currentQuestion = 0;
+      correct = 0;
+      score = 0;
+      streak = 0;
+
+      correctCountEl.textContent = "0";
+      scoreEl.textContent = "0";
+      streakEl.textContent = "0";
+
+      finalScreen.style.display = "none";
+      gameScreen.style.display = "block";
+
+      loadQuestion();
+    });
+
+    loadQuestion();
+  </script>
+</body>
+</html>
