@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>人気馬を買う？切る？ゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: linear-gradient(180deg, #fffaf2 0%, #ffe5c8 100%);
+      color: #4a2d1b;
+    }
+
+    .wrap {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 16px 14px 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .back-btn {
+      text-decoration: none;
+      background: #fff;
+      color: #7a4b2b;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .badge {
+      background: #ff8a65;
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.96);
+      border-radius: 22px;
+      padding: 18px 16px 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .sub {
+      text-align: center;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #7a5a46;
+      margin-bottom: 12px;
+    }
+
+    .horse-box {
+      text-align: center;
+      font-size: 52px;
+      margin: 8px 0 10px;
+    }
+
+    .question-no {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: #b85c1e;
+      margin-bottom: 10px;
+    }
+
+    .popular-box {
+      background: #fff3e9;
+      border: 2px solid #ffd0b2;
+      border-radius: 18px;
+      padding: 14px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .popular-title {
+      font-size: 13px;
+      color: #8b684e;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .popular-value {
+      font-size: 30px;
+      font-weight: 900;
+      color: #a94412;
+    }
+
+    .odds-text {
+      font-size: 14px;
+      color: #6f4c36;
+      margin-top: 4px;
+    }
+
+    .point-list {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .point-item {
+      background: #fff;
+      border: 2px solid #f2dfd0;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 14px;
+      line-height: 1.65;
+      color: #5e4331;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 18px;
+      padding: 16px 12px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.08);
+      transition: transform 0.08s ease;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .buy-btn {
+      background: #ffb347;
+      color: #fff;
+    }
+
+    .cut-btn {
+      background: #5dade2;
+      color: #fff;
+    }
+
+    .next-btn {
+      width: 100%;
+      background: #7a4b2b;
+      color: #fff;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .result {
+      min-height: 120px;
+      background: #fff;
+      border-radius: 18px;
+      padding: 14px;
+      line-height: 1.7;
+      font-size: 15px;
+      border: 2px solid #f3e2d4;
+    }
+
+    .score-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .score-box {
+      flex: 1;
+      text-align: center;
+      background: #fff8f2;
+      border-radius: 16px;
+      padding: 12px 8px;
+      border: 2px solid #ffd8b6;
+    }
+
+    .score-box .label {
+      font-size: 12px;
+      color: #8b684e;
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    .score-box .value {
+      font-size: 24px;
+      font-weight: 800;
+      color: #7d3d16;
+    }
+
+    .final-screen {
+      display: none;
+    }
+
+    .rank {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 900;
+      margin: 14px 0 6px;
+      color: #b85c1e;
+    }
+
+    .learn-box {
+      background: #fff7ea;
+      border-radius: 16px;
+      padding: 14px;
+      line-height: 1.8;
+      font-size: 14px;
+      color: #6c4b35;
+      margin: 14px 0;
+    }
+
+    .restart-btn {
+      width: 100%;
+      background: #ff8f5a;
+      color: #fff;
+    }
+
+    .small-note {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #8b6e5e;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 380px) {
+      h1 {
+        font-size: 21px;
+      }
+
+      button {
+        font-size: 16px;
+        padding: 14px 10px;
+      }
+
+      .popular-value {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a href="index.html" class="back-btn">← 一覧へ戻る</a>
+      <div class="badge">思考系</div>
+    </div>
+
+    <div id="gameScreen">
+      <div class="card">
+        <h1>人気馬を買う？切る？</h1>
+        <div class="sub">
+          人気馬だから買う、ではなく<br>
+          危険な要素があるかを見抜こう！
+        </div>
+
+        <div class="horse-box">🔥🐴</div>
+        <div class="question-no" id="questionNo">第1問 / 10問</div>
+
+        <div class="popular-box">
+          <div class="popular-title">今回の人気馬</div>
+          <div class="popular-value" id="popValue">1番人気</div>
+          <div class="odds-text" id="oddsText">単勝 2.4倍</div>
+        </div>
+
+        <div class="point-list" id="pointList"></div>
+
+        <div class="buttons">
+          <button class="buy-btn" id="buyBtn">買う！</button>
+          <button class="cut-btn" id="cutBtn">切る！</button>
+        </div>
+
+        <div class="result" id="resultBox">
+          情報を見て、「買う」か「切る」か選ぼう！
+        </div>
+
+        <button class="next-btn" id="nextBtn">次の問題へ</button>
+
+        <div class="score-row">
+          <div class="score-box">
+            <div class="label">正解数</div>
+            <div class="value" id="correctCount">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">スコア</div>
+            <div class="value" id="score">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">連勝</div>
+            <div class="value" id="streak">0</div>
+          </div>
+        </div>
+
+        <div class="small-note">
+          ※ 実戦では絶対の正解はありません。<br>
+          このゲームでは「危険人気馬を疑う視点」を鍛えます。
+        </div>
+      </div>
+    </div>
+
+    <div id="finalScreen" class="final-screen">
+      <div class="card">
+        <h1>判定終了！</h1>
+        <div class="horse-box">🏆✨</div>
+
+        <div class="rank" id="rankText">Bランク</div>
+
+        <div class="score-row">
+          <div class="score-box">
+            <div class="label">正解数</div>
+            <div class="value" id="finalCorrect">0</div>
+          </div>
+          <div class="score-box">
+            <div class="label">最終スコア</div>
+            <div class="value" id="finalScore">0</div>
+          </div>
+        </div>
+
+        <div class="learn-box" id="learnComment"></div>
+
+        <button class="restart-btn" id="restartBtn">もう一度チャレンジ</button>
+        <a href="index.html" class="back-btn" style="display:block; text-align:center; margin-top:12px;">ゲーム一覧へ戻る</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const totalQuestions = 10;
+    let currentQuestion = 0;
+    let correct = 0;
+    let score = 0;
+    let streak = 0;
+    let currentData = null;
+    let answered = false;
+
+    const scenarios = [
+      {
+        pop: "1番人気",
+        odds: "2.1倍",
+        points: [
+          "前走は展開がかなりハマっての勝利",
+          "今回は同型の逃げ馬が3頭いる",
+          "距離延長が少し不安",
+          "馬体重の増減が大きいタイプ"
+        ],
+        answer: false,
+        reason: "人気でも展開が厳しく、条件替わりの不安があります。危険な人気馬として“切る”判断が妥当です。"
+      },
+      {
+        pop: "1番人気",
+        odds: "2.8倍",
+        points: [
+          "同コースで安定して好走",
+          "先行力があり展開も向きそう",
+          "休み明け2走目で上積みあり",
+          "馬場状態も合いそう"
+        ],
+        answer: true,
+        reason: "条件がそろっていて、人気でも素直に買いやすい場面です。"
+      },
+      {
+        pop: "2番人気",
+        odds: "4.2倍",
+        points: [
+          "前走はメンバーレベルが低かった",
+          "今回は相手が一気に強化",
+          "外枠で脚質的にロスが大きそう",
+          "調教気配は平凡"
+        ],
+        answer: false,
+        reason: "前走内容ほど信頼しづらく、人気先行の危険があります。"
+      },
+      {
+        pop: "1番人気",
+        odds: "1.9倍",
+        points: [
+          "近3走すべて連対",
+          "今回の相手関係はやや楽",
+          "鞍上も継続騎乗",
+          "脚質的に大崩れしにくい"
+        ],
+        answer: true,
+        reason: "オッズ妙味は薄くても、能力と安定感で買える人気馬です。"
+      },
+      {
+        pop: "3番人気",
+        odds: "5.6倍",
+        points: [
+          "距離短縮はプラス",
+          "ただし道悪が苦手",
+          "当日は雨予報",
+          "末脚はあるが展開待ち"
+        ],
+        answer: false,
+        reason: "ハマれば来る可能性はありますが、条件面の不安が大きく、積極的には買いにくいです。"
+      },
+      {
+        pop: "2番人気",
+        odds: "3.7倍",
+        points: [
+          "得意コースに戻る",
+          "前走は出遅れで参考外",
+          "今回は枠順も良い",
+          "調教の動きが明らかに上向き"
+        ],
+        answer: true,
+        reason: "前走敗因が明確で、今回は巻き返し材料がそろっています。"
+      },
+      {
+        pop: "1番人気",
+        odds: "2.5倍",
+        points: [
+          "昇級初戦",
+          "前走時計は平凡",
+          "今回はペースが厳しくなりそう",
+          "人気ほどの裏付けは薄い"
+        ],
+        answer: false,
+        reason: "過剰人気気味で、条件が tougher になっています。切る意識が大切です。"
+      },
+      {
+        pop: "2番人気",
+        odds: "4.8倍",
+        points: [
+          "近走は相手が強かった",
+          "今回はメンバーが楽",
+          "脚質的に展開も向きそう",
+          "調教師コメントも前向き"
+        ],
+        answer: true,
+        reason: "人気でも買えるだけの好材料がそろっています。"
+      },
+      {
+        pop: "1番人気",
+        odds: "2.3倍",
+        points: [
+          "大外枠",
+          "初コース",
+          "気性面に不安あり",
+          "人気先行で売れすぎの印象"
+        ],
+        answer: false,
+        reason: "不安材料が多く、人気だけで買うと危ないタイプです。"
+      },
+      {
+        pop: "3番人気",
+        odds: "6.0倍",
+        points: [
+          "近2走は不利あり",
+          "本来はこの条件がベスト",
+          "調教内容も良好",
+          "人気ほど見劣らない"
+        ],
+        answer: true,
+        reason: "見直せる根拠があり、買い要素がしっかりあります。"
+      }
+    ];
+
+    const questionNo = document.getElementById("questionNo");
+    const popValue = document.getElementById("popValue");
+    const oddsText = document.getElementById("oddsText");
+    const pointList = document.getElementById("pointList");
+    const resultBox = document.getElementById("resultBox");
+    const correctCountEl = document.getElementById("correctCount");
+    const scoreEl = document.getElementById("score");
+    const streakEl = document.getElementById("streak");
+    const nextBtn = document.getElementById("nextBtn");
+    const buyBtn = document.getElementById("buyBtn");
+    const cutBtn = document.getElementById("cutBtn");
+    const gameScreen = document.getElementById("gameScreen");
+    const finalScreen = document.getElementById("finalScreen");
+    const finalCorrect = document.getElementById("finalCorrect");
+    const finalScore = document.getElementById("finalScore");
+    const rankText = document.getElementById("rankText");
+    const learnComment = document.getElementById("learnComment");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let shuffled = [];
+
+    function shuffleArray(arr) {
+      return [...arr].sort(() => Math.random() - 0.5);
+    }
+
+    function loadQuestion() {
+      answered = false;
+      currentData = shuffled[currentQuestion];
+
+      questionNo.textContent = `第${currentQuestion + 1}問 / ${totalQuestions}`;
+      popValue.textContent = currentData.pop;
+      oddsText.textContent = `単勝 ${currentData.odds}`;
+
+      pointList.innerHTML = "";
+      currentData.points.forEach(point => {
+        const div = document.createElement("div");
+        div.className = "point-item";
+        div.textContent = "・" + point;
+        pointList.appendChild(div);
+      });
+
+      resultBox.innerHTML = "情報を見て、「買う」か「切る」か選ぼう！";
+      nextBtn.style.display = "none";
+      buyBtn.disabled = false;
+      cutBtn.disabled = false;
+    }
+
+    function judge(choice) {
+      if (answered) return;
+      answered = true;
+
+      const isCorrect = choice === currentData.answer;
+
+      if (isCorrect) {
+        correct++;
+        streak++;
+        score += 100 + (streak - 1) * 20;
+
+        resultBox.innerHTML = `
+          <strong>正解！🎉</strong><br>
+          正解は <strong>${currentData.answer ? "買う" : "切る"}</strong> でした。<br>
+          <br>
+          <strong>学び：</strong>${currentData.reason}
+        `;
+      } else {
+        streak = 0;
+        score = Math.max(0, score - 30);
+
+        resultBox.innerHTML = `
+          <strong>不正解！😿</strong><br>
+          正解は <strong>${currentData.answer ? "買う" : "切る"}</strong> でした。<br>
+          <br>
+          <strong>学び：</strong>${currentData.reason}
+        `;
+      }
+
+      correctCountEl.textContent = correct;
+      scoreEl.textContent = score;
+      streakEl.textContent = streak;
+
+      buyBtn.disabled = true;
+      cutBtn.disabled = true;
+      nextBtn.style.display = "block";
+    }
+
+    function finishGame() {
+      gameScreen.style.display = "none";
+      finalScreen.style.display = "block";
+
+      finalCorrect.textContent = correct;
+      finalScore.textContent = score;
+
+      let rank = "Cランク";
+      let comment = "まずは人気に流されない意識を持てればOKです。『人気だから買う』を減らすだけでも精度は上がります。";
+
+      if (correct >= 9) {
+        rank = "SSランク";
+        comment = "素晴らしいです。危険な人気馬を見抜く感覚がかなりあります。馬券で無駄打ちを減らせるタイプです。";
+      } else if (correct >= 8) {
+        rank = "Sランク";
+        comment = "かなり良いです。人気の裏にある不安材料をしっかり見られています。";
+      } else if (correct >= 6) {
+        rank = "Aランク";
+        comment = "良い感覚です。人気と実力を分けて見られています。さらにオッズ感覚も加わると強いです。";
+      } else if (correct >= 4) {
+        rank = "Bランク";
+        comment = "悪くないです。次は『なぜ人気なのか』『本当に買える人気か』をもっと分けて考えると伸びます。";
+      }
+
+      rankText.textContent = rank;
+      learnComment.textContent = comment;
+    }
+
+    function initGame() {
+      shuffled = shuffleArray(scenarios).slice(0, totalQuestions);
+      currentQuestion = 0;
+      correct = 0;
+      score = 0;
+      streak = 0;
+
+      correctCountEl.textContent = "0";
+      scoreEl.textContent = "0";
+      streakEl.textContent = "0";
+
+      finalScreen.style.display = "none";
+      gameScreen.style.display = "block";
+
+      loadQuestion();
+    }
+
+    buyBtn.addEventListener("click", () => judge(true));
+    cutBtn.addEventListener("click", () => judge(false));
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestion++;
+      if (currentQuestion >= totalQuestions) {
+        finishGame();
+      } else {
+        loadQuestion();
+      }
+    });
+
+    restartBtn.addEventListener("click", initGame);
+
+    initGame();
+  </script>
+</body>
+</html>
