@@ -34,26 +34,19 @@
     .hero h1 {
       margin: 0;
       font-size: 40px;
-      line-height: 1.2;
     }
 
     .hero p {
       margin-top: 12px;
       color: rgba(255,255,255,0.8);
       line-height: 1.7;
-      font-size: 15px;
     }
 
-    .section { 
-      margin-top: 34px; 
-    }
+    .section { margin-top: 30px; }
 
     .section-title {
       font-size: 24px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      margin-bottom: 10px;
     }
 
     .grid {
@@ -70,35 +63,12 @@
       border: 1px solid rgba(255,255,255,0.14);
       border-radius: 20px;
       padding: 16px;
-      transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-      backdrop-filter: blur(6px);
-      min-height: 160px;
-    }
-
-    .card:hover,
-    .card:active {
-      transform: translateY(-2px);
-      background: rgba(255,255,255,0.12);
-      border-color: rgba(255,255,255,0.22);
     }
 
     .emoji {
       font-size: 28px;
       display: block;
       margin-bottom: 8px;
-    }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-size: 20px;
-      line-height: 1.3;
-    }
-
-    .card p {
-      margin: 0;
-      color: rgba(255,255,255,0.82);
-      line-height: 1.65;
-      font-size: 14px;
     }
 
     .tag {
@@ -111,11 +81,10 @@
     }
 
     .footer-box {
-      margin-top: 44px;
+      margin-top: 40px;
       padding: 20px;
       text-align: center;
       background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 20px;
     }
 
@@ -129,28 +98,6 @@
       text-decoration: none;
       font-weight: bold;
     }
-
-    @media (max-width: 640px) {
-      .wrap {
-        padding: 22px 14px 40px;
-      }
-
-      .hero {
-        padding: 20px 8px 18px;
-      }
-
-      .hero h1 {
-        font-size: 30px;
-      }
-
-      .section-title {
-        font-size: 21px;
-      }
-
-      .card {
-        min-height: auto;
-      }
-    }
   </style>
 </head>
 <body>
@@ -162,113 +109,91 @@
     <p>遊びながら競馬が上手くなるトレーニングゲーム</p>
   </div>
 
-  <!-- 基礎編 -->
+  <!-- 基礎 -->
   <div class="section">
-    <h2 class="section-title">📘 基礎編</h2>
+    <h2 class="section-title">📘 基礎力アップ</h2>
     <div class="grid">
       <a class="card" href="pace.html">
         <span class="emoji">🏇</span>
         <h3>ペース予想</h3>
-        <p>展開を読む基礎力を鍛える</p>
-        <span class="tag">初心者向け</span>
+        <p>展開を読む力を鍛える</p>
+        <span class="tag">初心者</span>
       </a>
 
       <a class="card" href="matchup.html">
-        <span class="emoji">🧠</span>
-        <h3>展開一致ゲーム</h3>
-        <p>流れに合う馬を選ぶ力を鍛える</p>
-        <span class="tag">実戦向け</span>
-      </a>
+  <span class="emoji">🧠</span>
+  <h3>展開一致ゲーム</h3>
+  <p>流れに合う馬を選ぶ力を鍛える</p>
+  <span class="tag">実戦向け</span>
+</a>
+      
     </div>
   </div>
 
-  <!-- 飛行系 -->
+  <!-- 判断 -->
   <div class="section">
-    <h2 class="section-title">✈️ 飛行系</h2>
-    <div class="grid">
-      <a class="card" href="ufo.html">
-        <span class="emoji">🛸</span>
-        <h3>UFO回避</h3>
-        <p>宇宙で障害物を避けて生き残れ</p>
-        <span class="tag">反射神経</span>
-      </a>
-
-      <a class="card" href="pony.html">
-        <span class="emoji">🐴</span>
-        <h3>ポニージャンプ</h3>
-        <p>ジャンプで障害物を回避しよう</p>
-        <span class="tag">アクション</span>
-      </a>
-    </div>
-  </div>
-
-  <!-- 回収力アップ -->
-  <div class="section">
-    <h2 class="section-title">💰 回収力アップ</h2>
+    <h2 class="section-title">🎯 馬券判断力</h2>
     <div class="grid">
 
       <a class="card" href="eliminate.html">
         <span class="emoji">🚫</span>
         <h3>消し馬ゲーム</h3>
-        <p>危険な人気馬を見抜く力を鍛える</p>
-        <span class="tag">実戦向け</span>
+        <p>危険な人気馬を見抜く</p>
       </a>
 
       <a class="card" href="anchor.html">
         <span class="emoji">🎯</span>
         <h3>軸馬選び</h3>
-        <p>崩れにくい軸馬を見つける</p>
-        <span class="tag">安定感重視</span>
+        <p>崩れない馬を見つける</p>
       </a>
 
       <a class="card" href="odds.html">
-        <span class="emoji">📉</span>
-        <h3>オッズ違和感ゲーム</h3>
-        <p>人気と実力のズレを見抜く力を鍛える</p>
-        <span class="tag">期待値感覚</span>
-      </a>
+  <span class="emoji">📉</span>
+  <h3>オッズ違和感ゲーム</h3>
+  <p>人気と実力のズレを見抜く力を鍛える</p>
+  <span class="tag">期待値感覚</span>
+</a>
 
-      <a class="card" href="evjudge.html">
-        <span class="emoji">📈🐴</span>
-        <h3>期待値ジャッジ！</h3>
-        <p>勝率とオッズを見て買うか見送るか判断する</p>
-        <span class="tag">期待値感覚</span>
-      </a>
-
-      <a class="card" href="ninkiba.html">
-        <span class="emoji">🔥🐴</span>
-        <h3>人気馬を買う？切る？</h3>
-        <p>危険な人気馬を見抜いて無駄打ちを減らす</p>
-        <span class="tag">人気判断</span>
-      </a>
-
+      <a href="evjudge.html" class="game-card thinking">
+  <div class="game-icon">📈🐴</div>
+  <div class="game-title">期待値ジャッジ！</div>
+  <div class="game-desc">
+    勝率とオッズを見て「買う」「見送る」を判断！
+    回収率アップ感覚を鍛える思考ゲーム。
+  </div>
+  <div class="game-tag">回収率アップ系</div>
+</a>
+      
     </div>
   </div>
 
-  <!-- ポニーゲーム -->
+  <!-- ポニー -->
   <div class="section">
     <h2 class="section-title">🎮 ポニーゲーム</h2>
     <div class="grid">
 
-      <a class="card" href="coin.html">
-        <span class="emoji">💰</span>
-        <h3>コイン集め</h3>
-        <p>コインを集めてスコアを伸ばそう</p>
-        <span class="tag">カジュアル</span>
+      <a class="card" href="pony.html">
+        <span class="emoji">🐴</span>
+        <h3>ポニージャンプ</h3>
+        <p>障害物をジャンプで回避</p>
       </a>
 
       <a class="card" href="puzzle.html">
         <span class="emoji">🧩</span>
         <h3>パズル</h3>
-        <p>スライドして完成を目指そう</p>
-        <span class="tag">ひらめき</span>
+        <p>スライドして完成させる</p>
       </a>
 
-      <a class="card" href="1sec.html">
-        <span class="emoji">⏱️</span>
-        <h3>1秒チャレンジ</h3>
-        <p>ぴったり1秒を狙うミニゲーム</p>
-        <span class="tag">集中力</span>
+      <a class="card" href="ufo.html">
+        <span class="emoji">🛸</span>
+        <h3>UFO回避</h3>
+        <p>宇宙で生き残れ</p>
+      </a>
+
+      <a class="card" href="coin.html">
+        <span class="emoji">💰</span>
+        <h3>コイン集め</h3>
+        <p>コインを集めろ</p>
       </a>
 
     </div>
@@ -277,7 +202,7 @@
   <!-- LINE -->
   <div class="footer-box">
     <div>🎮 ゲームクリアで限定カードが出現</div>
-    <a href="https://lin.ee/zohBFsV" target="_blank" rel="noopener noreferrer">LINEで受け取る</a>
+    <a href="https://lin.ee/zohBFsV" target="_blank">LINEで受け取る</a>
   </div>
 
 </div>
