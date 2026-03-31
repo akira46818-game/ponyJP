@@ -112,13 +112,6 @@
       line-height: 1.6;
     }
 
-    .choice-title {
-      text-align: center;
-      font-size: 17px;
-      font-weight: 800;
-      margin: 16px 0 12px;
-    }
-
     .result-box {
       display: none;
       margin-top: 16px;
@@ -150,7 +143,7 @@
       margin-bottom: 12px;
     }
 
-    .next-btn, .reward-btn, .back-btn {
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
       display: block;
       width: 100%;
       text-align: center;
@@ -164,7 +157,7 @@
       cursor: pointer;
     }
 
-    .next-btn {
+    .next-btn, .retry-btn {
       background: #06C755;
       color: #fff;
     }
@@ -204,7 +197,6 @@
 
     <div class="race-box">
       <div class="race-title" id="raceTitle">第1問</div>
-      <div class="choice-title">今回はどの馬を軸にしたい？</div>
       <div class="horse-list" id="horseList"></div>
     </div>
 
@@ -213,6 +205,7 @@
       <div id="explain" class="explain"></div>
       <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
       <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
       <a class="back-btn" href="index.html">← 一覧へ戻る</a>
     </div>
 
@@ -223,159 +216,219 @@
   </div>
 
   <script>
-    const quizzes = [
+    const allQuizzes = [
       {
-        title: "第1問",
+        title: "第1問候補",
         horses: [
-          {
-            name: "ルミナ",
-            info: "近3走すべて3着以内 / 同距離 / 先行しやすい枠 / 2番人気",
-            anchor: true,
-            reason: "安定感が高く、条件も向いています。1着固定までは断言しづらくても、連軸としては最適です。"
-          },
-          {
-            name: "ストーム",
-            info: "破壊力は高い / 気分屋 / 展開待ち / 5番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "フレア",
-            info: "逃げ切り型 / 同型多い / 1番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "ノクス",
-            info: "ハマれば強い / ただし相手依存 / 4番人気",
-            anchor: false,
-            reason: ""
-          }
+          { name: "ルミナ", info: "近3走すべて3着以内 / 同距離 / 先行しやすい枠 / 2番人気", reason: "安定感が高く、条件も向いています。1着固定までは断言しづらくても、連軸としては最適です。" },
+          { name: "ストーム", info: "破壊力は高い / 気分屋 / 展開待ち / 5番人気", reason: "" },
+          { name: "フレア", info: "逃げ切り型 / 同型多い / 1番人気", reason: "" },
+          { name: "ノクス", info: "ハマれば強い / ただし相手依存 / 4番人気", reason: "" }
         ],
         answer: "ルミナ"
       },
       {
-        title: "第2問",
+        title: "第2問候補",
         horses: [
-          {
-            name: "テラ",
-            info: "崩れにくい / バテ比べ歓迎 / 近走すべて掲示板内 / 3番人気",
-            anchor: true,
-            reason: "派手さはないですが崩れにくく、軸向きです。こういうタイプを拾えると馬券が安定します。"
-          },
-          {
-            name: "フレア",
-            info: "逃げ型 / 外枠 / 競り合い濃厚 / 1番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "ストーム",
-            info: "一発ある / 追込 / ハマるかどうか / 6番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "相手なり / 3着候補 / 人気薄",
-            anchor: false,
-            reason: ""
-          }
+          { name: "テラ", info: "崩れにくい / バテ比べ歓迎 / 近走すべて掲示板内 / 3番人気", reason: "派手さはないですが崩れにくく、軸向きです。こういうタイプを拾えると馬券が安定します。" },
+          { name: "フレア", info: "逃げ型 / 外枠 / 競り合い濃厚 / 1番人気", reason: "" },
+          { name: "ストーム", info: "一発ある / 追込 / ハマるかどうか / 6番人気", reason: "" },
+          { name: "にゃ〜ご", info: "相手なり / 3着候補 / 人気薄", reason: "" }
         ],
         answer: "テラ"
       },
       {
-        title: "第3問",
+        title: "第3問候補",
         horses: [
-          {
-            name: "アクア",
-            info: "差し安定 / 相手弱化 / 同条件向き / 2番人気",
-            anchor: true,
-            reason: "派手さよりも安定感。大崩れしにくく、相手関係も楽なので軸向きです。"
-          },
-          {
-            name: "ノクス",
-            info: "調教軽め / コメント弱気 / 1番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "フレア",
-            info: "逃げられれば強い / ただし同型あり / 3番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "ステラ",
-            info: "展開待ち / 脚質的に届かない可能性あり / 5番人気",
-            anchor: false,
-            reason: ""
-          }
+          { name: "アクア", info: "差し安定 / 相手弱化 / 同条件向き / 2番人気", reason: "派手さよりも安定感。大崩れしにくく、相手関係も楽なので軸向きです。" },
+          { name: "ノクス", info: "調教軽め / コメント弱気 / 1番人気", reason: "" },
+          { name: "フレア", info: "逃げられれば強い / ただし同型あり / 3番人気", reason: "" },
+          { name: "ステラ", info: "展開待ち / 脚質的に届かない可能性あり / 5番人気", reason: "" }
         ],
         answer: "アクア"
       },
       {
-        title: "第4問",
+        title: "第4問候補",
         horses: [
-          {
-            name: "ルミナ",
-            info: "先行安定 / 距離ベスト / 近走内容上位 / 1番人気",
-            anchor: true,
-            reason: "人気でも軸にしてよいパターンです。近走安定、条件合う、先行しやすい。典型的な連軸向きです。"
-          },
-          {
-            name: "ストーム",
-            info: "能力は高い / でもハイペース待ち / 4番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "安定型 / ただし相手強い / 3番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "ノクス",
-            info: "相手を崩す形向き / 自分で勝ち切るタイプではない / 5番人気",
-            anchor: false,
-            reason: ""
-          }
+          { name: "ルミナ", info: "先行安定 / 距離ベスト / 近走内容上位 / 1番人気", reason: "人気でも軸にしてよいパターンです。近走安定、条件合う、先行しやすい。典型的な連軸向きです。" },
+          { name: "ストーム", info: "能力は高い / でもハイペース待ち / 4番人気", reason: "" },
+          { name: "テラ", info: "安定型 / ただし相手強い / 3番人気", reason: "" },
+          { name: "ノクス", info: "相手を崩す形向き / 自分で勝ち切るタイプではない / 5番人気", reason: "" }
         ],
         answer: "ルミナ"
       },
       {
-        title: "第5問",
+        title: "第5問候補",
         horses: [
-          {
-            name: "アクア",
-            info: "差し安定 / 外しても3着候補 / 2番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "とにかく崩れにくい / コース合う / 馬場も向く / 3番人気",
-            anchor: true,
-            reason: "軸馬は『1着の可能性』より『飛びにくさ』が重要です。テラは典型的な連軸向きです。"
-          },
-          {
-            name: "フレア",
-            info: "逃げ切りか凡走かの両極端 / 1番人気",
-            anchor: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "押さえ向き / 人気薄 / 善戦型",
-            anchor: false,
-            reason: ""
-          }
+          { name: "アクア", info: "差し安定 / 外しても3着候補 / 2番人気", reason: "" },
+          { name: "テラ", info: "とにかく崩れにくい / コース合う / 馬場も向く / 3番人気", reason: "軸馬は『1着の可能性』より『飛びにくさ』が重要です。テラは典型的な連軸向きです。" },
+          { name: "フレア", info: "逃げ切りか凡走かの両極端 / 1番人気", reason: "" },
+          { name: "にゃ〜ご", info: "押さえ向き / 人気薄 / 善戦型", reason: "" }
         ],
         answer: "テラ"
+      },
+      {
+        title: "第6問候補",
+        horses: [
+          { name: "ルミナ", info: "先行安定 / 相手なり / 崩れにくい / 2番人気", reason: "勝ち切り保証ではないものの、連軸としての安定感が高い理想的なタイプです。" },
+          { name: "ストーム", info: "能力最上位だがムラ大きい / 1番人気", reason: "" },
+          { name: "フレア", info: "展開頼み / 逃げ切り型", reason: "" },
+          { name: "ノクス", info: "差し向き条件待ち", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第7問候補",
+        horses: [
+          { name: "テラ", info: "重馬場歓迎 / 安定型 / 3着内率高い / 4番人気", reason: "人気ほど派手でなくても、馬場適性込みで崩れにくいなら軸向きです。" },
+          { name: "ルミナ", info: "高速馬場向き / 重は少し割引 / 2番人気", reason: "" },
+          { name: "フレア", info: "逃げ型 / 道悪で粘り微妙", reason: "" },
+          { name: "にゃ〜ご", info: "ヒモ候補", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第8問候補",
+        horses: [
+          { name: "アクア", info: "差し安定 / 同条件連続好走 / 3番人気", reason: "派手ではないですが毎回走れており、軸にしやすいタイプです。" },
+          { name: "ステラ", info: "展開ハマれば / ハイペース待ち", reason: "" },
+          { name: "ストーム", info: "一発タイプ / 人気薄", reason: "" },
+          { name: "フレア", info: "逃げ残りか凡走か極端", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第9問候補",
+        horses: [
+          { name: "ノクス", info: "人気先行 / 相手崩し向き / 1番人気", reason: "" },
+          { name: "ルミナ", info: "先行安定 / 内枠 / ロスなく運べる / 2番人気", reason: "内枠先行で運びやすく、崩れにくさの面で軸向きです。" },
+          { name: "テラ", info: "相手向き / 勝ち切りは微妙", reason: "" },
+          { name: "にゃ〜ご", info: "押さえ候補", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第10問候補",
+        horses: [
+          { name: "テラ", info: "小回り向き / 器用 / バテにくい / 3番人気", reason: "コース適性が高く、器用で大崩れしにくいので軸に向きます。" },
+          { name: "フレア", info: "ハナ必須 / 外枠 / 1番人気", reason: "" },
+          { name: "ストーム", info: "直線長い方が良い", reason: "" },
+          { name: "アクア", info: "差し安定だが小回りでは一歩落ちる", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第11問候補",
+        horses: [
+          { name: "アクア", info: "相手弱化 / 叩き2走目 / 安定感あり / 2番人気", reason: "条件が整っていて、派手さより安定で軸に向く理想パターンです。" },
+          { name: "ノクス", info: "差し届くかどうか / 流れ待ち", reason: "" },
+          { name: "フレア", info: "逃げ残り条件限定", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第12問候補",
+        horses: [
+          { name: "ルミナ", info: "外枠でも先行可能 / 安定感高い / 1番人気", reason: "多少ロスがあっても安定して能力を出せるタイプは軸向きです。" },
+          { name: "フレア", info: "外枠逃げで負荷大きい", reason: "" },
+          { name: "ストーム", info: "差しハマり待ち", reason: "" },
+          { name: "テラ", info: "堅実だが決め手不足", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第13問候補",
+        horses: [
+          { name: "テラ", info: "相手なり / 掲示板安定 / 4番人気", reason: "1着かはともかく、崩れないので馬券の中心にしやすいです。" },
+          { name: "ストーム", info: "爆発型 / 2着か着外か", reason: "" },
+          { name: "フレア", info: "展開に左右される", reason: "" },
+          { name: "ステラ", info: "届くかどうかは展開次第", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第14問候補",
+        horses: [
+          { name: "アクア", info: "高速馬場でも堅実 / 相手弱め / 3番人気", reason: "高速馬場でも崩れず、相手関係も楽なら軸向きです。" },
+          { name: "ルミナ", info: "能力高いが休み明け / 1番人気", reason: "" },
+          { name: "ノクス", info: "展開が必要", reason: "" },
+          { name: "にゃ〜ご", info: "ヒモ向き", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第15問候補",
+        horses: [
+          { name: "ルミナ", info: "距離ベスト / 枠良し / 近走安定 / 2番人気", reason: "距離・枠・状態が揃っている馬は、1着固定でなくても軸として信頼しやすいです。" },
+          { name: "フレア", info: "ハナ争い濃厚 / 1番人気", reason: "" },
+          { name: "ストーム", info: "直線一気型", reason: "" },
+          { name: "テラ", info: "堅実だが切れ不足", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第16問候補",
+        horses: [
+          { name: "テラ", info: "内枠 / 先行型 / 崩れにくい / 3番人気", reason: "内枠先行で運びやすく、連軸向きの好条件です。" },
+          { name: "ノクス", info: "差し型 / スローなら危険", reason: "" },
+          { name: "フレア", info: "単騎なら怖いがリスクあり", reason: "" },
+          { name: "アクア", info: "差し安定 / 相手まで", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第17問候補",
+        horses: [
+          { name: "アクア", info: "差し安定 / 相手弱く連続好走可 / 2番人気", reason: "安定して走れており、相手関係も楽。軸にしやすい王道パターンです。" },
+          { name: "ストーム", info: "派手だが不安定", reason: "" },
+          { name: "フレア", info: "逃げ争いあり", reason: "" },
+          { name: "にゃ〜ご", info: "人気薄の善戦型", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第18問候補",
+        horses: [
+          { name: "ルミナ", info: "人気でも条件整う / 大崩れ少ない / 1番人気", reason: "人気でも、条件と安定感が揃っているなら軸にして問題ないパターンです。" },
+          { name: "ノクス", info: "人気ほどではない / 2番人気", reason: "" },
+          { name: "テラ", info: "安定 / 2,3着向き", reason: "" },
+          { name: "ステラ", info: "展開待ち", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第19問候補",
+        horses: [
+          { name: "テラ", info: "道悪巧者 / バテない / 4番人気", reason: "人気はなくても条件適性込みで最も崩れにくく、軸向きです。" },
+          { name: "ルミナ", info: "道悪で少し割引", reason: "" },
+          { name: "フレア", info: "スピード型で馬場微妙", reason: "" },
+          { name: "ストーム", info: "展開ハマり待ち", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第20問候補",
+        horses: [
+          { name: "アクア", info: "相手なりに走る / 飛びにくい / 3番人気", reason: "爆発力はなくても飛びにくいので、軸として使いやすいタイプです。" },
+          { name: "フレア", info: "展開極端 / 1番人気", reason: "" },
+          { name: "ノクス", info: "流れが向くか次第", reason: "" },
+          { name: "にゃ〜ご", info: "押さえ候補", reason: "" }
+        ],
+        answer: "アクア"
       }
     ];
 
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
     let current = 0;
     let score = 0;
     let answered = false;
@@ -389,12 +442,24 @@
     const explain = document.getElementById("explain");
     const nextBtn = document.getElementById("nextBtn");
     const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
 
     function renderQuiz() {
       answered = false;
       resultBox.style.display = "none";
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       questionNo.textContent = current + 1;
       scoreEl.textContent = score;
       raceTitle.textContent = quiz.title;
@@ -416,7 +481,7 @@
       if (answered) return;
       answered = true;
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       const correct = selectedName === quiz.answer;
       const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
 
@@ -434,8 +499,9 @@
 
       explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
 
-      if (current === quizzes.length - 1) {
+      if (current === selectedQuizzes.length - 1) {
         nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
         if (score >= 3) {
           rewardBtn.style.display = "block";
         } else {
@@ -443,6 +509,7 @@
         }
       } else {
         nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
         rewardBtn.style.display = "none";
       }
     }
@@ -452,7 +519,11 @@
       renderQuiz();
     }
 
-    renderQuiz();
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
   </script>
 </body>
 </html>
