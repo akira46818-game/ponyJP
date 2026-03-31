@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>オッズ違和感ゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 210, 120, 0.18), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(120, 180, 255, 0.18), transparent 25%),
+        linear-gradient(180deg, #111c3b 0%, #1e2f67 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .horse-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .horse-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .horse-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .info-line {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .odds {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📉 オッズ違和感ゲーム</h1>
+    <div class="sub">
+      4頭の中から、<br>
+      <b>オッズに違和感がある妙味馬</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+      <div class="choice-title">狙う価値がありそうな馬はどれ？</div>
+      <div class="horse-list" id="horseList"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      オッズが低い馬＝買い、ではありません。<br>
+      能力・条件・人気のズレに気づけると強いです。
+    </div>
+  </div>
+
+  <script>
+    const quizzes = [
+      {
+        title: "第1問",
+        horses: [
+          {
+            name: "ルミナ",
+            info: "安定感あり / 同条件向く / 1番人気に近い存在",
+            odds: "3.2倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "ステラ",
+            info: "差し脚安定 / ハイペース見込み / 条件向くのに人気薄",
+            odds: "12.8倍",
+            value: true,
+            reason: "条件が向いているのに人気がないタイプです。こういう馬はオッズ妙味があります。"
+          },
+          {
+            name: "フレア",
+            info: "逃げ型 / 同型多い / 展開不安あり",
+            odds: "4.8倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "堅実だが勝ち切りまでは微妙",
+            odds: "8.5倍",
+            value: false,
+            reason: ""
+          }
+        ],
+        answer: "ステラ"
+      },
+      {
+        title: "第2問",
+        horses: [
+          {
+            name: "アクア",
+            info: "差し安定 / 相手弱化 / 人気ほどでもない",
+            odds: "9.6倍",
+            value: true,
+            reason: "安定していて条件も悪くないのに売れていません。こういうタイプは妙味があります。"
+          },
+          {
+            name: "ノクス",
+            info: "人気先行気味 / 調教軽め / 2番人気",
+            odds: "4.1倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "フレア",
+            info: "逃げ切り条件が揃わず / 人気先行",
+            odds: "3.9倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "相手なり / 3着候補寄り",
+            odds: "14.5倍",
+            value: false,
+            reason: ""
+          }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第3問",
+        horses: [
+          {
+            name: "ストーム",
+            info: "爆発力あり / ハイペースならハマる / 人気薄",
+            odds: "18.2倍",
+            value: true,
+            reason: "展開がハマる可能性があるのにかなり人気がないので、妙味があります。"
+          },
+          {
+            name: "ルミナ",
+            info: "先行安定 / 条件合う / 妥当人気",
+            odds: "3.6倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "テラ",
+            info: "崩れにくいが勝ち切りイメージは薄い",
+            odds: "6.4倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "流れ待ち / 相手次第 / 5番人気",
+            odds: "9.9倍",
+            value: false,
+            reason: ""
+          }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第4問",
+        horses: [
+          {
+            name: "テラ",
+            info: "先行馬総崩れの形でも浮上 / バテ比べ歓迎 / 地味で人気薄",
+            odds: "11.7倍",
+            value: true,
+            reason: "派手さがない分売れていませんが、条件が向くなら十分妙味があります。"
+          },
+          {
+            name: "フレア",
+            info: "1番人気 / 逃げ条件微妙 / 売れすぎ感",
+            odds: "2.9倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "ルミナ",
+            info: "能力上位だが今回は展開微妙",
+            odds: "4.7倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "にゃ〜ご",
+            info: "善戦型 / 決め手不足",
+            odds: "15.4倍",
+            value: false,
+            reason: ""
+          }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第5問",
+        horses: [
+          {
+            name: "ステラ",
+            info: "展開向く / 人気薄 / 騎手も手が合う",
+            odds: "13.1倍",
+            value: true,
+            reason: "展開・脚質・人気のバランスが良く、狙い目として面白い馬です。"
+          },
+          {
+            name: "アクア",
+            info: "安定しているがオッズ相応",
+            odds: "5.2倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "ルミナ",
+            info: "人気でも納得レベル / 妙味は薄い",
+            odds: "3.1倍",
+            value: false,
+            reason: ""
+          },
+          {
+            name: "ノクス",
+            info: "展開待ち / 条件噛み合い切らず",
+            odds: "8.8倍",
+            value: false,
+            reason: ""
+          }
+        ],
+        answer: "ステラ"
+      }
+    ];
+
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const horseList = document.getElementById("horseList");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = quizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = quiz.title;
+
+      horseList.innerHTML = "";
+      quiz.horses.forEach(horse => {
+        const btn = document.createElement("button");
+        btn.className = "horse-btn";
+        btn.innerHTML = `
+          <div class="horse-name">🐴 ${horse.name}</div>
+          <div class="info-line">${horse.info}</div>
+          <div class="odds">単勝 ${horse.odds}</div>
+        `;
+        btn.onclick = () => answer(horse.name);
+        horseList.appendChild(btn);
+      });
+    }
+
+    function answer(selectedName) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = quizzes[current];
+      const correct = selectedName === quiz.answer;
+      const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
+
+      if (current === quizzes.length - 1) {
+        nextBtn.style.display = "none";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    renderQuiz();
+  </script>
+</body>
+</html>
