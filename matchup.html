@@ -153,7 +153,7 @@
       margin-bottom: 12px;
     }
 
-    .next-btn, .reward-btn, .back-btn {
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
       display: block;
       width: 100%;
       text-align: center;
@@ -167,7 +167,7 @@
       cursor: pointer;
     }
 
-    .next-btn {
+    .next-btn, .retry-btn {
       background: #06C755;
       color: #fff;
     }
@@ -216,6 +216,7 @@
       <div id="explain" class="explain"></div>
       <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
       <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
       <a class="back-btn" href="index.html">← 一覧へ戻る</a>
     </div>
 
@@ -226,164 +227,239 @@
   </div>
 
   <script>
-    const quizzes = [
+    const allQuizzes = [
       {
-        title: "第1問",
+        title: "第1問候補",
         pace: "ハイペース",
         horses: [
-          {
-            name: "ステラ",
-            info: "差し脚しっかり / 末脚安定 / 前崩れ歓迎",
-            fit: true,
-            reason: "ハイペースで前が苦しくなる形なので、差し脚を使えるステラが最も展開に向きます。"
-          },
-          {
-            name: "フレア",
-            info: "逃げ型 / 同型多い / 前半きつい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "ルミナ",
-            info: "先行型 / 能力高いが流れは厳しい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "バテ比べ歓迎だが決め手は甘い",
-            fit: false,
-            reason: ""
-          }
+          { name: "ステラ", info: "差し脚しっかり / 末脚安定 / 前崩れ歓迎", reason: "ハイペースで前が苦しくなる形なので、差し脚を使えるステラが最も展開に向きます。" },
+          { name: "フレア", info: "逃げ型 / 同型多い / 前半きつい", reason: "" },
+          { name: "ルミナ", info: "先行型 / 能力高いが流れは厳しい", reason: "" },
+          { name: "テラ", info: "バテ比べ歓迎だが決め手は甘い", reason: "" }
         ],
         answer: "ステラ"
       },
       {
-        title: "第2問",
+        title: "第2問候補",
         pace: "スローペース",
         horses: [
-          {
-            name: "フレア",
-            info: "逃げ型 / 自分の形に持ち込みやすい / 前残り向き",
-            fit: true,
-            reason: "スローペースでは前に行ける馬が有利です。逃げや先行で自分の形を作れるフレアが向きます。"
-          },
-          {
-            name: "ストーム",
-            info: "追込型 / 直線勝負型 / 流れないと苦しい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "ノクス",
-            info: "差し型 / 展開待ち / 相手崩し向き",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "アクア",
-            info: "差し安定 / スローだと届かない可能性",
-            fit: false,
-            reason: ""
-          }
+          { name: "フレア", info: "逃げ型 / 自分の形に持ち込みやすい / 前残り向き", reason: "スローペースでは前に行ける馬が有利です。逃げや先行で自分の形を作れるフレアが向きます。" },
+          { name: "ストーム", info: "追込型 / 直線勝負型 / 流れないと苦しい", reason: "" },
+          { name: "ノクス", info: "差し型 / 展開待ち / 相手崩し向き", reason: "" },
+          { name: "アクア", info: "差し安定 / スローだと届かない可能性", reason: "" }
         ],
         answer: "フレア"
       },
       {
-        title: "第3問",
+        title: "第3問候補",
         pace: "ミドルペース",
         horses: [
-          {
-            name: "ルミナ",
-            info: "先行安定 / 速すぎず遅すぎずがベスト / 立ち回り上手",
-            fit: true,
-            reason: "ミドルペースは総合力が問われやすく、先行して立ち回れるルミナが最も安定して向きます。"
-          },
-          {
-            name: "ストーム",
-            info: "爆発力はある / ハマり待ち要素あり",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "器用だが決め手不足 / 押さえ向き",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "崩れにくいが勝ち切りでは一歩足りない",
-            fit: false,
-            reason: ""
-          }
+          { name: "ルミナ", info: "先行安定 / 速すぎず遅すぎずがベスト / 立ち回り上手", reason: "ミドルペースは総合力が問われやすく、先行して立ち回れるルミナが最も安定して向きます。" },
+          { name: "ストーム", info: "爆発力はある / ハマり待ち要素あり", reason: "" },
+          { name: "にゃ〜ご", info: "器用だが決め手不足 / 押さえ向き", reason: "" },
+          { name: "テラ", info: "崩れにくいが勝ち切りでは一歩足りない", reason: "" }
         ],
         answer: "ルミナ"
       },
       {
-        title: "第4問",
+        title: "第4問候補",
         pace: "ハイペース",
         horses: [
-          {
-            name: "アクア",
-            info: "差し安定 / 外から脚を使える / 末脚型",
-            fit: true,
-            reason: "前が飛ばしてハイペースになるなら、末脚を活かせるアクアが展開に合います。"
-          },
-          {
-            name: "フレア",
-            info: "逃げ型 / 前半消耗しやすい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "ルミナ",
-            info: "先行安定型 / 力はあるが前受けは不利",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "善戦型 / 大きく展開が向くほどではない",
-            fit: false,
-            reason: ""
-          }
+          { name: "アクア", info: "差し安定 / 外から脚を使える / 末脚型", reason: "前が飛ばしてハイペースになるなら、末脚を活かせるアクアが展開に合います。" },
+          { name: "フレア", info: "逃げ型 / 前半消耗しやすい", reason: "" },
+          { name: "ルミナ", info: "先行安定型 / 力はあるが前受けは不利", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型 / 大きく展開が向くほどではない", reason: "" }
         ],
         answer: "アクア"
       },
       {
-        title: "第5問",
+        title: "第5問候補",
         pace: "スローペース",
         horses: [
-          {
-            name: "ルミナ",
-            info: "先行型 / 位置を取りやすい / 流れが落ち着くほど有利",
-            fit: true,
-            reason: "スローペースは前の馬が有利になりやすく、先行して押し切れるルミナが最も向きます。"
-          },
-          {
-            name: "ステラ",
-            info: "差し型 / 前が止まらないと苦しい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "ストーム",
-            info: "追込爆発型 / 流れないと届きにくい",
-            fit: false,
-            reason: ""
-          },
-          {
-            name: "ノクス",
-            info: "差し寄り / 展開が噛み合えばだが今回は微妙",
-            fit: false,
-            reason: ""
-          }
+          { name: "ルミナ", info: "先行型 / 位置を取りやすい / 流れが落ち着くほど有利", reason: "スローペースは前の馬が有利になりやすく、先行して押し切れるルミナが最も向きます。" },
+          { name: "ステラ", info: "差し型 / 前が止まらないと苦しい", reason: "" },
+          { name: "ストーム", info: "追込爆発型 / 流れないと届きにくい", reason: "" },
+          { name: "ノクス", info: "差し寄り / 展開が噛み合えばだが今回は微妙", reason: "" }
         ],
         answer: "ルミナ"
+      },
+      {
+        title: "第6問候補",
+        pace: "ハイペース",
+        horses: [
+          { name: "ストーム", info: "追込型 / 一発の末脚あり / 前崩れ歓迎", reason: "前半が速くなって前が止まるなら、追込のストームが最も展開に向きます。" },
+          { name: "フレア", info: "逃げ型 / 同型多く消耗大", reason: "" },
+          { name: "ルミナ", info: "先行型 / 能力は高いが消耗戦は少し不利", reason: "" },
+          { name: "にゃ〜ご", info: "器用だが爆発力は足りない", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第7問候補",
+        pace: "スローペース",
+        horses: [
+          { name: "フレア", info: "逃げ型 / 単騎濃厚 / マイペース歓迎", reason: "単騎で行けるスローペースは逃げ馬に最適です。フレアが最も展開に向きます。" },
+          { name: "ステラ", info: "差し型 / 直線勝負でも前が止まらないと苦しい", reason: "" },
+          { name: "ノクス", info: "差し寄り / 流れ待ち", reason: "" },
+          { name: "アクア", info: "差し安定 / ただし前残りは少し不利", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第8問候補",
+        pace: "ミドルペース",
+        horses: [
+          { name: "アクア", info: "安定型 / バランス良い / どの流れでも大崩れしにくい", reason: "ミドルペースは総合力と安定感が活きやすく、アクアが最も無難に向きます。" },
+          { name: "ストーム", info: "極端な流れの方が得意", reason: "" },
+          { name: "フレア", info: "前に行けるが絶対優位ではない", reason: "" },
+          { name: "ステラ", info: "ハイ寄りの方が良い", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第9問候補",
+        pace: "ハイペース",
+        horses: [
+          { name: "ノクス", info: "差し型 / 相手崩し向き / 流れが速いと浮上", reason: "ハイペースで前が崩れるなら、差し寄りのノクスが展開に合います。" },
+          { name: "フレア", info: "逃げ型 / 前半で脚を使う", reason: "" },
+          { name: "ルミナ", info: "先行型 / 力はあるが前受けは厳しい", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型 / 展開がハマるほどではない", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        title: "第10問候補",
+        pace: "スローペース",
+        horses: [
+          { name: "ルミナ", info: "先行型 / 好位で運べる / 瞬発力もある", reason: "スローからの瞬発力勝負は、好位で脚を溜められるルミナが最も向きます。" },
+          { name: "ストーム", info: "追込型 / 届かないリスク", reason: "" },
+          { name: "ステラ", info: "差し型 / 前が止まらないと厳しい", reason: "" },
+          { name: "ノクス", info: "差し寄り / 展開不向き", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第11問候補",
+        pace: "ミドルペース",
+        horses: [
+          { name: "テラ", info: "先行しつつバテない / バランス型 / 持続戦向き", reason: "ミドルペースの持続戦なら、先行して粘れるテラが最も向きます。" },
+          { name: "ストーム", info: "極端な流れ待ち", reason: "" },
+          { name: "フレア", info: "逃げ切り特化で平均流れは微妙", reason: "" },
+          { name: "ステラ", info: "差しだが切れ味勝負寄り", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第12問候補",
+        pace: "ハイペース",
+        horses: [
+          { name: "ステラ", info: "差し型 / 長く脚を使える / 前崩れ歓迎", reason: "ハイペースで差しが決まりやすく、長く脚を使えるステラが展開に合います。" },
+          { name: "フレア", info: "逃げ型 / 同型多数", reason: "" },
+          { name: "ルミナ", info: "先行安定 / 前崩れは少し割引", reason: "" },
+          { name: "テラ", info: "差し届くが決め手は少し不足", reason: "" }
+        ],
+        answer: "ステラ"
+      },
+      {
+        title: "第13問候補",
+        pace: "スローペース",
+        horses: [
+          { name: "フレア", info: "逃げ型 / 自分のリズムで行ける / 前残り歓迎", reason: "流れが落ち着くなら、前で運べるフレアがそのまま残りやすいです。" },
+          { name: "アクア", info: "差し安定 / ただし位置が後ろ", reason: "" },
+          { name: "ストーム", info: "追込型 / 届かない", reason: "" },
+          { name: "ノクス", info: "差し型 / 展開不向き", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第14問候補",
+        pace: "ミドルペース",
+        horses: [
+          { name: "ルミナ", info: "先行型 / 立ち回り上手 / 速すぎない流れ歓迎", reason: "ミドルペースでは好位から立ち回れるルミナが最も安定して展開に合います。" },
+          { name: "フレア", info: "逃げ型 / もう少し楽な方が理想", reason: "" },
+          { name: "ステラ", info: "差し型 / ハイほどではない", reason: "" },
+          { name: "にゃ〜ご", info: "器用さはあるが決め手は少し足りない", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第15問候補",
+        pace: "ハイペース",
+        horses: [
+          { name: "アクア", info: "差し安定 / 直線で確実に脚を使える", reason: "差し安定型のアクアは、速い流れで前が苦しくなると一気に浮上します。" },
+          { name: "フレア", info: "逃げ型 / 競り合い濃厚", reason: "" },
+          { name: "ルミナ", info: "先行型 / 粘り込みはあるが少し不利", reason: "" },
+          { name: "にゃ〜ご", info: "器用だが決め手不足", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第16問候補",
+        pace: "スローペース",
+        horses: [
+          { name: "ルミナ", info: "先行型 / 瞬発力あり / 好位差しも可", reason: "スローペースでは好位から瞬発力を使えるルミナが最も向きます。" },
+          { name: "ステラ", info: "差し型 / 位置取り後ろ", reason: "" },
+          { name: "ストーム", info: "追込型 / 展開待ち", reason: "" },
+          { name: "テラ", info: "前目で運べるが切れ味勝負だと少し分が悪い", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第17問候補",
+        pace: "ミドルペース",
+        horses: [
+          { name: "アクア", info: "安定型 / どの流れでも崩れにくい / バランス良い", reason: "極端でない流れではバランス型が強く、アクアが最も向きます。" },
+          { name: "ストーム", info: "ハイの方が良い", reason: "" },
+          { name: "フレア", info: "スローの方が良い", reason: "" },
+          { name: "ステラ", info: "差しがハマるほどではない", reason: "" }
+        ],
+        answer: "アクア"
+      },
+      {
+        title: "第18問候補",
+        pace: "ハイペース",
+        horses: [
+          { name: "ストーム", info: "追込型 / 一撃の末脚 / 前崩れ歓迎", reason: "前が速く流れて止まるなら、追込のストームが最も展開に向きます。" },
+          { name: "フレア", info: "前半きつい逃げ型", reason: "" },
+          { name: "ルミナ", info: "先行型 / 粘り込みはあるが楽ではない", reason: "" },
+          { name: "ノクス", info: "差し型 / こちらも悪くないが爆発力でストーム優勢", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第19問候補",
+        pace: "スローペース",
+        horses: [
+          { name: "フレア", info: "逃げ型 / 単騎ならしぶとい / 流れ落ち着くほど有利", reason: "スローで単騎ならフレアが一番残りやすい形です。" },
+          { name: "アクア", info: "差し型 / 直線だけでは届かない", reason: "" },
+          { name: "ステラ", info: "差し型 / 前が止まらない", reason: "" },
+          { name: "ストーム", info: "追込型 / 最も不向き", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第20問候補",
+        pace: "ミドルペース",
+        horses: [
+          { name: "テラ", info: "先行型 / バテにくい / 平均的な流れ歓迎", reason: "速すぎず遅すぎない流れは、先行してしぶといテラに向きます。" },
+          { name: "フレア", info: "逃げ切り特化", reason: "" },
+          { name: "ステラ", info: "差しのハマり待ち", reason: "" },
+          { name: "にゃ〜ご", info: "器用だが決め手不足", reason: "" }
+        ],
+        answer: "テラ"
       }
     ];
 
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
     let current = 0;
     let score = 0;
     let answered = false;
@@ -398,12 +474,24 @@
     const explain = document.getElementById("explain");
     const nextBtn = document.getElementById("nextBtn");
     const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
 
     function renderQuiz() {
       answered = false;
       resultBox.style.display = "none";
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       questionNo.textContent = current + 1;
       scoreEl.textContent = score;
       raceTitle.textContent = quiz.title;
@@ -426,7 +514,7 @@
       if (answered) return;
       answered = true;
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       const correct = selectedName === quiz.answer;
       const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
 
@@ -444,8 +532,9 @@
 
       explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
 
-      if (current === quizzes.length - 1) {
+      if (current === selectedQuizzes.length - 1) {
         nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
         if (score >= 3) {
           rewardBtn.style.display = "block";
         } else {
@@ -453,6 +542,7 @@
         }
       } else {
         nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
         rewardBtn.style.display = "none";
       }
     }
@@ -462,7 +552,11 @@
       renderQuiz();
     }
 
-    renderQuiz();
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
   </script>
 </body>
 </html>
