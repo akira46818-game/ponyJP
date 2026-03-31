@@ -175,7 +175,7 @@
       margin-bottom: 12px;
     }
 
-    .next-btn, .reward-btn, .back-btn {
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
       display: block;
       width: 100%;
       text-align: center;
@@ -189,7 +189,7 @@
       cursor: pointer;
     }
 
-    .next-btn {
+    .next-btn, .retry-btn {
       background: #06C755;
       color: #fff;
     }
@@ -219,7 +219,7 @@
     <h1>🏇 ペース予想ゲーム</h1>
     <div class="sub">
       脚質を見て、そのレースが<br>
-      <b>ハイペース・ミドル・スロー</b> のどれになるか当ててください。
+      <b>ハイペース・ミドルペース・スローペース</b> のどれになるか当ててください。
     </div>
 
     <div class="topbar">
@@ -245,19 +245,20 @@
       <div id="explain" class="explain"></div>
       <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
       <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
       <a class="back-btn" href="index.html">← 一覧へ戻る</a>
     </div>
 
     <div class="mini-note">
       逃げ・先行が多いほど流れは速くなりやすいです。<br>
-      これが展開読みの基本です。
+      差し・追込ばかりでは、むしろスローになりやすいです。
     </div>
   </div>
 
   <script>
-    const races = [
+    const allQuizzes = [
       {
-        title: "第1レース",
+        title: "レースA",
         horses: [
           { name: "フレア", style: "逃げ" },
           { name: "ルミナ", style: "逃げ" },
@@ -265,10 +266,10 @@
           { name: "アクア", style: "差し" }
         ],
         answer: "high",
-        explanation: "逃げが2頭、先行が1頭いるので前半から主張し合いやすく、ハイペースになりやすいレースです。"
+        explanation: "逃げ2頭＋先行1頭で前半から主張し合いやすく、ハイペースになりやすい構成です。"
       },
       {
-        title: "第2レース",
+        title: "レースB",
         horses: [
           { name: "テラ", style: "先行" },
           { name: "アクア", style: "差し" },
@@ -276,10 +277,10 @@
           { name: "にゃ〜ご", style: "追込" }
         ],
         answer: "slow",
-        explanation: "逃げ馬が不在で、前に行きたい馬が少ないため、落ち着いたスローペースになりやすい形です。"
+        explanation: "逃げ馬が不在で前に行きたい馬が少ないため、スローペースになりやすい形です。"
       },
       {
-        title: "第3レース",
+        title: "レースC",
         horses: [
           { name: "フレア", style: "逃げ" },
           { name: "テラ", style: "先行" },
@@ -287,10 +288,10 @@
           { name: "ステラ", style: "差し" }
         ],
         answer: "middle",
-        explanation: "逃げは1頭で主導権は取りやすいですが、先行馬が2頭いて適度に流れるのでミドルペース想定です。"
+        explanation: "逃げ1頭で主導権は決まりやすいですが、先行2頭がいて適度に流れるのでミドル想定です。"
       },
       {
-        title: "第4レース",
+        title: "レースD",
         horses: [
           { name: "ストーム", style: "逃げ" },
           { name: "フレア", style: "逃げ" },
@@ -298,10 +299,10 @@
           { name: "ノクス", style: "先行" }
         ],
         answer: "high",
-        explanation: "逃げ2頭、先行2頭で前がかなり激しくなります。典型的なハイペース寄りの組み合わせです。"
+        explanation: "逃げ2頭、先行2頭で前の争いが激しくなり、かなり速い流れになりやすいです。"
       },
       {
-        title: "第5レース",
+        title: "レースE",
         horses: [
           { name: "アクア", style: "差し" },
           { name: "ノクス", style: "差し" },
@@ -309,10 +310,185 @@
           { name: "ステラ", style: "追込" }
         ],
         answer: "slow",
-        explanation: "前へ行く馬がほぼいないので、流れはかなり遅くなりやすいです。差し・追込ばかりではペースは上がりません。"
+        explanation: "前へ行く馬がいないので、差し・追込ばかりではスローペースになりやすいです。"
+      },
+      {
+        title: "レースF",
+        horses: [
+          { name: "ルミナ", style: "逃げ" },
+          { name: "フレア", style: "先行" },
+          { name: "テラ", style: "差し" },
+          { name: "アクア", style: "追込" }
+        ],
+        answer: "middle",
+        explanation: "逃げ1頭で落ち着きやすいですが、先行馬もいて極端なスローにはなりにくく、ミドル想定です。"
+      },
+      {
+        title: "レースG",
+        horses: [
+          { name: "ノクス", style: "逃げ" },
+          { name: "ストーム", style: "先行" },
+          { name: "ルミナ", style: "先行" },
+          { name: "フレア", style: "先行" }
+        ],
+        answer: "high",
+        explanation: "逃げ1頭に先行3頭で前の圧が強く、かなり流れやすい構成です。"
+      },
+      {
+        title: "レースH",
+        horses: [
+          { name: "テラ", style: "差し" },
+          { name: "ステラ", style: "差し" },
+          { name: "にゃ〜ご", style: "追込" },
+          { name: "アクア", style: "先行" }
+        ],
+        answer: "slow",
+        explanation: "前に行くのが先行1頭だけなら楽に運べるので、全体としてはスロー寄りです。"
+      },
+      {
+        title: "レースI",
+        horses: [
+          { name: "フレア", style: "逃げ" },
+          { name: "ルミナ", style: "差し" },
+          { name: "テラ", style: "差し" },
+          { name: "ノクス", style: "追込" }
+        ],
+        answer: "slow",
+        explanation: "逃げは1頭だけで競り合いも少なく、後ろが多いのでスローペースになりやすいです。"
+      },
+      {
+        title: "レースJ",
+        horses: [
+          { name: "フレア", style: "逃げ" },
+          { name: "ストーム", style: "逃げ" },
+          { name: "ルミナ", style: "先行" },
+          { name: "テラ", style: "追込" }
+        ],
+        answer: "high",
+        explanation: "逃げ2頭で前半の主張が激しく、かなり速い流れになりやすい構成です。"
+      },
+      {
+        title: "レースK",
+        horses: [
+          { name: "アクア", style: "先行" },
+          { name: "にゃ〜ご", style: "先行" },
+          { name: "ステラ", style: "差し" },
+          { name: "ノクス", style: "追込" }
+        ],
+        answer: "middle",
+        explanation: "逃げ不在で超ハイにはなりませんが、先行2頭である程度流れるためミドル想定です。"
+      },
+      {
+        title: "レースL",
+        horses: [
+          { name: "ルミナ", style: "追込" },
+          { name: "ストーム", style: "追込" },
+          { name: "ステラ", style: "差し" },
+          { name: "テラ", style: "差し" }
+        ],
+        answer: "slow",
+        explanation: "前に行く馬が全くいないので、ほぼ確実にスロー寄りです。"
+      },
+      {
+        title: "レースM",
+        horses: [
+          { name: "フレア", style: "逃げ" },
+          { name: "ルミナ", style: "先行" },
+          { name: "アクア", style: "先行" },
+          { name: "ノクス", style: "差し" }
+        ],
+        answer: "middle",
+        explanation: "逃げ1頭＋先行2頭で流れは作られますが、激しい競りではなくミドル想定です。"
+      },
+      {
+        title: "レースN",
+        horses: [
+          { name: "フレア", style: "逃げ" },
+          { name: "ストーム", style: "先行" },
+          { name: "ステラ", style: "先行" },
+          { name: "にゃ〜ご", style: "先行" }
+        ],
+        answer: "high",
+        explanation: "前に行く馬が4頭でポジション争いが厳しく、ハイペース寄りです。"
+      },
+      {
+        title: "レースO",
+        horses: [
+          { name: "テラ", style: "先行" },
+          { name: "アクア", style: "追込" },
+          { name: "ノクス", style: "追込" },
+          { name: "ステラ", style: "差し" }
+        ],
+        answer: "slow",
+        explanation: "テラが単騎気味に運べそうで、全体的には落ち着いたスローになりやすいです。"
+      },
+      {
+        title: "レースP",
+        horses: [
+          { name: "ルミナ", style: "逃げ" },
+          { name: "フレア", style: "逃げ" },
+          { name: "アクア", style: "先行" },
+          { name: "ステラ", style: "差し" }
+        ],
+        answer: "high",
+        explanation: "逃げ2頭に先行1頭なので、前半から速くなる可能性が高いです。"
+      },
+      {
+        title: "レースQ",
+        horses: [
+          { name: "にゃ〜ご", style: "先行" },
+          { name: "ルミナ", style: "差し" },
+          { name: "テラ", style: "差し" },
+          { name: "ストーム", style: "追込" }
+        ],
+        answer: "slow",
+        explanation: "前に行く馬がほぼ1頭だけなら淡々と流れやすく、スローペース想定です。"
+      },
+      {
+        title: "レースR",
+        horses: [
+          { name: "フレア", style: "逃げ" },
+          { name: "ノクス", style: "先行" },
+          { name: "アクア", style: "先行" },
+          { name: "ステラ", style: "追込" }
+        ],
+        answer: "middle",
+        explanation: "逃げ1頭＋先行2頭である程度流れますが、極端なハイまでは行きにくくミドル想定です。"
+      },
+      {
+        title: "レースS",
+        horses: [
+          { name: "ストーム", style: "逃げ" },
+          { name: "ルミナ", style: "逃げ" },
+          { name: "フレア", style: "先行" },
+          { name: "ノクス", style: "追込" }
+        ],
+        answer: "high",
+        explanation: "逃げ2頭がいる時点で主導権争いが起きやすく、ハイペース寄りになります。"
+      },
+      {
+        title: "レースT",
+        horses: [
+          { name: "アクア", style: "差し" },
+          { name: "ステラ", style: "差し" },
+          { name: "テラ", style: "先行" },
+          { name: "にゃ〜ご", style: "追込" }
+        ],
+        answer: "slow",
+        explanation: "先行馬が1頭で差し・追込が多い形なので、前半は落ち着きやすくスロー想定です。"
       }
     ];
 
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
     let current = 0;
     let score = 0;
     let answered = false;
@@ -326,6 +502,7 @@
     const explain = document.getElementById("explain");
     const nextBtn = document.getElementById("nextBtn");
     const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
     const choices = document.getElementById("choices");
 
     function styleClass(style) {
@@ -335,12 +512,23 @@
       return "oikomi";
     }
 
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderRace();
+    }
+
     function renderRace() {
       answered = false;
       resultBox.style.display = "none";
       choices.style.display = "grid";
 
-      const race = races[current];
+      const race = selectedQuizzes[current];
       questionNo.textContent = current + 1;
       scoreEl.textContent = score;
       raceTitle.textContent = race.title;
@@ -361,7 +549,7 @@
       if (answered) return;
       answered = true;
 
-      const race = races[current];
+      const race = selectedQuizzes[current];
       const correct = selected === race.answer;
 
       resultBox.style.display = "block";
@@ -384,8 +572,9 @@
 
       explain.textContent = `${paceText}。${race.explanation}`;
 
-      if (current === races.length - 1) {
+      if (current === selectedQuizzes.length - 1) {
         nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
         if (score >= 3) {
           rewardBtn.style.display = "block";
         } else {
@@ -393,6 +582,7 @@
         }
       } else {
         nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
         rewardBtn.style.display = "none";
       }
     }
@@ -402,7 +592,11 @@
       renderRace();
     }
 
-    renderRace();
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
   </script>
 </body>
 </html>
