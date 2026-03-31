@@ -83,6 +83,13 @@
       text-align: center;
     }
 
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
     .horse-list {
       display: grid;
       gap: 10px;
@@ -110,13 +117,6 @@
       font-size: 13px;
       color: rgba(255,255,255,0.84);
       line-height: 1.6;
-    }
-
-    .choice-title {
-      text-align: center;
-      font-size: 17px;
-      font-weight: 800;
-      margin: 16px 0 12px;
     }
 
     .result-box {
@@ -150,7 +150,7 @@
       margin-bottom: 12px;
     }
 
-    .next-btn, .reward-btn, .back-btn {
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
       display: block;
       width: 100%;
       text-align: center;
@@ -164,7 +164,7 @@
       cursor: pointer;
     }
 
-    .next-btn {
+    .next-btn, .retry-btn {
       background: #06C755;
       color: #fff;
     }
@@ -213,6 +213,7 @@
       <div id="explain" class="explain"></div>
       <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
       <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
       <a class="back-btn" href="index.html">← 一覧へ戻る</a>
     </div>
 
@@ -223,159 +224,219 @@
   </div>
 
   <script>
-    const quizzes = [
+    const allQuizzes = [
       {
-        title: "第1問",
+        title: "第1問候補",
         horses: [
-          {
-            name: "フレア",
-            info: "前走1着 / 今回1番人気 / 距離延長 / 前走が激走",
-            danger: true,
-            reason: "前走で強く走りすぎた反動に加えて距離延長。人気ほど信頼しにくい危険パターンです。"
-          },
-          {
-            name: "ルミナ",
-            info: "近2走安定 / 同距離 / 先行しやすい枠",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "アクア",
-            info: "末脚安定 / 距離合う / 相手弱化",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "崩れにくい / 相手なり / 3着候補",
-            danger: false,
-            reason: ""
-          }
+          { name: "フレア", info: "前走1着 / 今回1番人気 / 距離延長 / 前走が激走", reason: "前走で強く走りすぎた反動に加えて距離延長。人気ほど信頼しにくい危険パターンです。" },
+          { name: "ルミナ", info: "近2走安定 / 同距離 / 先行しやすい枠", reason: "" },
+          { name: "アクア", info: "末脚安定 / 距離合う / 相手弱化", reason: "" },
+          { name: "テラ", info: "崩れにくい / 相手なり / 3着候補", reason: "" }
         ],
         answer: "フレア"
       },
       {
-        title: "第2問",
+        title: "第2問候補",
         horses: [
-          {
-            name: "ノクス",
-            info: "前走2着 / 同条件 / 調教強め / 人気ほどでもない",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "ストーム",
-            info: "追込型 / 逃げ馬不在 / スローペース濃厚 / 2番人気",
-            danger: true,
-            reason: "追込型なのにスローペース濃厚。展開が向きにくく、人気ほど期待しづらいです。"
-          },
-          {
-            name: "ルミナ",
-            info: "先行型 / 自分の形に持ち込みやすい / 安定",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "相手弱め / 位置取り自在 / 押さえ向き",
-            danger: false,
-            reason: ""
-          }
+          { name: "ノクス", info: "前走2着 / 同条件 / 調教強め / 人気ほどでもない", reason: "" },
+          { name: "ストーム", info: "追込型 / 逃げ馬不在 / スローペース濃厚 / 2番人気", reason: "追込型なのにスローペース濃厚。展開が向きにくく、人気ほど期待しづらいです。" },
+          { name: "ルミナ", info: "先行型 / 自分の形に持ち込みやすい / 安定", reason: "" },
+          { name: "にゃ〜ご", info: "相手弱め / 位置取り自在 / 押さえ向き", reason: "" }
         ],
         answer: "ストーム"
       },
       {
-        title: "第3問",
+        title: "第3問候補",
         horses: [
-          {
-            name: "アクア",
-            info: "休み明け2走目 / 体調上向き / 距離ぴったり",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "テラ",
-            info: "前走大敗 / 今回も外枠 / 先行厳しい条件 / 3番人気",
-            danger: true,
-            reason: "前走内容が悪く、今回も外枠で先行しづらい条件。人気があるなら危険です。"
-          },
-          {
-            name: "フレア",
-            info: "内枠 / 先行有利コース / 同距離",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "ステラ",
-            info: "器用さあり / 展開待ちでも対応可",
-            danger: false,
-            reason: ""
-          }
+          { name: "アクア", info: "休み明け2走目 / 体調上向き / 距離ぴったり", reason: "" },
+          { name: "テラ", info: "前走大敗 / 今回も外枠 / 先行厳しい条件 / 3番人気", reason: "前走内容が悪く、今回も外枠で先行しづらい条件。人気があるなら危険です。" },
+          { name: "フレア", info: "内枠 / 先行有利コース / 同距離", reason: "" },
+          { name: "ステラ", info: "器用さあり / 展開待ちでも対応可", reason: "" }
         ],
         answer: "テラ"
       },
       {
-        title: "第4問",
+        title: "第4問候補",
         horses: [
-          {
-            name: "ルミナ",
-            info: "前走楽勝 / 今回も同条件 / スピード上位",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "にゃ〜ご",
-            info: "近走安定 / 人気薄 / 相手なり",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "ノクス",
-            info: "調教軽め / コメント弱気 / 次走本番気配 / 2番人気",
-            danger: true,
-            reason: "調教軽めでコメントも弱気。今回は叩き台の可能性が高く、人気なら消したいです。"
-          },
-          {
-            name: "アクア",
-            info: "展開待ちだが能力足りる / 押さえ可",
-            danger: false,
-            reason: ""
-          }
+          { name: "ルミナ", info: "前走楽勝 / 今回も同条件 / スピード上位", reason: "" },
+          { name: "にゃ〜ご", info: "近走安定 / 人気薄 / 相手なり", reason: "" },
+          { name: "ノクス", info: "調教軽め / コメント弱気 / 次走本番気配 / 2番人気", reason: "調教軽めでコメントも弱気。今回は叩き台の可能性が高く、人気なら消したいです。" },
+          { name: "アクア", info: "展開待ちだが能力足りる / 押さえ可", reason: "" }
         ],
         answer: "ノクス"
       },
       {
-        title: "第5問",
+        title: "第5問候補",
         horses: [
-          {
-            name: "ステラ",
-            info: "差し脚堅実 / ハイペース濃厚 / 展開向く",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "ストーム",
-            info: "能力高い / ただし気分屋 / 人気薄なら面白い",
-            danger: false,
-            reason: ""
-          },
-          {
-            name: "フレア",
-            info: "逃げ型 / 逃げ馬3頭 / 外枠 / 1番人気",
-            danger: true,
-            reason: "逃げ馬が多く外枠。前で脚を使いすぎる可能性が高く、人気なら危険です。"
-          },
-          {
-            name: "テラ",
-            info: "堅実 / バテ比べ歓迎 / 相手候補",
-            danger: false,
-            reason: ""
-          }
+          { name: "ステラ", info: "差し脚堅実 / ハイペース濃厚 / 展開向く", reason: "" },
+          { name: "ストーム", info: "能力高い / ただし気分屋 / 人気薄なら面白い", reason: "" },
+          { name: "フレア", info: "逃げ型 / 逃げ馬3頭 / 外枠 / 1番人気", reason: "逃げ馬が多く外枠。前で脚を使いすぎる可能性が高く、人気なら危険です。" },
+          { name: "テラ", info: "堅実 / バテ比べ歓迎 / 相手候補", reason: "" }
         ],
         answer: "フレア"
+      },
+      {
+        title: "第6問候補",
+        horses: [
+          { name: "ルミナ", info: "前走メイチ感あり / 今回中2週 / 1番人気", reason: "前走で仕上げ切った可能性があり、中2週で上積みも薄いです。人気ほど信頼しづらいです。" },
+          { name: "アクア", info: "叩き2走目 / 条件ベスト / 人気ほどでもない", reason: "" },
+          { name: "テラ", info: "安定型 / 相手なり / 大崩れしにくい", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型 / ヒモ向き", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第7問候補",
+        horses: [
+          { name: "ストーム", info: "能力高い / 馬場悪化で良さ減る / 2番人気", reason: "本来の切れが削がれる馬場では人気ほどのパフォーマンスが出ない可能性があります。" },
+          { name: "テラ", info: "パワー型 / 道悪歓迎 / 安定", reason: "" },
+          { name: "ノクス", info: "差し型 / 展開待ち", reason: "" },
+          { name: "アクア", info: "バランス型 / 条件合う", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第8問候補",
+        horses: [
+          { name: "フレア", info: "逃げ型 / 同型多数 / ハイペース濃厚 / 1番人気", reason: "逃げ馬が多く、自分の形に持ち込みにくいです。人気なら危険です。" },
+          { name: "ステラ", info: "差し脚安定 / 展開向く", reason: "" },
+          { name: "にゃ〜ご", info: "器用 / 位置取り自在", reason: "" },
+          { name: "テラ", info: "バテ比べ歓迎", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第9問候補",
+        horses: [
+          { name: "ノクス", info: "前走好走 / 今回距離短縮で忙しい / 3番人気", reason: "距離短縮で流れに乗れない可能性があり、前走ほど走れないリスクがあります。" },
+          { name: "ルミナ", info: "先行安定 / 距離合う", reason: "" },
+          { name: "アクア", info: "末脚安定 / 相手向き", reason: "" },
+          { name: "フレア", info: "条件ハマれば残る", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        title: "第10問候補",
+        horses: [
+          { name: "テラ", info: "休み明け / 調教本数少ない / 2番人気", reason: "休み明けで調教量が足りず、人気ほど仕上がっていない可能性があります。" },
+          { name: "アクア", info: "実戦型 / 一度使って良化", reason: "" },
+          { name: "ルミナ", info: "スピード上位 / 状態維持", reason: "" },
+          { name: "にゃ〜ご", info: "人気薄 / ヒモ向き", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第11問候補",
+        horses: [
+          { name: "ステラ", info: "差し型 / スロー濃厚 / 2番人気", reason: "差し型でスロー濃厚だと届かないリスクが高く、人気なら危険です。" },
+          { name: "フレア", info: "逃げ型 / 単騎濃厚", reason: "" },
+          { name: "ルミナ", info: "先行型 / 好位で安定", reason: "" },
+          { name: "テラ", info: "堅実型 / 相手向き", reason: "" }
+        ],
+        answer: "ステラ"
+      },
+      {
+        title: "第12問候補",
+        horses: [
+          { name: "アクア", info: "安定型 / コース合う", reason: "" },
+          { name: "フレア", info: "前走展開ハマっただけ / 今回条件悪化 / 1番人気", reason: "前走は展開に恵まれた可能性が高く、今回は再現性が低いです。" },
+          { name: "ノクス", info: "流れ向けば浮上", reason: "" },
+          { name: "にゃ〜ご", info: "押さえ向き", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第13問候補",
+        horses: [
+          { name: "ルミナ", info: "外枠 / 先行型 / コースロス大きい / 1番人気", reason: "先行したいのに外枠でロスが大きく、能力ほど楽に運べない危険があります。" },
+          { name: "テラ", info: "内枠 / 安定型", reason: "" },
+          { name: "アクア", info: "差し型 / 相手候補", reason: "" },
+          { name: "ステラ", info: "展開次第で浮上", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第14問候補",
+        horses: [
+          { name: "ストーム", info: "気分屋 / 連闘 / 2番人気", reason: "気分屋タイプで連闘はリスクがあり、人気なら過信しづらいです。" },
+          { name: "テラ", info: "安定型 / 条件向く", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型", reason: "" },
+          { name: "ノクス", info: "差し向き条件", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第15問候補",
+        horses: [
+          { name: "テラ", info: "重馬場得意 / 今回良馬場高速決着 / 3番人気", reason: "パワー型で時計勝負は少し不向き。条件が変わるなら人気ほど信頼しにくいです。" },
+          { name: "ルミナ", info: "高速決着向き", reason: "" },
+          { name: "フレア", info: "前残りなら怖い", reason: "" },
+          { name: "アクア", info: "バランス型", reason: "" }
+        ],
+        answer: "テラ"
+      },
+      {
+        title: "第16問候補",
+        horses: [
+          { name: "ノクス", info: "前走が最高条件 / 今回は真逆の流れ / 1番人気", reason: "前走好走の再現条件ではなく、今回は流れが真逆。人気ほどの信頼感はありません。" },
+          { name: "ステラ", info: "今回の流れ向き", reason: "" },
+          { name: "テラ", info: "安定型", reason: "" },
+          { name: "にゃ〜ご", info: "ヒモ向き", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        title: "第17問候補",
+        horses: [
+          { name: "フレア", info: "逃げ型 / 休み明け / 同型2頭 / 2番人気", reason: "休み明けで同型もいて、楽逃げできない可能性が高いです。" },
+          { name: "アクア", info: "安定差し / 展開向く", reason: "" },
+          { name: "ルミナ", info: "先行安定", reason: "" },
+          { name: "ステラ", info: "展開待ち", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        title: "第18問候補",
+        horses: [
+          { name: "アクア", info: "人気薄 / 条件向く / 相手弱化", reason: "" },
+          { name: "ルミナ", info: "小回り苦手 / 1番人気", reason: "広いコース向きで小回りでは取りこぼしのリスクがあり、人気なら消したい場面です。" },
+          { name: "テラ", info: "器用 / 小回り向き", reason: "" },
+          { name: "にゃ〜ご", info: "善戦型", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        title: "第19問候補",
+        horses: [
+          { name: "ステラ", info: "末脚安定 / 直線長いコース向き", reason: "" },
+          { name: "ストーム", info: "直線短いコース / 追込型 / 3番人気", reason: "直線が短いコースでは追込型は届きにくく、人気なら危険です。" },
+          { name: "フレア", info: "先行押し切り可", reason: "" },
+          { name: "テラ", info: "内で我慢できる", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        title: "第20問候補",
+        horses: [
+          { name: "にゃ〜ご", info: "人気薄 / 相手なり / 3着候補", reason: "" },
+          { name: "ノクス", info: "差し型 / ハイペース待ち / 今回スロー濃厚 / 2番人気", reason: "スロー濃厚で差し型は展開不向き。人気なら消したいタイプです。" },
+          { name: "ルミナ", info: "先行安定 / 展開向く", reason: "" },
+          { name: "フレア", info: "単騎逃げ可能", reason: "" }
+        ],
+        answer: "ノクス"
       }
     ];
 
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
     let current = 0;
     let score = 0;
     let answered = false;
@@ -389,12 +450,24 @@
     const explain = document.getElementById("explain");
     const nextBtn = document.getElementById("nextBtn");
     const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
 
     function renderQuiz() {
       answered = false;
       resultBox.style.display = "none";
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       questionNo.textContent = current + 1;
       scoreEl.textContent = score;
       raceTitle.textContent = quiz.title;
@@ -416,7 +489,7 @@
       if (answered) return;
       answered = true;
 
-      const quiz = quizzes[current];
+      const quiz = selectedQuizzes[current];
       const correct = selectedName === quiz.answer;
       const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
 
@@ -434,8 +507,9 @@
 
       explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
 
-      if (current === quizzes.length - 1) {
+      if (current === selectedQuizzes.length - 1) {
         nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
         if (score >= 3) {
           rewardBtn.style.display = "block";
         } else {
@@ -443,6 +517,7 @@
         }
       } else {
         nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
         rewardBtn.style.display = "none";
       }
     }
@@ -452,7 +527,11 @@
       renderQuiz();
     }
 
-    renderQuiz();
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
   </script>
 </body>
 </html>
