@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>人気崩しゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 120, 120, 0.18), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255, 190, 120, 0.16), transparent 25%),
+        linear-gradient(180deg, #171b3a 0%, #2a2258 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .horse-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .horse-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .horse-name {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .info-line {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .pop-tag {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn, .retry-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🔥 人気崩しゲーム</h1>
+    <div class="sub">
+      4頭の中から、<br>
+      <b>人気しているけど危ない馬</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+      <div class="choice-title">危ない人気馬はどれ？</div>
+      <div class="horse-list" id="horseList"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      人気がある馬と、信頼できる馬は別です。<br>
+      危ない人気馬を切れるようになると、回収率は安定しやすいです。
+    </div>
+  </div>
+
+  <script>
+    const allQuizzes = [
+      {
+        horses: [
+          { name: "ルミナ", info: "1番人気 / 距離延長 / 前走メイチ感あり / 今回上積み薄い", pop: "1番人気", reason: "前走で仕上がっていた可能性が高く、距離延長もプラスとは言えません。人気ほど信頼しにくいです。" },
+          { name: "テラ", info: "3番人気 / 崩れにくい / 同条件向く", pop: "3番人気", reason: "" },
+          { name: "アクア", info: "4番人気 / 安定差し / 相手弱化", pop: "4番人気", reason: "" },
+          { name: "にゃ〜ご", info: "8番人気 / 善戦型", pop: "8番人気", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "1番人気 / 逃げ型 / 同型3頭 / 外枠", pop: "1番人気", reason: "逃げたい馬が多く、しかも外枠。前半から苦しくなりやすく、人気ほど信頼しにくいです。" },
+          { name: "ステラ", info: "4番人気 / 差し脚安定 / 展開向く", pop: "4番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / バテ比べ歓迎", pop: "5番人気", reason: "" },
+          { name: "ノクス", info: "6番人気 / 展開待ち", pop: "6番人気", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        horses: [
+          { name: "ノクス", info: "2番人気 / 調教軽め / コメント弱気 / 叩き台気配", pop: "2番人気", reason: "状態面が強気ではなく、今回は本番前の可能性があります。売れすぎ感があります。" },
+          { name: "アクア", info: "3番人気 / 条件合う / 差し安定", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "1番人気 / 実力上位だが絶対視までは微妙", pop: "1番人気", reason: "" },
+          { name: "にゃ〜ご", info: "7番人気 / 押さえ候補", pop: "7番人気", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        horses: [
+          { name: "ステラ", info: "1番人気 / 差し型 / スローペース濃厚 / 届かない恐れ", pop: "1番人気", reason: "差し馬なのに流れが遅そうなら不発の可能性が高いです。人気なら危険です。" },
+          { name: "フレア", info: "3番人気 / 単騎逃げ濃厚", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "2番人気 / 好位で安定", pop: "2番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / 堅実型", pop: "5番人気", reason: "" }
+        ],
+        answer: "ステラ"
+      },
+      {
+        horses: [
+          { name: "ストーム", info: "2番人気 / 追込型 / 小回り短い直線 / 条件不向き", pop: "2番人気", reason: "追込型なのに小回り短い直線は不利です。人気ほどの信頼は置きにくいです。" },
+          { name: "テラ", info: "4番人気 / 小回り向き / 器用", pop: "4番人気", reason: "" },
+          { name: "フレア", info: "3番人気 / 前で運べる", pop: "3番人気", reason: "" },
+          { name: "にゃ〜ご", info: "8番人気 / 内枠でロスなく運べる", pop: "8番人気", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        horses: [
+          { name: "ルミナ", info: "1番人気 / 高速馬場向き / 今回は重馬場", pop: "1番人気", reason: "得意条件から外れているのに人気を被るのは危険です。馬場悪化で割引が必要です。" },
+          { name: "テラ", info: "3番人気 / 道悪歓迎 / バテ比べ向き", pop: "3番人気", reason: "" },
+          { name: "アクア", info: "5番人気 / バランス型", pop: "5番人気", reason: "" },
+          { name: "ノクス", info: "6番人気 / 差し届けば", pop: "6番人気", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "2番人気 / 前走展開ハマりすぎ / 今回再現薄い", pop: "2番人気", reason: "前走の好走が展開に恵まれたもので、今回同じ形は見込みにくいです。" },
+          { name: "ルミナ", info: "1番人気 / 安定型", pop: "1番人気", reason: "" },
+          { name: "アクア", info: "4番人気 / 安定差し", pop: "4番人気", reason: "" },
+          { name: "ステラ", info: "6番人気 / 展開向き", pop: "6番人気", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        horses: [
+          { name: "ノクス", info: "1番人気 / 距離短縮で忙しい / 追走不安", pop: "1番人気", reason: "前走より流れが速くなる距離短縮で、追走に苦労する可能性があります。危険な人気です。" },
+          { name: "ルミナ", info: "2番人気 / 先行安定", pop: "2番人気", reason: "" },
+          { name: "テラ", info: "4番人気 / 堅実", pop: "4番人気", reason: "" },
+          { name: "にゃ〜ご", info: "7番人気 / 相手候補", pop: "7番人気", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "1番人気 / 休み明け / 追い切り本数少ない", pop: "1番人気", reason: "能力はあっても仕上がりが足りない可能性があります。人気なら危険です。" },
+          { name: "アクア", info: "3番人気 / 一度使って良化", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "2番人気 / 状態安定", pop: "2番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / 条件向く", pop: "5番人気", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        horses: [
+          { name: "ステラ", info: "2番人気 / 差し型 / 前有利馬場 / 馬場逆風", pop: "2番人気", reason: "馬場傾向が合っておらず、差し届かないリスクがあります。人気なら少し危険です。" },
+          { name: "フレア", info: "3番人気 / 前で運べる", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "1番人気 / 好位安定", pop: "1番人気", reason: "" },
+          { name: "テラ", info: "4番人気 / バテにくい", pop: "4番人気", reason: "" }
+        ],
+        answer: "ステラ"
+      },
+      {
+        horses: [
+          { name: "ストーム", info: "1番人気 / 一撃型 / 能力高いがムラ大きい", pop: "1番人気", reason: "爆発力はある一方で安定感に欠けます。1番人気で買うには危険が大きいタイプです。" },
+          { name: "アクア", info: "3番人気 / 安定型", pop: "3番人気", reason: "" },
+          { name: "テラ", info: "4番人気 / 崩れにくい", pop: "4番人気", reason: "" },
+          { name: "にゃ〜ご", info: "8番人気 / 押さえ候補", pop: "8番人気", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        horses: [
+          { name: "ルミナ", info: "2番人気 / 外枠先行 / コースロス大", pop: "2番人気", reason: "先行したいのに外枠だとロスが大きく、能力通りに運べない危険があります。" },
+          { name: "テラ", info: "4番人気 / 内枠 / 器用", pop: "4番人気", reason: "" },
+          { name: "アクア", info: "3番人気 / 差し安定", pop: "3番人気", reason: "" },
+          { name: "ノクス", info: "6番人気 / 流れ次第", pop: "6番人気", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "1番人気 / 逃げ型 / 距離延長で最後甘い不安", pop: "1番人気", reason: "距離延長で逃げ馬は最後が甘くなることがあり、人気を背負うなら危険です。" },
+          { name: "ルミナ", info: "2番人気 / 安定先行", pop: "2番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / バテ比べ歓迎", pop: "5番人気", reason: "" },
+          { name: "ステラ", info: "4番人気 / 差し向くなら", pop: "4番人気", reason: "" }
+        ],
+        answer: "フレア"
+      },
+      {
+        horses: [
+          { name: "ノクス", info: "2番人気 / 前走好走も今回は相手強化", pop: "2番人気", reason: "前走のメンバーより今回は相手が強く、同じだけ走れるとは限りません。人気なら危険です。" },
+          { name: "ルミナ", info: "1番人気 / 実力上位", pop: "1番人気", reason: "" },
+          { name: "アクア", info: "4番人気 / 相手なり", pop: "4番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / 堅実型", pop: "5番人気", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        horses: [
+          { name: "ステラ", info: "1番人気 / 追込寄り / 小頭数スロー濃厚", pop: "1番人気", reason: "小頭数で流れが落ち着くと追込寄りは届きにくいです。人気なら危険です。" },
+          { name: "フレア", info: "3番人気 / 単騎逃げ濃厚", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "2番人気 / 好位差し可", pop: "2番人気", reason: "" },
+          { name: "アクア", info: "4番人気 / 安定差し", pop: "4番人気", reason: "" }
+        ],
+        answer: "ステラ"
+      },
+      {
+        horses: [
+          { name: "ルミナ", info: "1番人気 / 中2週 / 前走反動懸念", pop: "1番人気", reason: "前走でしっかり走っていて、中2週で反動が出るリスクがあります。人気なら慎重です。" },
+          { name: "テラ", info: "4番人気 / 使いつつ上向き", pop: "4番人気", reason: "" },
+          { name: "アクア", info: "3番人気 / 安定型", pop: "3番人気", reason: "" },
+          { name: "にゃ〜ご", info: "9番人気 / 展開ひとつ", pop: "9番人気", reason: "" }
+        ],
+        answer: "ルミナ"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "2番人気 / 開幕週以外は微妙 / 今回差し馬場", pop: "2番人気", reason: "前残りしにくい馬場なのに先行逃げ型が売れているのは危険です。" },
+          { name: "ステラ", info: "4番人気 / 差し馬場歓迎", pop: "4番人気", reason: "" },
+          { name: "アクア", info: "3番人気 / 末脚安定", pop: "3番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / バテ比べ向き", pop: "5番人気", reason: "" }
+        ],
+       answer: "フレア"
+      },
+      {
+        horses: [
+          { name: "ストーム", info: "1番人気 / 直線長い方が良い / 今回小回り", pop: "1番人気", reason: "本来の良さが出にくい条件なのに人気を被っているので危険です。" },
+          { name: "ルミナ", info: "2番人気 / 器用 / コース合う", pop: "2番人気", reason: "" },
+          { name: "テラ", info: "4番人気 / 小回り向き", pop: "4番人気", reason: "" },
+          { name: "アクア", info: "5番人気 / 相手候補", pop: "5番人気", reason: "" }
+        ],
+        answer: "ストーム"
+      },
+      {
+        horses: [
+          { name: "ノクス", info: "2番人気 / 展開待ち / 逃げ馬少なく流れ遅そう", pop: "2番人気", reason: "差し展開待ちなのにスロー濃厚では不向きです。人気なら危険です。" },
+          { name: "フレア", info: "3番人気 / 逃げやすい", pop: "3番人気", reason: "" },
+          { name: "ルミナ", info: "1番人気 / 好位安定", pop: "1番人気", reason: "" },
+          { name: "テラ", info: "4番人気 / 相手向き", pop: "4番人気", reason: "" }
+        ],
+        answer: "ノクス"
+      },
+      {
+        horses: [
+          { name: "フレア", info: "1番人気 / 前走逃げ切り / 今回は同型増えて再現薄い", pop: "1番人気", reason: "前走の形を再現しにくいのに人気だけ残っている危険パターンです。" },
+          { name: "アクア", info: "3番人気 / 差し安定", pop: "3番人気", reason: "" },
+          { name: "ステラ", info: "4番人気 / 展開向けば", pop: "4番人気", reason: "" },
+          { name: "テラ", info: "5番人気 / 堅実", pop: "5番人気", reason: "" }
+        ],
+        answer: "フレア"
+      }
+    ];
+
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const horseList = document.getElementById("horseList");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = selectedQuizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = `第${current + 1}問`;
+
+      horseList.innerHTML = "";
+      quiz.horses.forEach(horse => {
+        const btn = document.createElement("button");
+        btn.className = "horse-btn";
+        btn.innerHTML = `
+          <div class="horse-name">🐴 ${horse.name}</div>
+          <div class="info-line">${horse.info}</div>
+          <div class="pop-tag">${horse.pop}</div>
+        `;
+        btn.onclick = () => answer(horse.name);
+        horseList.appendChild(btn);
+      });
+    }
+
+    function answer(selectedName) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = selectedQuizzes[current];
+      const correct = selectedName === quiz.answer;
+      const answerHorse = quiz.horses.find(h => h.name === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${quiz.answer}」です。${answerHorse.reason}`;
+
+      if (current === selectedQuizzes.length - 1) {
+        nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
+  </script>
+</body>
+</html>
