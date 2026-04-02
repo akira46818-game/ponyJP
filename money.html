@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>資金配分ゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 255, 180, 0.16), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255, 220, 120, 0.16), transparent 25%),
+        linear-gradient(180deg, #0f1832 0%, #1f3561 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .summary-box {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .summary-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 4px;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+
+    .plan-btn {
+      width: 100%;
+      border: none;
+      border-radius: 18px;
+      padding: 14px 12px;
+      text-align: left;
+      background: rgba(255,255,255,0.08);
+      color: white;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .plan-title {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .plan-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.6;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn, .retry-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>💰 資金配分ゲーム</h1>
+    <div class="sub">
+      1,000円をどう配分するか、<br>
+      <b>一番良い買い方</b> を選んでください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+
+      <div class="summary-box" id="summaryBox"></div>
+
+      <div class="choice-title">このレースで最適な資金配分は？</div>
+
+      <div class="choices" id="choices"></div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      自信のある本命に厚く、ブレやすい穴には薄く。<br>
+      資金配分が上手い人ほど、同じ予想でも勝ちやすいです。
+    </div>
+  </div>
+
+  <script>
+    const allQuizzes = [
+      {
+        details: [
+          { label: "本命", value: "ルミナ　勝率高め / 単勝2.8倍" },
+          { label: "相手候補", value: "アクア、テラが相手本線" },
+          { label: "レース傾向", value: "比較的堅めに決まりやすい" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命厚め", desc: "ルミナ単勝700円、相手ワイド300円" },
+          { key: "B", title: "均等買い", desc: "4頭に250円ずつ単勝" },
+          { key: "C", title: "穴全振り", desc: "人気薄2頭に500円ずつ" }
+        ],
+        answer: "A",
+        explanation: "本命の信頼度が高いレースでは、本命に厚く張るのが基本です。均等や穴全振りは期待値を落としやすいです。"
+      },
+      {
+        details: [
+          { label: "本命", value: "フレア　逃げ切り候補だが同型多い / 単勝4.5倍" },
+          { label: "相手候補", value: "ステラ、ノクスが展開向く" },
+          { label: "レース傾向", value: "やや荒れそう" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命一本", desc: "フレア単勝1,000円" },
+          { key: "B", title: "分散型", desc: "フレア300円、ステラ350円、ノクス350円" },
+          { key: "C", title: "超薄く広く", desc: "5頭に200円ずつ" }
+        ],
+        answer: "B",
+        explanation: "荒れやすいレースで本命一本は危険です。勝ち筋が複数あるなら分散型が正解です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "テラ　道悪巧者 / 単勝6.2倍" },
+          { label: "相手候補", value: "ルミナは道悪不安、アクアは安定" },
+          { label: "レース傾向", value: "条件ハマりの妙味あり" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "妙味本線", desc: "テラ単勝600円、アクア複勝400円" },
+          { key: "B", title: "均等買い", desc: "テラ・ルミナ・アクアに333円ずつ" },
+          { key: "C", title: "守りすぎ", desc: "アクア複勝1,000円" }
+        ],
+        answer: "A",
+        explanation: "条件ハマりで妙味がある本命にはある程度厚く張るべきです。守りすぎると利益が伸びません。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ステラ　差し届くか微妙 / 単勝3.9倍" },
+          { label: "相手候補", value: "ルミナ先行安定、フレア逃げ残り注意" },
+          { label: "レース傾向", value: "読みづらく混戦" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "人気馬一本", desc: "ステラ単勝1,000円" },
+          { key: "B", title: "保留型", desc: "見送りに近い少額、ルミナ300円だけ" },
+          { key: "C", title: "無理に広げる", desc: "5点に200円ずつ" }
+        ],
+        answer: "B",
+        explanation: "混戦で自信がないなら、無理に全額使わない感覚が大事です。勝負度を落とすのが正解です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "アクア　差し安定 / 単勝5.4倍" },
+          { label: "相手候補", value: "ノクス、ステラも展開向く" },
+          { label: "レース傾向", value: "差し決着寄り" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命＋相手", desc: "アクア単勝500円、ノクス250円、ステラ250円" },
+          { key: "B", title: "アクア一本", desc: "アクア単勝1,000円" },
+          { key: "C", title: "ルミナにも保険", desc: "アクア400円、ルミナ400円、ステラ200円" }
+        ],
+        answer: "A",
+        explanation: "本命はあるが差し決着で他馬も怖いなら、本命を中心に相手へ流す配分が自然です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ルミナ　内枠先行 / 単勝2.5倍" },
+          { label: "相手候補", value: "フレアは展開不安、他はやや落ちる" },
+          { label: "レース傾向", value: "堅め本線" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命厚め", desc: "ルミナ単勝800円、押さえ200円" },
+          { key: "B", title: "均等分散", desc: "4頭に250円ずつ" },
+          { key: "C", title: "穴狙い", desc: "人気薄2頭に500円ずつ" }
+        ],
+        answer: "A",
+        explanation: "堅い本命がいるなら厚く張るのが基本です。均等や穴狙いは期待値を下げやすいです。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ストーム　一撃型 / 単勝7.8倍" },
+          { label: "相手候補", value: "ルミナ、テラは安定" },
+          { label: "レース傾向", value: "ストームは来るか飛ぶか極端" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "穴厚め", desc: "ストーム800円、ルミナ200円" },
+          { key: "B", title: "穴は薄く", desc: "ストーム300円、ルミナ350円、テラ350円" },
+          { key: "C", title: "全部穴", desc: "人気薄3頭に333円ずつ" }
+        ],
+        answer: "B",
+        explanation: "来るか飛ぶか分からない穴馬は薄く、本線に厚くが基本です。穴に厚すぎるのは危険です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "テラ　複勝圏は堅い / 単勝4.9倍" },
+          { label: "相手候補", value: "ルミナも強いがオッズ低い" },
+          { label: "レース傾向", value: "1着断定より連軸向き" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "連軸重視", desc: "テラ複勝700円、ルミナ複勝300円" },
+          { key: "B", title: "テラ単勝1,000円", desc: "勝ち切り前提で一点勝負" },
+          { key: "C", title: "5頭流し", desc: "いろいろ薄く買う" }
+        ],
+        answer: "A",
+        explanation: "テラは連軸向きのタイプなので、複勝や安定系の配分が合っています。単勝一本は少し強気すぎます。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ノクス　展開待ち / 単勝6.5倍" },
+          { label: "相手候補", value: "ステラも差しで浮上、前は総崩れも" },
+          { label: "レース傾向", value: "ハイペースで差し決着濃厚" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "差し2頭分散", desc: "ノクス500円、ステラ500円" },
+          { key: "B", title: "ノクス一本", desc: "ノクス1,000円" },
+          { key: "C", title: "前残り保険", desc: "フレア700円、ノクス300円" }
+        ],
+        answer: "A",
+        explanation: "差し決着が濃厚で、勝ち筋が2頭にあるなら分散する方が自然です。一本化しすぎないのがコツです。"
+      },
+      {
+        details: [
+          { label: "本命", value: "フレア　単騎逃げ濃厚 / 単勝5.1倍" },
+          { label: "相手候補", value: "ルミナは好位、他は後方" },
+          { label: "レース傾向", value: "展開利はかなり大きい" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "逃げ本線", desc: "フレア700円、ルミナ300円" },
+          { key: "B", title: "均等", desc: "フレア500円、ルミナ500円" },
+          { key: "C", title: "後方馬も拾う", desc: "4頭に250円ずつ" }
+        ],
+        answer: "A",
+        explanation: "展開利が大きい本命には厚めでOKです。ただし保険で対抗も押さえるのがバランス良いです。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ルミナ　1番人気2.4倍" },
+          { label: "相手候補", value: "他馬も差が小さい" },
+          { label: "レース傾向", value: "人気ほど抜けていない" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "ルミナ全額", desc: "ルミナ単勝1,000円" },
+          { key: "B", title: "勝負度を落とす", desc: "ルミナ300円だけにして様子見" },
+          { key: "C", title: "均等", desc: "4頭に250円ずつ" }
+        ],
+        answer: "B",
+        explanation: "オッズが低いのに抜けていない本命なら、全額勝負は危険です。勝負度を下げるのが正解です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "アクア　単勝6.9倍" },
+          { label: "相手候補", value: "差し向き馬場で条件ハマる" },
+          { label: "レース傾向", value: "相手も差し馬中心" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "単勝重視", desc: "アクア700円、ステラ300円" },
+          { key: "B", title: "複勝重視", desc: "アクア複勝1,000円" },
+          { key: "C", title: "ばらけさせる", desc: "差し馬4頭に250円ずつ" }
+        ],
+        answer: "A",
+        explanation: "妙味のある本命には単勝重視で攻める価値があります。複勝だけでは利益が伸びません。"
+      },
+      {
+        details: [
+          { label: "本命", value: "テラ　単勝4.4倍" },
+          { label: "相手候補", value: "堅実だが勝ち切り保証までは微妙" },
+          { label: "レース傾向", value: "連対候補としては強い" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "単勝全額", desc: "テラ単勝1,000円" },
+          { key: "B", title: "複勝軸型", desc: "テラ複勝600円、相手400円" },
+          { key: "C", title: "穴流し", desc: "人気薄にばら撒く" }
+        ],
+        answer: "B",
+        explanation: "勝ち切りより連対・複勝圏向きの馬には、複勝軸の考え方が合います。単勝全額は少し危険です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ステラ　単勝8.1倍" },
+          { label: "相手候補", value: "ハイペース濃厚で末脚向く" },
+          { label: "レース傾向", value: "展開ハマりの穴" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "穴ちょい厚め", desc: "ステラ400円、ノクス300円、アクア300円" },
+          { key: "B", title: "ステラ全額", desc: "ステラ単勝1,000円" },
+          { key: "C", title: "本命不在で均等", desc: "5頭に200円ずつ" }
+        ],
+        answer: "A",
+        explanation: "穴馬は当たるときは大きいですが、全額はリスク大です。少し厚め＋相手分散が自然です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "フレア　単勝3.6倍" },
+          { label: "相手候補", value: "単騎逃げ濃厚で再現性高い" },
+          { label: "レース傾向", value: "かなり形が決まりそう" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命厚め", desc: "フレア800円、対抗200円" },
+          { key: "B", title: "均等", desc: "フレア500円、対抗500円" },
+          { key: "C", title: "広く分散", desc: "4頭に250円ずつ" }
+        ],
+        answer: "A",
+        explanation: "形が決まりそうな本命には厚めでOKです。再現性が高い時ほど集中投資が活きます。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ルミナ　単勝2.9倍" },
+          { label: "相手候補", value: "アクアも条件向く" },
+          { label: "レース傾向", value: "2強気味" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "2強分散", desc: "ルミナ600円、アクア400円" },
+          { key: "B", title: "ルミナ1,000円", desc: "一点集中" },
+          { key: "C", title: "穴に流す", desc: "人気薄3頭に分散" }
+        ],
+        answer: "A",
+        explanation: "2強なら片方に全額より、優勢側を厚めにしつつ分散が自然です。"
+      },
+      {
+        details: [
+          { label: "本命", value: "ノクス　単勝5.8倍" },
+          { label: "相手候補", value: "展開ひとつで差し勢複数浮上" },
+          { label: "レース傾向", value: "読めるが少しブレる" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "本命中心分散", desc: "ノクス500円、ステラ250円、アクア250円" },
+          { key: "B", title: "ノクス単勝1,000円", desc: "本命だけに全額" },
+          { key: "C", title: "均等4分割", desc: "4頭に250円ずつ" }
+        ],
+        answer: "A",
+        explanation: "本命はいるがブレるレースは、本命中心の分散がベストです。"
+      },
+      {
+        details: [
+          { label: "本命", value: "テラ　単勝7.4倍" },
+          { label: "相手候補", value: "道悪＋内枠でかなり条件向く" },
+          { label: "レース傾向", value: "人気薄の条件ハマり" },
+          { label: "予算", value: "1,000円" }
+        ],
+        plans: [
+          { key: "A", title: "妙味勝負", desc: "テラ700円、保険300円" },
+          { key: "B", title: "複勝のみ", desc: "テラ複勝1,000円" },
+          { key: "C", title: "均等ばら撒き", desc: "5頭に200円ずつ" }
+        ],
+        answer: "A",
+        explanation: "人気薄でも条件がハマるなら、ある程度攻める価値があります。保険を残した厚め配分が良いです。"
+      }
+    ];
+
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const summaryBox = document.getElementById("summaryBox");
+    const choices = document.getElementById("choices");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+
+      const quiz = selectedQuizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = `第${current + 1}問`;
+
+      summaryBox.innerHTML = "";
+      quiz.details.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-card";
+        div.innerHTML = `
+          <div class="summary-label">${item.label}</div>
+          <div class="summary-value">${item.value}</div>
+        `;
+        summaryBox.appendChild(div);
+      });
+
+      choices.innerHTML = "";
+      quiz.plans.forEach(plan => {
+        const btn = document.createElement("button");
+        btn.className = "plan-btn";
+        btn.innerHTML = `
+          <div class="plan-title">${plan.title}</div>
+          <div class="plan-desc">${plan.desc}</div>
+        `;
+        btn.onclick = () => answer(plan.key);
+        choices.appendChild(btn);
+      });
+    }
+
+    function answer(selected) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = selectedQuizzes[current];
+      const correct = selected === quiz.answer;
+      const answerPlan = quiz.plans.find(p => p.key === quiz.answer);
+
+      resultBox.style.display = "block";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      explain.textContent = `正解は「${answerPlan.title}」です。${quiz.explanation}`;
+
+      if (current === selectedQuizzes.length - 1) {
+        nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
+  </script>
+</body>
+</html>
