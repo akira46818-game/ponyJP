@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>買い時・見送りゲーム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(120, 255, 180, 0.16), transparent 25%),
+        radial-gradient(circle at 80% 30%, rgba(255, 190, 120, 0.16), transparent 25%),
+        linear-gradient(180deg, #101934 0%, #20315f 100%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 28px;
+      padding: 20px 16px 24px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      backdrop-filter: blur(8px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      text-align: center;
+      font-size: 32px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      text-align: center;
+      color: rgba(255,255,255,0.84);
+      line-height: 1.7;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .pill {
+      flex: 1;
+      text-align: center;
+      background: rgba(255,255,255,0.10);
+      border-radius: 16px;
+      padding: 10px 8px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+
+    .race-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .race-title {
+      font-size: 20px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .summary-box {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-card {
+      background: rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 4px;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      line-height: 1.6;
+      font-weight: 700;
+    }
+
+    .choice-title {
+      text-align: center;
+      font-size: 17px;
+      font-weight: 800;
+      margin: 16px 0 12px;
+    }
+
+    .choices {
+      display: grid;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 999px;
+      padding: 16px 18px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      color: white;
+    }
+
+    .btn-buy {
+      background: #06C755;
+    }
+
+    .btn-skip {
+      background: #ff7b54;
+    }
+
+    .result-box {
+      display: none;
+      margin-top: 16px;
+      border-radius: 20px;
+      padding: 16px 14px;
+      line-height: 1.7;
+    }
+
+    .correct {
+      background: rgba(60, 200, 120, 0.18);
+      border: 1px solid rgba(60, 200, 120, 0.28);
+    }
+
+    .wrong {
+      background: rgba(255, 90, 90, 0.16);
+      border: 1px solid rgba(255, 90, 90, 0.24);
+    }
+
+    .result-title {
+      font-size: 24px;
+      font-weight: 900;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .explain {
+      font-size: 15px;
+      color: rgba(255,255,255,0.92);
+      margin-bottom: 12px;
+    }
+
+    .next-btn, .reward-btn, .back-btn, .retry-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      border: none;
+      border-radius: 999px;
+      padding: 15px 18px;
+      font-size: 17px;
+      font-weight: 800;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .next-btn, .retry-btn {
+      background: #06C755;
+      color: #fff;
+    }
+
+    .reward-btn {
+      background: gold;
+      color: #1b1b1b;
+      display: none;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+    }
+
+    .mini-note {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🧠 買い時・見送りゲーム</h1>
+    <div class="sub">
+      レースの状況を見て、<br>
+      <b>買うべきか、見送るべきか</b> を判断してください。
+    </div>
+
+    <div class="topbar">
+      <div class="pill">問題 <span id="questionNo">1</span> / 5</div>
+      <div class="pill">正解数 <span id="score">0</span></div>
+    </div>
+
+    <div class="race-box">
+      <div class="race-title" id="raceTitle">第1問</div>
+
+      <div class="summary-box" id="summaryBox"></div>
+
+      <div class="choice-title">このレース、あなたは？</div>
+
+      <div class="choices" id="choices">
+        <button class="btn btn-buy" onclick="answer('buy')">買う</button>
+        <button class="btn btn-skip" onclick="answer('skip')">見送る</button>
+      </div>
+    </div>
+
+    <div id="resultBox" class="result-box">
+      <div id="resultTitle" class="result-title">正解！</div>
+      <div id="explain" class="explain"></div>
+      <button class="next-btn" id="nextBtn" onclick="nextQuestion()">次の問題へ</button>
+      <a class="reward-btn" id="rewardBtn" href="reward-pony-01.html">🎁 カードを受け取る</a>
+      <button class="retry-btn" id="retryBtn" onclick="restartGame()" style="display:none;">もう一回遊ぶ</button>
+      <a class="back-btn" href="index.html">← 一覧へ戻る</a>
+    </div>
+
+    <div class="mini-note">
+      勝てる人ほど「見送る技術」を持っています。<br>
+      自信と期待値が低いレースを避けるだけで、回収率は大きく変わります。
+    </div>
+  </div>
+
+  <script>
+    const allQuizzes = [
+      {
+        details: [
+          { label: "本命候補", value: "ルミナ（想定勝率は高いが単勝2.1倍）" },
+          { label: "展開", value: "スローペース濃厚で前有利" },
+          { label: "不安材料", value: "相手も手薄で逆転候補少ない" },
+          { label: "判断ポイント", value: "人気でも信頼度が高く、買う根拠が明確" }
+        ],
+        answer: "buy",
+        explanation: "本命の信頼度が高く、展開も向くので『買う』が正解です。オッズは低くても、明確な優位があるレースは勝負できます。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "フレア（1番人気 3.4倍）" },
+          { label: "展開", value: "逃げ馬3頭でハイペース濃厚" },
+          { label: "不安材料", value: "人気馬が展開不向き、他も差が小さい" },
+          { label: "判断ポイント", value: "どの馬にも決め手がなく、荒れやすい" }
+        ],
+        answer: "skip",
+        explanation: "人気馬が展開不向きで、他馬も横一線。こういうレースは無理に買わず『見送る』のが正解です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "テラ（4.8倍）" },
+          { label: "展開", value: "道悪でパワー型有利" },
+          { label: "不安材料", value: "適性がハッキリしていて相手関係も楽" },
+          { label: "判断ポイント", value: "オッズと適性のバランスが良い" }
+        ],
+        answer: "buy",
+        explanation: "適性がはっきり向くのにオッズもそこそこ付いています。こういうレースは『買う価値がある』場面です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ステラ（2番人気 4.1倍）" },
+          { label: "展開", value: "スローペース濃厚で差し不利" },
+          { label: "不安材料", value: "本命候補も条件に合っていない" },
+          { label: "判断ポイント", value: "人気と適性がズレている" }
+        ],
+        answer: "skip",
+        explanation: "人気サイドに信頼できる軸が見当たらず、条件もズレています。こういう時は『見送り』が正解です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "アクア（6.8倍）" },
+          { label: "展開", value: "外差し届く馬場で脚質向く" },
+          { label: "不安材料", value: "ややムラはあるが、今回は条件好転" },
+          { label: "判断ポイント", value: "期待値があり、買う理由が明確" }
+        ],
+        answer: "buy",
+        explanation: "条件が大きく好転していて、オッズとのバランスも良いです。こういう『理由のある妙味馬』は買ってOKです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ルミナ（2.8倍）" },
+          { label: "展開", value: "先行有利コースだが外枠" },
+          { label: "不安材料", value: "対抗馬も多数いて能力差小さい" },
+          { label: "判断ポイント", value: "人気ほど抜けていない" }
+        ],
+        answer: "skip",
+        explanation: "本命の人気はあるのに抜けた材料がなく、能力差も小さいです。こういうレースは期待値が低く、見送る方が得です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ノクス（8.2倍）" },
+          { label: "展開", value: "ハイペース濃厚で差し向く" },
+          { label: "不安材料", value: "差し損ねリスクはある" },
+          { label: "判断ポイント", value: "展開メリット込みなら妙味十分" }
+        ],
+        answer: "buy",
+        explanation: "展開が明確に向く上にオッズも十分。リスクはあっても期待値があるので『買う』寄りです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ストーム（1番人気 3.1倍）" },
+          { label: "展開", value: "小回りで追込不利" },
+          { label: "不安材料", value: "人気先行で条件も合わない" },
+          { label: "判断ポイント", value: "危険な人気馬が中心" }
+        ],
+        answer: "skip",
+        explanation: "条件不向きなのに人気を被るタイプです。こういう時は『当たるかも』より『見送るべき』が正解です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "フレア（5.9倍）" },
+          { label: "展開", value: "単騎逃げ濃厚" },
+          { label: "不安材料", value: "ハナを切れれば強いタイプ" },
+          { label: "判断ポイント", value: "形が決まりやすく、オッズも悪くない" }
+        ],
+        answer: "buy",
+        explanation: "自分の形に持ち込める可能性が高く、オッズも悪くありません。買う根拠が明確なので勝負できます。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "テラ（3.8倍）" },
+          { label: "展開", value: "どの脚質にもチャンスあり" },
+          { label: "不安材料", value: "突出した馬がいない混戦" },
+          { label: "判断ポイント", value: "妙味も信頼度も中途半端" }
+        ],
+        answer: "skip",
+        explanation: "混戦で決め手が薄く、買う理由が弱いです。こういう『なんとなく買いたいレース』は見送るべきです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ルミナ（3.3倍）" },
+          { label: "展開", value: "先行有利・内枠・相手弱化" },
+          { label: "不安材料", value: "大きなマイナス材料なし" },
+          { label: "判断ポイント", value: "オッズ以上に信頼できる" }
+        ],
+        answer: "buy",
+        explanation: "条件・展開・相手関係が揃っていて、買う理由がはっきりしています。こういう本命は買ってOKです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "アクア（4.9倍）" },
+          { label: "展開", value: "差し届くか微妙な馬場" },
+          { label: "不安材料", value: "相手関係は横一線" },
+          { label: "判断ポイント", value: "強い根拠が不足" }
+        ],
+        answer: "skip",
+        explanation: "悪くはないが、買うだけの強い理由がありません。こういう時は『買わない』方が長期的に勝ちやすいです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ステラ（10.4倍）" },
+          { label: "展開", value: "ハイペース想定で末脚ハマる" },
+          { label: "不安材料", value: "後ろすぎると届かない可能性" },
+          { label: "判断ポイント", value: "リスク込みでも期待値は高い" }
+        ],
+        answer: "buy",
+        explanation: "展開がハマる可能性が高く、オッズも十分。こういうレースは『買う』価値があります。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "フレア（2.6倍）" },
+          { label: "展開", value: "逃げ争い激化濃厚" },
+          { label: "不安材料", value: "本命の条件悪化" },
+          { label: "判断ポイント", value: "妙味がなく危険" }
+        ],
+        answer: "skip",
+        explanation: "人気なのに展開不向きで、買う価値が薄いです。こういうレースは見送るのが正解です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "テラ（7.1倍）" },
+          { label: "展開", value: "道悪＋内枠でロスなく運べる" },
+          { label: "不安材料", value: "極端な瞬発力勝負になると弱い" },
+          { label: "判断ポイント", value: "今回は条件がハマる" }
+        ],
+        answer: "buy",
+        explanation: "条件の後押しが強く、オッズも悪くないです。こういう『条件ハマり』は買い時です。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ノクス（3.9倍）" },
+          { label: "展開", value: "差し届くかどうか微妙" },
+          { label: "不安材料", value: "人気馬に明確な優位なし" },
+          { label: "判断ポイント", value: "やや難解で手を出しづらい" }
+        ],
+        answer: "skip",
+        explanation: "難解で優位性が薄いレースです。勝てる人ほど、こういう場面を見送ります。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ルミナ（5.4倍）" },
+          { label: "展開", value: "ミドルで先行安定型に向く" },
+          { label: "不安材料", value: "大崩れ少なく相手も楽" },
+          { label: "判断ポイント", value: "買う理由が複数ある" }
+        ],
+        answer: "buy",
+        explanation: "条件・脚質・相手関係のバランスが良く、期待値もあります。十分買ってよいレースです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "ストーム（4.4倍）" },
+          { label: "展開", value: "極端な流れでないと不発もある" },
+          { label: "不安材料", value: "能力は高いが再現性が低い" },
+          { label: "判断ポイント", value: "魅力はあるが勝負度は低い" }
+        ],
+        answer: "skip",
+        explanation: "魅力はあるものの、勝負するだけの安定材料が不足しています。こういう時は見送る方が上手いです。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "アクア（6.2倍）" },
+          { label: "展開", value: "広いコースで差し向き" },
+          { label: "不安材料", value: "人気もほどほどで狙い頃" },
+          { label: "判断ポイント", value: "過剰人気ではなく条件も良い" }
+        ],
+        answer: "buy",
+        explanation: "条件好転＋人気ほどでもない、という理想形です。こういうレースは買う価値があります。"
+      },
+      {
+        details: [
+          { label: "本命候補", value: "フレア（3.0倍）" },
+          { label: "展開", value: "単騎なら残るが、同型が読みにくい" },
+          { label: "不安材料", value: "展開が読みにくくブレ大きい" },
+          { label: "判断ポイント", value: "迷うレースは見送るのも技術" }
+        ],
+        answer: "skip",
+        explanation: "展開の読みが難しく、結果がブレやすいレースです。こういう曖昧な場面は見送るのが正解です。"
+      }
+    ];
+
+    function shuffle(array) {
+      const copied = [...array];
+      for (let i = copied.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copied[i], copied[j]] = [copied[j], copied[i]];
+      }
+      return copied;
+    }
+
+    let selectedQuizzes = [];
+    let current = 0;
+    let score = 0;
+    let answered = false;
+
+    const summaryBox = document.getElementById("summaryBox");
+    const questionNo = document.getElementById("questionNo");
+    const scoreEl = document.getElementById("score");
+    const raceTitle = document.getElementById("raceTitle");
+    const resultBox = document.getElementById("resultBox");
+    const resultTitle = document.getElementById("resultTitle");
+    const explain = document.getElementById("explain");
+    const nextBtn = document.getElementById("nextBtn");
+    const rewardBtn = document.getElementById("rewardBtn");
+    const retryBtn = document.getElementById("retryBtn");
+    const choices = document.getElementById("choices");
+
+    function setupGame() {
+      selectedQuizzes = shuffle(allQuizzes).slice(0, 5);
+      current = 0;
+      score = 0;
+      answered = false;
+      rewardBtn.style.display = "none";
+      retryBtn.style.display = "none";
+      nextBtn.style.display = "block";
+      renderQuiz();
+    }
+
+    function renderQuiz() {
+      answered = false;
+      resultBox.style.display = "none";
+      choices.style.display = "grid";
+
+      const quiz = selectedQuizzes[current];
+      questionNo.textContent = current + 1;
+      scoreEl.textContent = score;
+      raceTitle.textContent = `第${current + 1}問`;
+
+      summaryBox.innerHTML = "";
+      quiz.details.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "summary-card";
+        div.innerHTML = `
+          <div class="summary-label">${item.label}</div>
+          <div class="summary-value">${item.value}</div>
+        `;
+        summaryBox.appendChild(div);
+      });
+    }
+
+    function answer(selected) {
+      if (answered) return;
+      answered = true;
+
+      const quiz = selectedQuizzes[current];
+      const correct = selected === quiz.answer;
+
+      resultBox.style.display = "block";
+      choices.style.display = "none";
+
+      if (correct) {
+        score++;
+        scoreEl.textContent = score;
+        resultBox.className = "result-box correct";
+        resultTitle.textContent = "🎉 正解！";
+      } else {
+        resultBox.className = "result-box wrong";
+        resultTitle.textContent = "❌ 不正解";
+      }
+
+      const answerText = quiz.answer === "buy" ? "買う" : "見送る";
+      explain.textContent = `正解は「${answerText}」です。${quiz.explanation}`;
+
+      if (current === selectedQuizzes.length - 1) {
+        nextBtn.style.display = "none";
+        retryBtn.style.display = "block";
+        if (score >= 3) {
+          rewardBtn.style.display = "block";
+        } else {
+          rewardBtn.style.display = "none";
+        }
+      } else {
+        nextBtn.style.display = "block";
+        retryBtn.style.display = "none";
+        rewardBtn.style.display = "none";
+      }
+    }
+
+    function nextQuestion() {
+      current++;
+      renderQuiz();
+    }
+
+    function restartGame() {
+      setupGame();
+    }
+
+    setupGame();
+  </script>
+</body>
+</html>
