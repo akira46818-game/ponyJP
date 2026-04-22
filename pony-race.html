@@ -1,173 +1,417 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ポニーレース</title>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  />
+  <title>ポニーレース</title>
 
-<style>
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background: #2e7d32;
-  color: white;
-  text-align: center;
-}
-
-h1 {
-  margin-top: 10px;
-}
-
-canvas {
-  width: 100%;
-  max-width: 800px;
-  background: #3fa34d;
-  border-radius: 10px;
-}
-
-.buttons {
-  margin-top: 10px;
-}
-
-button {
-  margin: 5px;
-  padding: 12px;
-  font-size: 18px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-}
-
-.start { background: gold; color: black; }
-
-.result {
-  margin-top: 10px;
-  font-size: 22px;
-}
-</style>
-</head>
-
-<body>
-
-<h1>🏇 ポニーレース</h1>
-
-<canvas id="game" width="800" height="300"></canvas>
-
-<div class="buttons">
-  <button onclick="boost(0)">🐎 逃げ</button>
-  <button onclick="boost(1)">🐴 先行</button>
-  <button onclick="boost(2)">🦄 差し</button>
-  <button onclick="boost(3)">🐐 わたし🔥</button>
-</div>
-
-<button class="start" onclick="startRace()">スタート！</button>
-
-<div class="result" id="result"></div>
-
-<script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-const FINISH = 700;
-
-let ponies;
-let running = false;
-let winner = null;
-
-function reset() {
-  ponies = [
-    { x: 20, y: 60, base: 3.2, boost: 0, name: "逃げ", icon: "🐎" },
-    { x: 20, y: 120, base: 2.6, boost: 0, name: "先行", icon: "🐴" },
-    { x: 20, y: 180, base: 2.2, boost: 0, name: "差し", icon: "🦄" },
-    { x: 20, y: 240, base: 2.0, boost: 0, name: "わたし", icon: "🐐" }
-  ];
-  running = false;
-  winner = null;
-  document.getElementById("result").textContent = "";
-}
-
-reset();
-
-function startRace() {
-  reset();
-  running = true;
-}
-
-function boost(i) {
-  if (!running) return;
-
-  if (ponies[i].name === "わたし") {
-    ponies[i].boost += 2.5; // 自分は強い🔥
-  } else {
-    ponies[i].boost += 0.8;
-  }
-}
-
-function update() {
-  if (!running) return;
-
-  ponies.forEach(p => {
-    let random = Math.random() * 1.5;
-
-    // 差しは後半強い
-    if (p.name === "差し" && p.x > 300) {
-      random += 1.5;
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    // ラストスパート
-    if (p.x > 500) {
-      random += Math.random() * 2;
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #2e7d32;
+      color: white;
+      text-align: center;
     }
 
-    p.x += p.base + random + p.boost;
-    p.boost *= 0.9;
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
 
-    if (p.x >= FINISH && !winner) {
-      winner = p.name;
-      running = false;
+    .wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 10px 12px 30px;
+    }
 
-      if (winner === "わたし") {
-        document.getElementById("result").textContent =
-          "🎉 わたしが勝った！ガチャへGO！";
-        
-        setTimeout(() => {
-          window.location.href = "coin.html"; // ←ここガチャページ
-        }, 1500);
+    h1 {
+      margin: 8px 0 6px;
+      font-size: 30px;
+    }
 
-      } else {
-        document.getElementById("result").textContent =
-          "負けた…もう一回！";
+    .sub {
+      font-size: 15px;
+      opacity: 0.9;
+      margin-bottom: 10px;
+    }
+
+    .game-box {
+      background: rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      margin: 0 auto;
+      background: #3fa34d;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,0.18);
+      touch-action: manipulation;
+    }
+
+    .info {
+      margin-top: 10px;
+      font-size: 15px;
+      opacity: 0.95;
+    }
+
+    .result {
+      margin-top: 12px;
+      min-height: 30px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 10px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn1 { background: #ffb3c1; color: #222; }
+    .btn2 { background: #ffd6a5; color: #222; }
+    .btn3 { background: #caffbf; color: #222; }
+    .btn4 { background: #9bf6ff; color: #222; }
+
+    .start-btn {
+      margin-top: 12px;
+      width: 100%;
+      background: gold;
+      color: #222;
+      font-size: 22px;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 26px;
+      }
+
+      .result {
+        font-size: 22px;
+      }
+
+      button {
+        font-size: 18px;
+        padding: 13px 8px;
       }
     }
-  });
-}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🏇 ポニーレース</h1>
+    <div class="sub">ボタンをタップして応援！ いちばん先にゴールを目指そう！</div>
 
-function draw() {
-  ctx.clearRect(0,0,800,300);
+    <div class="game-box">
+      <canvas id="game" width="800" height="320"></canvas>
 
-  // 芝
-  ctx.fillStyle = "#3fa34d";
-  ctx.fillRect(0,0,800,300);
+      <div class="info">
+        いちばん下の <strong>「わたし」</strong> をたくさん応援して勝とう🔥
+      </div>
 
-  // ゴール
-  ctx.fillStyle = "white";
-  ctx.fillRect(FINISH, 0, 5, 300);
+      <div class="result" id="result"></div>
 
-  // ポニー
-  ctx.font = "30px Arial";
-  ponies.forEach(p => {
-    ctx.fillText(p.icon + " " + p.name, p.x, p.y);
-  });
-}
+      <div class="buttons">
+        <button class="btn1" id="btn0">🐎 逃げ</button>
+        <button class="btn2" id="btn1">🐴 先行</button>
+        <button class="btn3" id="btn2">🦄 差し</button>
+        <button class="btn4" id="btn3">🐐 わたし</button>
+      </div>
 
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
+      <button class="start-btn" id="startBtn">スタート！</button>
+    </div>
+  </div>
 
-loop();
-</script>
+  <script>
+    // ダブルタップ拡大対策
+    let lastTouchEnd = 0;
+    document.addEventListener(
+      "touchend",
+      function (event) {
+        const now = Date.now();
+        if (now - lastTouchEnd <= 300) {
+          event.preventDefault();
+        }
+        lastTouchEnd = now;
+      },
+      { passive: false }
+    );
 
+    // ジェスチャー拡大対策（iPhone系）
+    document.addEventListener("gesturestart", function (event) {
+      event.preventDefault();
+    });
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const resultEl = document.getElementById("result");
+    const startBtn = document.getElementById("startBtn");
+
+    const FINISH_X = 710;
+    const LANES = [60, 130, 200, 270];
+
+    let ponies = [];
+    let running = false;
+    let winner = null;
+    let raceStarted = false;
+
+    function resetRace() {
+      ponies = [
+        {
+          x: 30,
+          y: LANES[0],
+          name: "逃げ",
+          icon: "🐎",
+          baseSpeed: 2.8,
+          boost: 0,
+          color: "#ffb3c1"
+        },
+        {
+          x: 30,
+          y: LANES[1],
+          name: "先行",
+          icon: "🐴",
+          baseSpeed: 2.4,
+          boost: 0,
+          color: "#ffd6a5"
+        },
+        {
+          x: 30,
+          y: LANES[2],
+          name: "差し",
+          icon: "🦄",
+          baseSpeed: 2.0,
+          boost: 0,
+          color: "#caffbf"
+        },
+        {
+          x: 30,
+          y: LANES[3],
+          name: "わたし",
+          icon: "🐐",
+          baseSpeed: 1.9,
+          boost: 0,
+          color: "#9bf6ff"
+        }
+      ];
+
+      running = false;
+      winner = null;
+      raceStarted = false;
+      resultEl.textContent = "";
+    }
+
+    function startRace() {
+      resetRace();
+      running = true;
+      raceStarted = true;
+      resultEl.textContent = "スタート！ がんばれー！";
+    }
+
+    function boostPony(index) {
+      if (!running || winner) return;
+
+      const pony = ponies[index];
+      if (!pony) return;
+
+      if (pony.name === "わたし") {
+        pony.boost += 2.2;
+      } else {
+        pony.boost += 0.9;
+      }
+    }
+
+    function updateRace() {
+      if (!running || winner) return;
+
+      for (const pony of ponies) {
+        let random = Math.random() * 1.0;
+
+        // 脚質の個性
+        if (pony.name === "逃げ") {
+          // 前半に強い
+          if (pony.x < 320) random += 1.0;
+        }
+
+        if (pony.name === "先行") {
+          // 安定型
+          random += 0.4;
+        }
+
+        if (pony.name === "差し") {
+          // 後半に強い
+          if (pony.x > 320) random += 1.8;
+        }
+
+        if (pony.name === "わたし") {
+          // タップで大きく伸びる
+          random += 0.2;
+          if (pony.x > 500) {
+            random += 0.6;
+          }
+        }
+
+        // ラストスパート
+        if (pony.x > 540) {
+          random += Math.random() * 1.8;
+        }
+
+        const speed = pony.baseSpeed + random + pony.boost;
+        pony.x += speed;
+
+        // ブースト減衰
+        pony.boost *= 0.84;
+
+        // ゴール判定
+        if (pony.x >= FINISH_X && !winner) {
+          winner = pony.name;
+          running = false;
+
+          if (winner === "わたし") {
+            resultEl.textContent = "🎉 わたしが勝った！ ガチャへGO！";
+            setTimeout(() => {
+              window.location.href = "coin.html";
+            }, 1400);
+          } else {
+            resultEl.textContent = `🏁 ${winner} が勝ち！ もう一回チャレンジ！`;
+          }
+        }
+      }
+    }
+
+    function drawTrack() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // 芝
+      for (let i = 0; i < canvas.height; i += 24) {
+        ctx.fillStyle = i % 48 === 0 ? "#3fa34d" : "#48b05a";
+        ctx.fillRect(0, i, canvas.width, 24);
+      }
+
+      // レーン
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      ctx.lineWidth = 2;
+      for (let i = 0; i < LANES.length; i++) {
+        const y = LANES[i] + 18;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
+      }
+
+      // ゴールライン
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(FINISH_X, 0, 8, canvas.height);
+
+      // GOAL文字
+      ctx.save();
+      ctx.fillStyle = "#111";
+      ctx.font = "bold 18px sans-serif";
+      ctx.fillText("GOAL", FINISH_X - 18, 20);
+      ctx.restore();
+
+      // 市松模様っぽいゴール
+      const block = 16;
+      for (let y = 0; y < canvas.height; y += block) {
+        ctx.fillStyle = (Math.floor(y / block) % 2 === 0) ? "#000" : "#fff";
+        ctx.fillRect(FINISH_X + 8, y, 14, block);
+      }
+    }
+
+    function drawPonies() {
+      ctx.font = "30px sans-serif";
+
+      for (const pony of ponies) {
+        // 名前ラベル
+        ctx.fillStyle = "rgba(0,0,0,0.35)";
+        ctx.fillRect(pony.x - 8, pony.y - 30, 90, 24);
+
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 16px sans-serif";
+        ctx.fillText(pony.name, pony.x, pony.y - 12);
+
+        // 馬アイコン
+        ctx.font = "32px sans-serif";
+        ctx.fillText(pony.icon, pony.x, pony.y + 18);
+      }
+    }
+
+    function draw() {
+      drawTrack();
+      drawPonies();
+    }
+
+    function loop() {
+      updateRace();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    // ボタン操作
+    function bindTap(buttonId, index) {
+      const btn = document.getElementById(buttonId);
+
+      const handler = (e) => {
+        e.preventDefault();
+        boostPony(index);
+      };
+
+      btn.addEventListener("click", handler);
+      btn.addEventListener("touchstart", handler, { passive: false });
+    }
+
+    bindTap("btn0", 0);
+    bindTap("btn1", 1);
+    bindTap("btn2", 2);
+    bindTap("btn3", 3);
+
+    startBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      startRace();
+    });
+
+    startBtn.addEventListener("touchstart", function (e) {
+      e.preventDefault();
+      startRace();
+    }, { passive: false });
+
+    resetRace();
+    draw();
+    loop();
+  </script>
 </body>
 </html>
