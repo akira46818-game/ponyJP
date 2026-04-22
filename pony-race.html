@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ポニーレース</title>
+<style>
+  body {
+    margin: 0;
+    font-family: "Hiragino Sans","Yu Gothic",sans-serif;
+    background: #2e7d32; /* 芝っぽい */
+    color: #fff;
+    text-align: center;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 10px 12px 16px;
+  }
+  h1 { margin: 8px 0 4px; }
+  .sub { opacity: .9; margin-bottom: 8px; }
+
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 6px 0 10px;
+    font-weight: bold;
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn {
+    border: none;
+    border-radius: 14px;
+    padding: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .b1 { background:#ffadad; }
+  .b2 { background:#ffd6a5; }
+  .b3 { background:#caffbf; }
+  .b4 { background:#9bf6ff; }
+
+  .start {
+    margin-top: 10px;
+    background: gold;
+    color:#333;
+  }
+
+  canvas {
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+    background: #3fa34d;
+    box-shadow: 0 6px 16px rgba(0,0,0,.25);
+  }
+
+  .result {
+    margin-top: 10px;
+    font-size: 22px;
+    min-height: 28px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🏇 ポニーレース</h1>
+  <div class="sub">タップで応援！はやくゴールしたポニーが勝ち！</div>
+
+  <div class="hud">
+    <div>距離: 1200m（イメージ）</div>
+    <div>スピードは前にいるほど有利だよ</div>
+  </div>
+
+  <canvas id="game" width="800" height="360"></canvas>
+
+  <div class="controls">
+    <button class="btn b1" onclick="boost(0)">🐴 ポニー1</button>
+    <button class="btn b2" onclick="boost(1)">🐎 ポニー2</button>
+    <button class="btn b3" onclick="boost(2)">🦄 ポニー3</button>
+    <button class="btn b4" onclick="boost(3)">🐐 ポニー4</button>
+  </div>
+
+  <button class="btn start" onclick="startRace()">スタート！</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const LANE_Y = [70, 140, 210, 280];
+const FINISH_X = 720;
+
+let ponies = [];
+let running = false;
+let winner = null;
+
+// 初期化
+function reset() {
+  ponies = [
+    { x: 40, y: LANE_Y[0], speed: 0, boost: 0, icon: "🐴", name: "ポニー1" },
+    { x: 40, y: LANE_Y[1], speed: 0, boost: 0, icon: "🐎", name: "ポニー2" },
+    { x: 40, y: LANE_Y[2], speed: 0, boost: 0, icon: "🦄", name: "ポニー3" },
+    { x: 40, y: LANE_Y[3], speed: 0, boost: 0, icon: "🐐", name: "ポニー4" },
+  ];
+  running = false;
+  winner = null;
+  document.getElementById("result").textContent = "";
+}
+reset();
+
+// スタート
+function startRace() {
+  reset();
+  running = true;
+}
+
+// 応援（タップで加速）
+function boost(i) {
+  if (!running || winner) return;
+  ponies[i].boost += 0.6; // タップで一時加速
+}
+
+// 更新
+function update() {
+  if (!running || winner) return;
+
+  ponies.forEach(p => {
+    // 前にいるほど少し有利（競馬っぽさ）
+    const positionBonus = (p.x / FINISH_X) * 0.6;
+
+    // ベース速度 + 乱数 + タップブースト
+    p.speed = 1.5 + Math.random()*0.8 + positionBonus + p.boost;
+
+    p.x += p.speed;
+
+    // ブーストは徐々に減衰
+    p.boost *= 0.9;
+
+    // ゴール判定
+    if (p.x >= FINISH_X && !winner) {
+      winner = p.name;
+      document.getElementById("result").textContent = `🎉 ${p.name} が勝ち！`;
+      running = false;
+    }
+  });
+}
+
+// 描画
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // 芝ストライプ
+  for (let i=0;i<canvas.height;i+=20){
+    ctx.fillStyle = i%40===0 ? "#3fa34d" : "#46b15a";
+    ctx.fillRect(0,i,canvas.width,20);
+  }
+
+  // レーン線
+  ctx.strokeStyle = "rgba(255,255,255,0.4)";
+  ctx.lineWidth = 2;
+  LANE_Y.forEach(y => {
+    ctx.beginPath();
+    ctx.moveTo(0, y+20);
+    ctx.lineTo(canvas.width, y+20);
+    ctx.stroke();
+  });
+
+  // ゴールライン
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(FINISH_X, 0, 6, canvas.height);
+  ctx.fillStyle = "#000";
+  ctx.font = "16px Arial";
+  ctx.fillText("GOAL", FINISH_X - 10, 20);
+
+  // ポニー描画
+  ctx.font = "36px Arial";
+  ponies.forEach(p => {
+    ctx.fillText(p.icon, p.x, p.y);
+  });
+}
+
+// ループ
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
+</body>
+</html>
