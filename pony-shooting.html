@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>蹄鉄シューティング</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: linear-gradient(#6ec6ff, #43a047);
+  font-family: sans-serif;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#ui {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  text-shadow: 2px 2px 4px #000;
+}
+
+#message {
+  position: fixed;
+  top: 70px;
+  left: 10px;
+  color: yellow;
+  font-weight: bold;
+  font-size: 18px;
+  text-shadow: 2px 2px 4px #000;
+}
+
+#startBtn {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 16px 34px;
+  font-size: 22px;
+  font-weight: bold;
+  border: none;
+  border-radius: 999px;
+  background: gold;
+  color: #222;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="ui">
+  スコア: <span id="score">0</span><br>
+  ライフ: <span id="life">3</span>
+</div>
+
+<div id="message">🥕を狙って、💀は避けよう！</div>
+
+<button id="startBtn">スタート</button>
+
+<script>
+let lastTouch = 0;
+document.addEventListener("touchend", function(e){
+  const now = Date.now();
+  if (now - lastTouch <= 300) e.preventDefault();
+  lastTouch = now;
+}, { passive:false });
+
+document.addEventListener("gesturestart", function(e){
+  e.preventDefault();
+});
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+const scoreEl = document.getElementById("score");
+const lifeEl = document.getElementById("life");
+const messageEl = document.getElementById("message");
+const startBtn = document.getElementById("startBtn");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const pony = {
+  x: 80,
+  y: window.innerHeight / 2,
+  size: 42
+};
+
+let horseshoes = [];
+let targets = [];
+let score = 0;
+let life = 3;
+let running = false;
+let frame = 0;
+
+function startGame() {
+  horseshoes = [];
+  targets = [];
+  score = 0;
+  life = 3;
+  frame = 0;
+  running = true;
+  pony.y = canvas.height / 2;
+
+  scoreEl.textContent = score;
+  lifeEl.textContent = life;
+  messageEl.textContent = "🥕を狙って、💀は避けよう！";
+  startBtn.style.display = "none";
+}
+
+startBtn.addEventListener("click", startGame);
+startBtn.addEventListener("touchstart", function(e){
+  e.preventDefault();
+  startGame();
+}, { passive:false });
+
+function shoot() {
+  if (!running) return;
+
+  horseshoes.push({
+    x: pony.x + 42,
+    y: pony.y,
+    speed: 10,
+    spin: 0
+  });
+}
+
+function movePony(y) {
+  pony.y = Math.max(50, Math.min(canvas.height - 50, y));
+}
+
+canvas.addEventListener("touchstart", function(e){
+  e.preventDefault();
+  const touch = e.touches[0];
+  movePony(touch.clientY);
+  shoot();
+}, { passive:false });
+
+canvas.addEventListener("touchmove", function(e){
+  e.preventDefault();
+  const touch = e.touches[0];
+  movePony(touch.clientY);
+}, { passive:false });
+
+canvas.addEventListener("click", function(e){
+  movePony(e.clientY);
+  shoot();
+});
+
+canvas.addEventListener("mousemove", function(e){
+  movePony(e.clientY);
+});
+
+function createTarget() {
+  const good = Math.random() > 0.38;
+
+  targets.push({
+    x: canvas.width + 50,
+    y: 70 + Math.random() * (canvas.height - 140),
+    speed: 2 + Math.random() * 2.5,
+    good: good,
+    text: good ? "🥕" : "💀",
+    size: good ? 34 : 40
+  });
+}
+
+function update() {
+  if (!running) return;
+
+  frame++;
+
+  if (frame % 48 === 0) {
+    createTarget();
+  }
+
+  horseshoes.forEach(h => {
+    h.x += h.speed;
+    h.spin += 0.25;
+  });
+
+  targets.forEach(t => {
+    t.x -= t.speed;
+  });
+
+  horseshoes = horseshoes.filter(h => h.x < canvas.width + 80);
+
+  for (let i = targets.length - 1; i >= 0; i--) {
+    const t = targets[i];
+
+    if (t.x < -80) {
+      targets.splice(i, 1);
+      continue;
+    }
+
+    for (let j = horseshoes.length - 1; j >= 0; j--) {
+      const h = horseshoes[j];
+
+      const dx = h.x - t.x;
+      const dy = h.y - t.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 38) {
+        horseshoes.splice(j, 1);
+        targets.splice(i, 1);
+
+        if (t.good) {
+          score += 10;
+          messageEl.textContent = "🥕 にんじんゲット！";
+        } else {
+          life -= 1;
+          messageEl.textContent = "💀 ドクロに当たった！";
+        }
+
+        scoreEl.textContent = score;
+        lifeEl.textContent = life;
+
+        if (life <= 0) {
+          gameOver();
+        }
+
+        break;
+      }
+    }
+  }
+}
+
+function gameOver() {
+  running = false;
+  messageEl.textContent = "ゲーム終了！もう一度チャレンジ！";
+  startBtn.textContent = "もう一度";
+  startBtn.style.display = "block";
+}
+
+function drawBackground() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "#6ec6ff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height * 0.55);
+
+  ctx.fillStyle = "#43a047";
+  ctx.fillRect(0, canvas.height * 0.55, canvas.width, canvas.height * 0.45);
+
+  ctx.fillStyle = "rgba(255,255,255,0.35)";
+  for (let i = 0; i < canvas.width; i += 70) {
+    ctx.fillRect(i, canvas.height * 0.55 + 35, 35, 4);
+  }
+}
+
+function drawPony() {
+  ctx.font = "44px sans-serif";
+  ctx.fillText("🐴", pony.x, pony.y);
+
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "white";
+  ctx.fillText("ポニー", pony.x - 4, pony.y + 24);
+}
+
+function drawHorseshoes() {
+  ctx.font = "30px sans-serif";
+
+  horseshoes.forEach(h => {
+    ctx.save();
+    ctx.translate(h.x, h.y);
+    ctx.rotate(h.spin);
+    ctx.fillText("🧲", -14, 10);
+    ctx.restore();
+  });
+}
+
+function drawTargets() {
+  targets.forEach(t => {
+    ctx.font = `${t.size}px sans-serif`;
+    ctx.fillText(t.text, t.x, t.y);
+  });
+}
+
+function drawGameOver() {
+  if (running || life > 0) return;
+
+  ctx.fillStyle = "rgba(0,0,0,0.55)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.font = "bold 36px sans-serif";
+  ctx.fillText("ゲーム終了", canvas.width / 2, canvas.height / 2 - 25);
+
+  ctx.font = "24px sans-serif";
+  ctx.fillText("スコア: " + score, canvas.width / 2, canvas.height / 2 + 20);
+
+  ctx.textAlign = "left";
+}
+
+function draw() {
+  drawBackground();
+  drawPony();
+  drawHorseshoes();
+  drawTargets();
+  drawGameOver();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
