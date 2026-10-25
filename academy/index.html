@@ -1,0 +1,1566 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#173f88">
+  <meta name="description" content="ポニーランド学園の敷地をめぐり、虹色ミニマート・図書館・自習室で遊んで学べる絵本ゲームです。">
+  <title>ポニーランド学園アプリ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#513d59;
+  --pink:#ff75b5;
+  --pink-deep:#ef4f98;
+  --cream:#fff8e8;
+  --gold:#ffc83d;
+  --green:#50c878;
+  --blue:#5cc8ff;
+  font-family:"Shippori Mincho","Yu Mincho","YuMincho","Hiragino Mincho ProN","Hiragino Mincho Pro","Noto Serif JP",serif;
+  font-feature-settings:"palt" 1;
+  font-kerning:normal;
+  color:var(--ink);
+  background:#fff5fb;
+  -webkit-tap-highlight-color:transparent;
+}
+*{box-sizing:border-box}
+html,body,#app{width:100%;min-height:100%;margin:0}
+body{overflow-x:hidden;background:linear-gradient(180deg,#9de3ff 0,#fff6e6 68%,#ffe7f4 100%)}
+button{font:inherit;color:inherit}
+.screen{display:none;min-height:100vh}
+.screen.active{display:block}
+.hero{position:relative;z-index:1;text-align:center;padding:54px 20px 26px}
+.crest{width:72px;height:72px;margin:0 auto 8px;border:6px solid #fff;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#ffd966,#ff9fc8);color:#fff;font-size:34px;box-shadow:0 10px 25px #8a5a8440}
+.eyebrow{margin:0;color:#d14c8b;font-size:12px;font-weight:900;letter-spacing:.16em}
+.hero h1{margin:5px 0 4px;font-size:clamp(34px,7vw,58px);line-height:1.1;color:#7a4a87;text-shadow:0 3px #fff}
+.hero-copy{margin:10px 0 0;font-weight:800;color:#6c5872}
+.sky-deco{position:absolute;inset:0 0 auto;height:270px;overflow:hidden;pointer-events:none}
+.sky-deco:after{content:"";position:absolute;width:520px;height:220px;left:50%;top:-145px;transform:translateX(-50%);border:24px solid #fff8;border-radius:50%}
+.sky-deco i{position:absolute;width:100px;height:32px;border-radius:50%;background:#fff9;filter:blur(1px)}
+.sky-deco i:nth-child(1){top:55px;left:6%}.sky-deco i:nth-child(2){top:110px;right:8%;width:140px}.sky-deco i:nth-child(3){top:180px;left:18%;width:70px}
+.home-grid{position:relative;z-index:1;width:min(1240px,94%);margin:0 auto 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.home-card{position:relative;min-height:330px;padding:26px 22px 22px;border:0;border-radius:30px;text-align:left;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;cursor:pointer;box-shadow:0 18px 45px #704f7a26, inset 0 0 0 3px #fff9;transition:transform .2s,box-shadow .2s}
+.home-card:not(:disabled):hover{transform:translateY(-6px);box-shadow:0 24px 55px #704f7a3b,inset 0 0 0 3px #fff}
+.home-card:focus-visible{outline:5px solid #5642a7;outline-offset:3px}
+.game-card{background:linear-gradient(145deg,#dffcc9,#a6e988)}
+.book-card{background:linear-gradient(145deg,#ffe2f1,#ffb5d6)}
+.character-card{background:linear-gradient(145deg,#fff4c9,#f5d46f)}
+.soon-card{background:linear-gradient(145deg,#e7e3ff,#cfc5ff);cursor:default;opacity:.82}
+.card-badge{position:absolute;top:17px;right:17px;padding:7px 12px;border-radius:99px;background:#f14e76;color:#fff;font-size:11px;font-weight:1000;letter-spacing:.08em}
+.card-art{font-size:78px;line-height:1;filter:drop-shadow(0 10px 8px #5b495033);margin:4px 0 20px}
+.pony-art{transform:rotate(-5deg)}
+.card-art-img{width:112px;height:112px;margin:0 0 12px;object-fit:contain;object-position:center;background:transparent;filter:drop-shadow(0 9px 8px #67503633)}
+.official-badge{background:#725099}
+.card-kicker{font-size:12px;font-weight:900;color:#6b5472;margin-bottom:6px}
+.home-card strong{font-size:26px;line-height:1.25;color:#513d59}
+.home-card small{font-size:13px;font-weight:700;line-height:1.6;margin-top:9px;min-height:42px}
+.play-pill,.soon-pill{margin-top:auto;padding:11px 15px;border-radius:99px;background:#fff;color:#d54888;font-weight:1000;font-size:13px;box-shadow:0 6px 15px #7652671c}
+.game-card .play-pill{color:#2d9652}.character-card .play-pill{color:#8a6514}.soon-pill{color:#7163a7}
+.home-footer{text-align:center;padding:0 10px 30px;font-size:12px;font-weight:700;color:#715d76}
+
+.game-screen{position:fixed;inset:0;background:#28233a;min-height:100dvh;overflow:hidden;overscroll-behavior:none}
+.game-shell{position:relative;width:min(100vw,500px);height:100dvh;min-height:650px;margin:auto;background:#a5dc8b;overflow:hidden;box-shadow:0 0 60px #0008}
+.game-topbar{position:absolute;z-index:20;top:0;left:0;right:0;height:calc(78px + env(safe-area-inset-top));display:flex;align-items:center;gap:7px;padding:calc(10px + env(safe-area-inset-top)) 8px 10px;background:linear-gradient(180deg,#56355edd,#56355e00);color:#fff;pointer-events:none}
+.game-topbar>*{pointer-events:auto}
+.round-button{width:43px;height:43px;flex:0 0 43px;border:2px solid #fff9;border-radius:50%;background:#6b4778dd;color:#fff;font-weight:1000;font-size:18px;box-shadow:0 4px 12px #1d172644}
+.day-chip{width:42px;height:48px;border-radius:13px;background:#fff;color:#754b7d;display:grid;place-items:center;line-height:1;box-shadow:0 4px 12px #1d172633}
+.day-chip small{font-size:8px;margin-top:6px}.day-chip b{font-size:22px;margin-top:-5px}
+.goal-wrap{flex:1;min-width:90px;background:#fff;border-radius:15px;padding:6px 8px;box-shadow:0 4px 12px #1d172633}
+.goal-label{display:flex;justify-content:space-between;color:#67476e;font-size:10px;font-weight:900;margin-bottom:4px}.goal-track{height:8px;border-radius:99px;background:#eadbea;overflow:hidden}.goal-track i{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ffb52f,#ff668e);transition:width .3s}
+.coin-chip{height:43px;min-width:70px;padding:0 9px;border-radius:15px;background:#fff;color:#6d4b74;display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 4px 12px #1d172633}
+.objective{position:absolute;z-index:18;top:calc(76px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);width:max-content;max-width:88%;padding:9px 16px;border-radius:99px;background:#fffdeb;color:#684b70;font-size:12px;font-weight:1000;box-shadow:0 7px 18px #3c295d33;transition:opacity .2s;pointer-events:none}
+.canvas-wrap{position:absolute;inset:0;touch-action:none;overscroll-behavior:none;user-select:none;-webkit-user-select:none}
+#gameCanvas{display:block;width:100%;height:100%;touch-action:none}
+.stock-panel{position:absolute;z-index:15;top:calc(118px + env(safe-area-inset-top));left:10px;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:12px;background:#fffdf0ed;color:#5b4263;font-size:10px;font-weight:1000;box-shadow:0 5px 12px #2e1a3329;white-space:nowrap;pointer-events:none}.stock-panel span{display:inline-flex;align-items:center;gap:1px}.stock-panel b{font-variant-numeric:tabular-nums}.stock-panel [hidden]{display:none}.stock-title{padding-right:5px;border-right:1px solid #cbb8ca;color:#8b6b8e}
+.stock-icon{width:18px;height:18px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 2px 2px #173f8844)}.carry-chip .stock-icon{width:21px;height:21px;margin-right:3px}
+.carry-chip{position:absolute;z-index:15;top:calc(118px + env(safe-area-inset-top));right:10px;padding:7px 10px;border-radius:12px;background:#523a60dc;color:#fff;font-weight:900;font-size:11px;box-shadow:0 5px 12px #2e1a3333;pointer-events:none}.carry-chip[hidden]{display:none}
+.mobile-controls{position:absolute;z-index:19;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));display:flex;align-items:flex-end;justify-content:flex-end;padding:0 24px;pointer-events:none}
+.joystick{display:none!important;width:118px;height:118px;border-radius:50%;background:#4b376077;border:3px solid #fff8;box-shadow:inset 0 0 0 12px #fff1;pointer-events:auto;touch-action:none;position:relative}
+.joystick i{position:absolute;width:54px;height:54px;left:29px;top:29px;border-radius:50%;background:linear-gradient(145deg,#fff,#d9cee5);box-shadow:0 6px 12px #35254166;transform:translate(0,0)}
+.action-button{width:91px;height:91px;margin-right:clamp(70px,20vw,100px);border:5px solid #fff9;border-radius:50%;background:linear-gradient(145deg,#ff8fc1,#eb4e98);color:#fff;box-shadow:0 9px 18px #792b5c66;display:grid;place-items:center;align-content:center;pointer-events:auto;touch-action:none}.action-button b{font-size:26px;line-height:1}.action-button span{font-size:8px;font-weight:900}.action-button.pulse{animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.09);box-shadow:0 0 0 15px #fff4}}
+#floatingLayer{position:absolute;inset:0;z-index:14;pointer-events:none}.float-text{position:absolute;font-weight:1000;color:#fff;text-shadow:0 2px 3px #583e63;animation:floatUp .9s forwards}@keyframes floatUp{to{transform:translateY(-45px) scale(1.15);opacity:0}}
+
+.book-screen{position:fixed;inset:0;z-index:50;background:#fff}.book-screen.active{display:block}.book-close{position:fixed;z-index:55;top:max(10px,env(safe-area-inset-top));left:12px;border:0;border-radius:99px;padding:11px 17px;background:#5e3c6edb;color:#fff;font-size:13px;font-weight:900;box-shadow:0 6px 16px #281d2d44}.book-screen iframe{width:100%;height:100dvh;border:0;background:#fff}
+
+.modal{position:fixed;inset:0;z-index:100;display:none;place-items:center;padding:22px;background:#32253bba;backdrop-filter:blur(7px)}.modal.open{display:grid}.modal-card{width:min(390px,100%);padding:28px;border-radius:30px;background:#fffaf0;text-align:center;box-shadow:0 30px 80px #1b101f88;border:4px solid #fff}.modal-card h2{margin:8px 0 10px;font-size:30px;color:#65416e}.modal-card p{line-height:1.75;font-weight:700}.modal-pony{font-size:74px;filter:drop-shadow(0 8px 6px #5b3d5d33)}.howto-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:18px 0}.howto-row span{background:#efe8f1;padding:8px 10px;border-radius:12px;font-size:11px;font-weight:900}.primary-button,.secondary-button,.text-button{width:100%;border:0;border-radius:17px;padding:14px;font-weight:1000;margin-top:8px}.primary-button{background:linear-gradient(135deg,#ff78b3,#ef519a);color:#fff;box-shadow:0 8px 18px #c83d7d44}.secondary-button{background:#e9e0ee;color:#65416e}.text-button{background:transparent;color:#a782a8;font-size:12px}.clear-card{background:linear-gradient(180deg,#fff8c8,#fff4fa)}.stars{font-size:40px;color:#ffbd2e;letter-spacing:.08em;text-shadow:0 3px #e38b25}.reward-box{margin:15px 0;padding:13px;border-radius:16px;background:#fff;border:2px dashed #f3af35}.reward-box b{font-size:20px;margin-left:10px}
+.welcome-card{position:relative;max-height:94dvh;overflow:auto;padding:20px;background:linear-gradient(180deg,#fff8c9 0%,#fff4fb 48%,#e9ffd9 100%);border-color:#fff7c7}
+.welcome-card:before,.welcome-card:after{content:'★';position:absolute;color:#ffc83d;font-size:34px;animation:welcomeTwinkle 1.2s ease-in-out infinite alternate}.welcome-card:before{left:18px;top:18px}.welcome-card:after{right:18px;top:22px;animation-delay:.45s}
+.motivation-stars{color:#ffb52f;font-size:27px;letter-spacing:.12em;text-shadow:0 3px #fff;margin-bottom:2px}.motivation-kicker{display:inline-block;margin:0;padding:5px 13px;border-radius:99px;background:#ff6fae;color:#fff;font-size:11px;font-weight:1000;letter-spacing:.08em}.welcome-card h2{margin:6px 0 9px;color:#754485;font-size:clamp(26px,7vw,34px);line-height:1.15}.reward-callout{display:flex;align-items:center;justify-content:center;gap:9px;margin:7px 0 9px;padding:11px 8px;border:3px solid #ffd65e;border-radius:20px;background:#fff;box-shadow:0 8px 20px #d77ca12b}.reward-callout>span{font-size:32px;animation:rewardBounce 1.25s ease-in-out infinite}.reward-callout>span:last-child{animation-delay:.3s}.reward-callout strong{font-size:16px;line-height:1.35;color:#68476e}.reward-callout em{color:#ed4f96;font-size:19px;font-style:normal}.reward-note{display:inline-block;margin:0 0 6px;padding:4px 10px;border-radius:99px;background:#6e4b7f;color:#fff;font-size:10px;font-weight:900}.welcome-character{width:108px;height:108px;object-fit:contain;object-position:center;background:transparent;filter:drop-shadow(0 8px 8px #5b3d5d44);animation:ponyHello 1.6s ease-in-out infinite}.welcome-guide{margin:3px 0 7px!important;font-size:11px;line-height:1.55!important}.welcome-card .howto-row{margin:9px 0 5px}.welcome-card .howto-row span{padding:6px 8px;font-size:10px}.start-sparkle-button{font-size:18px;background:linear-gradient(135deg,#ff67aa,#f04991 55%,#ff9c3f);box-shadow:0 9px 20px #c83d7d55;animation:startGlow 1.25s ease-in-out infinite alternate}
+@keyframes welcomeTwinkle{to{transform:scale(1.25) rotate(14deg);opacity:.65}}@keyframes rewardBounce{50%{transform:translateY(-5px) rotate(-4deg)}}@keyframes ponyHello{50%{transform:translateY(-4px)}}@keyframes startGlow{to{transform:scale(1.025);box-shadow:0 11px 25px #c83d7d77}}
+.completion-modal-card{width:min(440px,96vw);max-height:94vh;overflow:auto;padding:20px;background:linear-gradient(180deg,#fff4ca,#fff7ee 45%,#ffe9f2)}.completion-modal-card h2{font-size:25px}.completion-modal-card>p{margin:5px 0 10px;font-size:12px}.completion-modal-card canvas{display:block;width:min(100%,330px);height:auto;margin:8px auto;border-radius:22px;box-shadow:0 12px 28px #59384655;background:#25142d}.serial-caption{padding:8px;border-radius:12px;background:#fff;border:1px solid #e7bd58;word-break:break-all}.serial-caption b{color:#a84872}
+.character-modal-card{position:relative;width:min(920px,96vw);max-height:92vh;overflow:auto;padding:24px}.modal-close{position:absolute;right:14px;top:12px;width:40px;height:40px;border:0;border-radius:50%;background:#6a4b73;color:#fff;font-size:24px;font-weight:900}.character-note{margin:3px 0 16px!important;font-size:12px}.character-layout{display:grid;grid-template-columns:minmax(320px,1fr) minmax(300px,1.1fr);gap:18px;text-align:left}.character-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;align-content:start}.character-choice{position:relative;padding:7px;border:3px solid transparent;border-radius:17px;background:#f2e9f1;cursor:pointer;text-align:center}.character-choice.selected{border-color:#ff65a7;background:#fff3f8;box-shadow:0 5px 15px #c84e8733}.character-choice.helper{border-color:#f0a83b}.character-choice img{width:100%;aspect-ratio:1;object-fit:contain;object-position:center;filter:drop-shadow(0 4px 3px #4b36502b)}.character-choice.helper img{object-fit:cover;border-radius:50%}.character-choice b{display:block;font-size:11px;margin-top:5px}.character-choice small{font-size:8px}.character-preview{padding:13px;border-radius:20px;background:#f5edf5}.character-preview img{display:block;width:100%;max-height:330px;object-fit:contain;border-radius:14px;background:#fff}.preview-title{display:flex;align-items:center;justify-content:space-between;margin:2px 2px 9px}.preview-title b{font-size:21px}.preview-title span{font-weight:900;color:#8b6a90}.character-preview p{min-height:28px;margin:8px 2px!important;font-size:12px}.character-preview .primary-button:disabled{background:#aaa;box-shadow:none}
+.character-choice.helper img{object-fit:contain;border-radius:0}
+.toast{position:fixed;z-index:200;left:50%;bottom:150px;transform:translate(-50%,20px);opacity:0;pointer-events:none;padding:10px 16px;border-radius:99px;background:#4c3858ed;color:#fff;font-weight:900;font-size:12px;transition:.25s}.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media(max-width:1000px){.home-grid{grid-template-columns:repeat(2,1fr);max-width:800px}}
+@media(max-width:760px){.home-grid{grid-template-columns:1fr;max-width:460px}.home-card{min-height:235px}.card-art{font-size:60px;margin-bottom:12px}.hero{padding-top:35px}.home-card strong{font-size:23px}.character-layout{grid-template-columns:1fr}.character-grid{grid-template-columns:repeat(4,1fr)}.character-preview img{max-height:240px}}
+@media(min-width:761px){.mobile-controls{opacity:.82}.game-shell{border-left:5px solid #fff4;border-right:5px solid #fff4}}
+@media(max-width:420px){.game-topbar{gap:4px;padding-left:4px;padding-right:4px}.round-button{width:38px;height:38px;flex-basis:38px;font-size:16px}.day-chip{width:38px}.coin-chip{min-width:54px;padding:0 5px}.goal-wrap{min-width:62px;padding-left:6px;padding-right:6px}.goal-label>span:first-child{display:none}.stock-panel{left:7px;padding:6px;gap:4px}.carry-chip{right:7px}}
+@media(pointer:coarse){.mobile-controls{opacity:1;padding:0 18px}.joystick{width:132px;height:132px}.joystick i{width:60px;height:60px;left:33px;top:33px}.action-button{width:100px;height:100px}.round-button,.action-button{cursor:pointer}}
+@media(max-height:690px){.joystick{width:100px;height:100px}.joystick i{width:46px;height:46px;left:24px;top:24px}.action-button{width:80px;height:80px}.mobile-controls{padding:0 17px}.objective{top:calc(70px + env(safe-area-inset-top))}.stock-panel,.carry-chip{top:calc(108px + env(safe-area-inset-top))}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+
+/* Ponyland storybook PNG theme */
+:root{--royal:#17428f;--royal-deep:#102b69;--story-gold:#e9b83f;--ivory:#fffaf0}
+body{background:radial-gradient(circle at 50% 2%,#fff7bd 0 4%,transparent 22%),linear-gradient(180deg,#75cfff 0,#eaf8ff 37%,#fff7df 72%,#ffeaf5 100%)}
+.crest{border-color:#fff8dc;background:radial-gradient(circle at 38% 30%,#fff9b4,#f7c443 45%,#c98a16 100%);box-shadow:0 0 0 4px #2852a9,0 13px 28px #193b7d55}
+.eyebrow{color:#2451a0}.hero h1{color:#1f4590;text-shadow:0 2px #fff,0 5px #e5b43b}.hero-copy{color:#534778}
+.sky-deco:after{border-color:#fff9;box-shadow:0 0 0 7px #f7cf4a55}
+.home-card{border:3px solid #e8b63f;background:linear-gradient(160deg,#fffdf6 0,#fff5dc 55%,#e8f3ff 100%);box-shadow:0 16px 42px #153b7b2b,inset 0 0 0 3px #fff}
+.game-card{background:linear-gradient(145deg,#eefaff,#fff8d9 62%,#e8f7e5)}.book-card{background:linear-gradient(145deg,#fff7fb,#ffe4ef 58%,#fff8d9)}.character-card{background:linear-gradient(145deg,#fffdf4,#fff0bd 58%,#e8f2ff)}.soon-card{background:linear-gradient(145deg,#f8f7ff,#e5e9ff)}
+.card-badge{background:linear-gradient(135deg,#214d9f,#e0a92f);border:2px solid #fff3ba}.home-card strong{color:#173c82}.play-pill,.soon-pill{color:#173c82;border:2px solid #e4b23f;box-shadow:0 6px 15px #173c8222}.home-footer{color:#3b4771}
+
+.game-screen{background:radial-gradient(circle at 50% 20%,#3159a0,#151c42 70%)}
+.game-shell{background:#d9f2ff;border-left:3px solid #e9bd4c;border-right:3px solid #e9bd4c;box-shadow:0 0 70px #000a,inset 0 0 0 2px #fff8}
+.game-topbar{background:linear-gradient(180deg,#102b69f5 0,#163f86e8 68%,#163f8600 100%);filter:drop-shadow(0 5px 6px #07173855)}
+.round-button{border-color:#ffe99a;background:linear-gradient(145deg,#315fb5,#112e70);box-shadow:inset 0 0 0 2px #ffffff33,0 4px 12px #07173866}
+.day-chip,.goal-wrap,.coin-chip{color:#173b82;background:linear-gradient(180deg,#fffef8,#fff3ca);border:2px solid #e7b438;box-shadow:0 4px 14px #07173855}
+.goal-track{background:#d7dff2}.goal-track i{background:linear-gradient(90deg,#f3bc36,#ff73ae,#59bceb)}
+.objective{top:calc(80px + env(safe-area-inset-top));color:#fff;background:linear-gradient(135deg,#163f88f2,#245cb0ed);border:2px solid #f2c54d;box-shadow:0 7px 18px #07173866,inset 0 0 0 2px #ffffff22}
+.stock-panel{color:#173b82;background:#fffaf1f2;border:2px solid #e5b33e;box-shadow:0 5px 15px #102b6944}.stock-title{color:#b16b22;border-right-color:#e0bd66}
+.carry-chip{background:linear-gradient(135deg,#173e86ed,#245fb4ed);border:2px solid #efc84f}
+.action-button{background:radial-gradient(circle at 38% 28%,#ffef91 0 7%,#ff7fbd 10%,#ed4d9a 58%,#173f89 100%);border-color:#ffe68a;box-shadow:0 0 0 4px #173e8acc,0 10px 24px #102b6977,inset 0 0 0 3px #fff7}.action-button b{font-size:29px;text-shadow:0 2px #8f225c}
+.float-text{text-shadow:0 2px 4px #102b69,0 0 8px #102b69}
+.modal{background:#10214bbd}.modal-card,.welcome-card,.completion-modal-card,.character-modal-card{background:linear-gradient(180deg,#fffef8,#fff4d5 52%,#edf5ff);border-color:#e7b63e;box-shadow:0 30px 80px #07173899,inset 0 0 0 3px #fff}.modal-card h2,.welcome-card h2{color:#173e87}.howto-row span{background:#e8f0ff;border:1px solid #d4a839}.primary-button,.start-sparkle-button{background:linear-gradient(135deg,#1d4d9d,#346fc1 50%,#ed5ba3);border:2px solid #f6d563;box-shadow:0 9px 22px #102b6955}.secondary-button{background:#e5edff;color:#173e87;border:2px solid #d7ad43}.reward-callout{border-color:#dfaa31;background:#fffef8}.reward-note{background:#173e87}.toast{background:#123572f2;border:2px solid #edc750;box-shadow:0 7px 22px #07173866}
+
+/* Interactive Ponyland Academy campus */
+.campus-screen{position:fixed;inset:0;min-height:100dvh;overflow:hidden;background:radial-gradient(circle at 50% 18%,#4f8bd0,#173f88 60%,#0a1e49);overscroll-behavior:none}
+.campus-shell{position:relative;width:min(100vw,calc(100dvh * .5628));height:100dvh;min-height:600px;margin:auto;overflow:hidden;background:#dff6ff;box-shadow:0 0 70px #061637aa}
+.campus-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;user-select:none;-webkit-user-drag:none}
+.campus-vignette{position:absolute;inset:0;background:linear-gradient(180deg,#09224d24 0,#09224d00 24%,#07163300 59%,#071633aa 86%,#071633ed 100%);pointer-events:none}
+.campus-header{position:absolute;z-index:5;top:0;left:0;right:0;padding:calc(13px + env(safe-area-inset-top)) 13px 0;text-align:center;pointer-events:none}
+.campus-title{display:inline-block;max-width:88%;padding:8px 22px 10px;border:3px solid #efc64e;border-radius:22px;background:linear-gradient(180deg,#fffef7ee,#fff2cbe8);box-shadow:0 8px 22px #102b6966,inset 0 0 0 2px #fff;color:#173f88;text-shadow:0 2px #fff;font-size:clamp(20px,5.6vw,31px);line-height:1.05}
+.campus-guide{width:max-content;max-width:86%;margin:5px auto 0;padding:5px 12px;border:2px solid #f0c64f;border-radius:99px;background:#173f88e8;color:#fff;font-size:clamp(10px,2.8vw,13px);font-weight:900;box-shadow:0 5px 16px #07173855}
+.facility-hotspots{position:absolute;z-index:6;inset:0;pointer-events:none}
+.facility-hotspot{position:absolute;min-width:116px;min-height:54px;transform:translate(-50%,-50%);border:0;background:transparent;color:#173f88;cursor:pointer;pointer-events:auto;filter:drop-shadow(0 6px 8px #07173866)}
+.facility-hotspot:before{content:'★';display:grid;place-items:center;width:47px;height:47px;margin:auto;border:4px solid #fff7c5;border-radius:50%;background:radial-gradient(circle at 35% 28%,#fff8a7 0 8%,#ff76b1 12%,#df3f8d 65%,#173f88 100%);color:#fff6a1;font-size:29px;line-height:1;box-shadow:0 0 0 3px #e6b83f,0 0 22px #fff7a9;animation:campusPulse 1.8s ease-in-out infinite}
+.facility-hotspot span{display:block;width:max-content;max-width:148px;margin:2px auto 0;padding:5px 10px;border:2px solid #e8b83e;border-radius:99px;background:#fffdf2f2;color:#173f88;font-size:11px;font-weight:1000;white-space:nowrap;box-shadow:0 4px 12px #102b6955}
+.facility-hotspot.selected:before{box-shadow:0 0 0 5px #ff76b1,0 0 32px 12px #fff39aaa;transform:scale(1.08)}
+.facility-hotspot:focus-visible{outline:4px solid #fff;outline-offset:6px;border-radius:24px}
+@keyframes campusPulse{50%{transform:translateY(-4px) scale(1.04);box-shadow:0 0 0 3px #e6b83f,0 0 30px 6px #fff7a9}}
+.facility-panel{position:absolute;z-index:8;left:10px;right:10px;bottom:max(9px,env(safe-area-inset-bottom));padding:12px 12px 10px;border:3px solid #e9bd45;border-radius:27px;background:linear-gradient(160deg,#fffef7f5,#fff1cef2 64%,#eaf4fff2);box-shadow:0 18px 48px #071738aa,inset 0 0 0 2px #fff;backdrop-filter:blur(10px)}
+.facility-summary{display:grid;grid-template-columns:54px 1fr auto;gap:9px;align-items:center}
+.facility-preview-icon{width:54px;height:54px;display:grid;place-items:center;border:3px solid #e5b43d;border-radius:18px;background:linear-gradient(145deg,#fff,#e8f1ff);font-size:29px;box-shadow:0 5px 13px #173f8833}
+.facility-copy{min-width:0}.facility-copy small{display:block;color:#a86b27;font-size:9px;font-weight:1000;letter-spacing:.08em}.facility-copy strong{display:block;margin-top:1px;color:#173f88;font-size:clamp(17px,4.8vw,23px);line-height:1.1}.facility-copy p{margin:4px 0 0;color:#4f4b69;font-size:10px;font-weight:800;line-height:1.35}
+.campus-enter-button{min-width:88px;min-height:54px;padding:8px 12px;border:3px solid #ffe783;border-radius:18px;background:linear-gradient(135deg,#ff79b4,#ed4d99 58%,#214d9b);color:#fff;font-size:12px;font-weight:1000;box-shadow:0 7px 17px #8a245766;cursor:pointer}.campus-enter-button:active{transform:translateY(2px)}.campus-enter-button:focus-visible{outline:4px solid #214d9b;outline-offset:2px}
+.facility-medallions{display:flex;gap:7px;margin-top:9px;overflow-x:auto;scrollbar-width:none;padding:1px 1px 2px}.facility-medallions::-webkit-scrollbar{display:none}
+.facility-medallion{flex:1 0 68px;min-height:50px;padding:5px 4px;border:2px solid #dfb13c;border-radius:15px;background:#fffdf2;color:#173f88;font-size:9px;font-weight:1000;cursor:pointer}.facility-medallion b{display:block;font-size:20px;line-height:1.05}.facility-medallion.selected{background:linear-gradient(145deg,#fff7bf,#ffd9eb);border-color:#ef5ca0;box-shadow:0 0 0 2px #fff,0 4px 12px #b8347044}.facility-medallion.future{color:#8a7890;background:#f6f1f7}
+
+.study-screen{position:fixed;inset:0;min-height:100dvh;overflow:auto;background:#173f88}
+.study-shell{position:relative;width:min(100%,760px);min-height:100dvh;margin:auto;padding:calc(18px + env(safe-area-inset-top)) 18px calc(28px + env(safe-area-inset-bottom));overflow:hidden;background:linear-gradient(180deg,#eaf7ffed,#fff9e9f2)}
+.study-shell:before{content:'';position:absolute;inset:0;background:linear-gradient(#173f8866,#173f8888),url('ponyland-campus-mobile-background.png') center/cover;filter:blur(2px);transform:scale(1.02)}
+.study-content{position:relative;z-index:1}.study-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.study-back{min-width:48px;min-height:48px;border:3px solid #f1c84e;border-radius:50%;background:#173f88e8;color:#fff;font-size:22px;font-weight:1000;box-shadow:0 6px 16px #07173866}.study-heading{flex:1;padding:12px 15px;border:3px solid #e9bd45;border-radius:22px;background:#fffdf3ee;text-align:center;box-shadow:0 8px 22px #07173855}.study-heading small{display:block;color:#b16b22;font-size:10px;font-weight:1000}.study-heading h2{margin:2px 0;color:#173f88;font-size:clamp(25px,7vw,38px)}.study-heading p{margin:3px 0;color:#544c6d;font-size:11px;font-weight:800}
+.study-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}.study-card{min-height:154px;padding:17px 12px;border:3px solid #e7b93f;border-radius:25px;background:linear-gradient(160deg,#fffef7f3,#fff1d8f2);color:#173f88;text-align:center;box-shadow:0 10px 25px #07173855;cursor:pointer}.study-card:first-child{grid-column:1/-1;min-height:180px;background:linear-gradient(145deg,#fff9c9f5,#ffe5f2f5 55%,#e5f2fff5)}.study-card:disabled{cursor:default;opacity:.86}.study-icon{display:block;font-size:45px;filter:drop-shadow(0 5px 5px #173f8833)}.study-card strong{display:block;margin-top:7px;font-size:19px}.study-card small{display:block;margin-top:5px;color:#5e5873;font-weight:800;line-height:1.4}.study-status{display:inline-block;margin-top:10px;padding:5px 11px;border-radius:99px;background:#173f88;color:#fff;font-size:10px;font-weight:1000}.study-card:first-child .study-status{background:#ef579c}
+
+@media(max-width:430px){.campus-shell{min-height:560px}.campus-title{padding:7px 18px}.facility-hotspot{min-width:102px}.facility-hotspot:before{width:43px;height:43px;font-size:26px}.facility-hotspot span{font-size:10px}.facility-panel{left:6px;right:6px;padding:10px 9px 8px}.facility-summary{grid-template-columns:48px 1fr auto;gap:7px}.facility-preview-icon{width:48px;height:48px}.campus-enter-button{min-width:76px;padding:7px 9px}.facility-medallion{flex-basis:63px}.study-grid{gap:9px}.study-card{min-height:140px;padding:14px 8px}}
+@media(max-height:700px){.campus-guide{display:none}.facility-panel{padding-top:8px}.facility-copy p{display:none}.facility-medallions{margin-top:6px}.facility-hotspot:before{width:40px;height:40px}.facility-hotspot span{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.facility-hotspot:before{animation:none}}
+
+</style>
+<link rel="stylesheet" href="integration.css?v=1">
+<script src="market-gifts.js?v=1"></script>
+</head>
+<body>
+  <main id="app">
+    <section id="campusScreen" class="screen campus-screen active" aria-label="ポニーランド学園の施設案内">
+      <div class="campus-shell">
+        <img class="campus-art" src="ponyland-campus-mobile-background.png" alt="虹色ミニマート、図書館、自習室がつながるポニーランド学園の敷地">
+        <div class="campus-vignette" aria-hidden="true"></div>
+        <header class="campus-header">
+          <h1 class="campus-title">★ ポニーランド学園 ★</h1>
+          <p class="campus-guide">行きたい建物の星をタップしてね</p>
+        </header>
+        <div class="facility-hotspots" id="facilityHotspots" aria-label="施設を選ぶ"></div>
+        <section class="facility-panel" aria-live="polite" aria-label="選択中の施設">
+          <div class="facility-summary">
+            <div class="facility-preview-icon" id="facilityPreviewIcon" aria-hidden="true">📚</div>
+            <div class="facility-copy">
+              <small id="facilityKicker">えほんと物語の場所</small>
+              <strong id="facilityName">図書館</strong>
+              <p id="facilityDescription">声と絵で第1話を楽しめます。</p>
+            </div>
+            <button class="campus-enter-button" id="enterFacilityButton">図書館へ入る</button>
+          </div>
+          <div class="facility-medallions" id="facilityMedallions" aria-label="施設一覧"></div>
+<div class="academy-links"><a href="../">🎮 ゲーム広場</a><a class="market-gift-link" href="gifts.html">🎁 ミュウミュウのガチャ</a></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="homeScreen" class="screen" aria-label="ホーム">
+      <div class="sky-deco" aria-hidden="true"><i></i><i></i><i></i></div>
+      <header class="hero">
+        <div class="crest" aria-hidden="true">★</div>
+        <p class="eyebrow">えほんとゲームのワクワク広場</p>
+        <h1>ポニーランド学園</h1>
+        <p class="hero-copy">ルミナたちと、読んで・遊んで・学ぼう！</p>
+      </header>
+
+      <div class="home-grid">
+        <button class="home-card game-card" id="openGame">
+          <span class="card-badge">NEW</span>
+          <img class="card-art-img" id="gameCharacterThumb" src="embedded/5c760af4927a42d00151.png" alt="ゲームで選択中の公式キャラクター">
+          <span class="card-kicker">おみせを大きくしよう</span>
+          <strong>にじいろミニマート</strong>
+          <small>収穫 → ならべる → 販売 → パワーアップ</small>
+          <span class="play-pill">ゲームであそぶ ▶</span>
+        </button>
+
+        <button class="home-card book-card" id="openBook">
+          <span class="card-art" aria-hidden="true">📖</span>
+          <span class="card-kicker">フレアたちの読み聞かせ</span>
+          <strong>第1話を読む</strong>
+          <small>声と絵で楽しめる全33場面</small>
+          <span class="play-pill">えほんをひらく ▶</span>
+        </button>
+
+        <button class="home-card character-card" id="openCharacters">
+          <span class="card-badge official-badge">公式</span>
+          <img class="card-art-img" id="selectedCharacterThumb" src="embedded/5c760af4927a42d00151.png" alt="ルミナの公式三面図から切り抜いた正面画像">
+          <span class="card-kicker">正式三面図から登録</span>
+          <strong>キャラクター図鑑</strong>
+          <small>最初の8体を確認・選択できます</small>
+          <span class="play-pill">キャラクターを選ぶ ▶</span>
+        </button>
+
+        <button class="home-card soon-card" disabled>
+          <span class="card-art" aria-hidden="true">✏️</span>
+          <span class="card-kicker">つぎに追加</span>
+          <strong>おべんきょう広場</strong>
+          <small>ことば・かず・英語・ぬりえ</small>
+          <span class="soon-pill">じゅんび中</span>
+        </button>
+      </div>
+
+      <footer class="home-footer">広告なし・通信なしでも遊べます　｜　スマホ操作対応版</footer>
+    </section>
+
+    <section id="studyScreen" class="screen study-screen" aria-label="自習室">
+      <div class="study-shell">
+        <div class="study-content">
+          <div class="study-topbar">
+            <button class="study-back" id="studyBack" aria-label="学園の敷地へ戻る">←</button>
+            <header class="study-heading">
+              <small>ポニーランド学園</small>
+              <h2>自習室</h2>
+              <p>好きなことを選んで、楽しく学ぼう！</p>
+            </header>
+          </div>
+          <div class="study-grid">
+            <button class="study-card" id="studyCharacters">
+              <span class="study-icon" aria-hidden="true">🦄</span>
+              <strong>キャラクター図鑑</strong>
+              <small>ルミナたちの名前や特技を見て、ゲームで遊ぶキャラクターを選べます。</small>
+              <span class="study-status">いま遊べます</span>
+            </button>
+            <button class="study-card" disabled><span class="study-icon" aria-hidden="true">🔤</span><strong>ことば</strong><small>文字とことばの練習</small><span class="study-status">じゅんび中</span></button>
+            <button class="study-card" disabled><span class="study-icon" aria-hidden="true">🔢</span><strong>かず</strong><small>数えて考える練習</small><span class="study-status">じゅんび中</span></button>
+            <button class="study-card" disabled><span class="study-icon" aria-hidden="true">🌎</span><strong>英語</strong><small>音で楽しむ英語</small><span class="study-status">じゅんび中</span></button>
+            <button class="study-card" disabled><span class="study-icon" aria-hidden="true">🎨</span><strong>ぬりえ</strong><small>色を選んで遊ぶ</small><span class="study-status">じゅんび中</span></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen" aria-label="にじいろミニマート">
+      <div class="game-shell">
+        <div class="game-topbar">
+          <button class="round-button" id="backHome" aria-label="ホームへ戻る">⌂</button>
+          <div class="day-chip"><small>DAY</small><b id="dayValue">1</b></div>
+          <div class="goal-wrap">
+            <div class="goal-label"><span>きょうの売上</span><b><span id="earnedValue">0</span>/<span id="goalValue">60</span></b></div>
+            <div class="goal-track"><i id="goalBar"></i></div>
+          </div>
+          <div class="coin-chip"><span>⭐</span><b id="coinValue">0</b></div>
+          <button class="round-button" id="fullscreenButton" aria-label="全画面表示" title="全画面表示">⛶</button>
+          <button class="round-button" id="pauseButton" aria-label="一時停止">Ⅱ</button>
+        </div>
+
+        <div class="objective" id="objective">光っている畑へ行こう！</div>
+        <div class="canvas-wrap">
+          <canvas id="gameCanvas" width="450" height="780" aria-label="ポニーランド学園 にじいろミニマート ゲーム画面"></canvas>
+          <div id="floatingLayer" aria-hidden="true"></div>
+          <div class="stock-panel" id="stockPanel" aria-label="商品棚の在庫">
+            <span class="stock-title" title="現在数／上限数">🏪Lv.<b id="storeLevelValue">1</b> 棚</span>
+            <span><img class="stock-icon" src="carrot-single.png" alt="ニンジン"><b id="stockCarrot">0/8</b></span>
+            <span id="stockBerryWrap" hidden><img class="stock-icon" src="strawberry-single.png" alt="イチゴ"><b id="stockBerry">0/8</b></span>
+            <span id="stockBreadWrap" hidden><img class="stock-icon" src="croissant-single.png" alt="クロワッサン"><b id="stockBread">0/8</b></span>
+          </div>
+          <div class="carry-chip" id="carryChip" hidden></div>
+        </div>
+
+        <div class="mobile-controls" aria-label="ゲーム操作">
+          <div class="joystick" id="joystick"><i id="joystickKnob"></i></div>
+          <button class="action-button" id="actionButton"><b>A</b><span>おしごと</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section id="bookScreen" class="screen book-screen" aria-label="絵本">
+      <button class="book-close" id="closeBook">← アプリにもどる</button>
+      <iframe id="bookFrame" title="ポニーランド学園 第1話 読み聞かせ"></iframe>
+    </section>
+  </main>
+
+  <div class="modal" id="welcomeModal" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="modal-card welcome-card">
+      <div class="motivation-stars" aria-hidden="true">★ ✨ ★</div>
+      <p class="motivation-kicker">きょうのチャレンジ！</p>
+      <img class="welcome-character" id="welcomeCharacter" src="embedded/5c760af4927a42d00151.png" alt="選択中の公式キャラクター">
+      <h2 id="welcomeTitle">おみせを大きくしよう！</h2>
+      <div class="reward-callout"><span aria-hidden="true">🏪</span><strong>お店を大きくして<br><em>スペシャルカード</em>をもらおう！</strong><span aria-hidden="true">🎁</span></div>
+      <div class="reward-note">🏆 シリアルナンバー入り！</div>
+      <p class="welcome-guide">タップで移動して、右下の「A・おしごと」で収穫や陳列をしよう。お店を最高ランクまで大きくすると、スペシャルカードがもらえるよ！</p>
+      <div class="howto-row"><span>👆 タップで移動</span><span>🅰️ Aでおしごと</span><span>⌨️ 矢印キー＋Space</span></div>
+      <button class="primary-button start-sparkle-button" id="startGameButton">✨ ゲームスタート！</button>
+    </div>
+  </div>
+
+  <div class="modal" id="characterModal" role="dialog" aria-modal="true" aria-labelledby="characterTitle">
+    <div class="modal-card character-modal-card">
+      <button class="modal-close" id="closeCharacters" aria-label="キャラクター図鑑を閉じる">×</button>
+      <p class="eyebrow">OFFICIAL CHARACTER REGISTRY</p>
+      <h2 id="characterTitle">キャラクター図鑑</h2>
+      <p class="character-note">正式なキャラクター全集の三面図を登録しています。</p>
+      <div class="character-layout">
+        <div class="character-grid" id="characterGrid"></div>
+        <div class="character-preview">
+          <div class="preview-title"><b id="previewName">ルミナ</b><span id="previewNumber">No.003</span></div>
+          <img id="characterSheetPreview" src="embedded/07be639f6c6d814a2c30.jpg" alt="選択したキャラクターの公式三面図">
+          <p id="previewSkill">特技：光のスピードで移動</p>
+          <button class="primary-button" id="selectCharacterButton">このキャラクターで遊ぶ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="pauseModal" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="modal-card">
+      <h2 id="pauseTitle">ひとやすみ</h2>
+      <p>進み具合は、この端末に自動で保存されています。</p>
+      <button class="primary-button" id="resumeButton">つづける</button>
+      <button class="secondary-button" id="showCompletionButton" hidden>🏆 クリアカードを見る</button>
+      <a class="secondary-button market-gift-link" href="gifts.html">🎁 ミュウミュウのガチャ</a>
+<button class="secondary-button" id="pauseHomeButton">ホームへ</button>
+      <button class="text-button" id="resetButton">最初からやり直す</button>
+    </div>
+  </div>
+
+  <div class="modal" id="dayClearModal" role="dialog" aria-modal="true" aria-labelledby="clearTitle">
+    <div class="modal-card clear-card">
+      <div class="stars">★ ★ ★</div>
+      <p class="eyebrow">DAY CLEAR!</p>
+      <h2 id="clearTitle">おみせは大人気！</h2>
+      <p id="clearMessage">今日の目標を達成しました。</p>
+      <div class="reward-box">ごほうび <b>⭐ <span id="rewardValue">30</span></b></div>
+      <button class="primary-button" id="nextDayButton">つぎの日へ</button>
+    </div>
+  </div>
+
+  <div class="modal" id="gameCompleteModal" role="dialog" aria-modal="true" aria-labelledby="gameCompleteTitle">
+    <div class="modal-card completion-modal-card">
+      <p class="eyebrow">PONYLAND GRAND CLEAR</p>
+      <h2 id="gameCompleteTitle">百貨店完成、おめでとう！</h2>
+      <p>ミュウミュウから、端末発行シリアル入りの記念カードです。</p>
+      <canvas id="completionCardCanvas" width="900" height="1200" aria-label="ミュウミュウのゲームクリア記念カード"></canvas>
+      <p class="serial-caption">端末発行番号 <b id="completionSerialText">---</b></p>
+      <button class="primary-button" id="downloadCompletionCard">カード画像を保存</button>
+      <a class="secondary-button market-gift-link" href="gifts.html">🎁 ミュウミュウのガチャ</a>
+<button class="secondary-button" id="continueAfterComplete">百貨店をつづける</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  window.__PONY_ASSETS = {"assets/characters/001-flare-back.jpg":"embedded/c6c9a7679929eabaa7e7.jpg","assets/characters/001-flare-front.jpg":"embedded/f6674faf875e320f7474.jpg","assets/characters/001-flare-sheet.jpg":"embedded/54452c26b5765171e9c2.jpg","assets/characters/001-flare-side.jpg":"embedded/aa679c9f6dcb94531ff4.jpg","assets/characters/002-aqua-back.jpg":"embedded/9e726f19e1b31baf41fa.jpg","assets/characters/002-aqua-front.jpg":"embedded/4eea11ea5d051d67a88a.jpg","assets/characters/002-aqua-sheet.jpg":"embedded/c47f91c8035be451ae43.jpg","assets/characters/002-aqua-side.jpg":"embedded/20f73621c93119c0a60d.jpg","assets/characters/003-lumina-back.jpg":"embedded/6228da901d5e02190522.jpg","assets/characters/003-lumina-front.jpg":"embedded/dc9aa666c5569ad26b21.jpg","assets/characters/003-lumina-sheet.jpg":"embedded/07be639f6c6d814a2c30.jpg","assets/characters/003-lumina-side.jpg":"embedded/c70f7ed5beacd8e92704.jpg","assets/characters/004-nox-back.jpg":"embedded/be2be4203d4548f327c7.jpg","assets/characters/004-nox-front.jpg":"embedded/fadf39b321c48ed88a33.jpg","assets/characters/004-nox-sheet.jpg":"embedded/a286b402277ec38dd173.jpg","assets/characters/004-nox-side.jpg":"embedded/b6fb93c0e1847786a2bf.jpg","assets/characters/005-mewmew-official.jpg":"embedded/584500c681775070cd72.jpg","assets/characters/006-storm-back.jpg":"embedded/75334dc10be683baa623.jpg","assets/characters/006-storm-front.jpg":"embedded/cc74ba1115f4d36b4390.jpg","assets/characters/006-storm-sheet.jpg":"embedded/fe7ea3ca3cec31db3595.jpg","assets/characters/006-storm-side.jpg":"embedded/64070cd7af14ab018a96.jpg","assets/characters/007-terra-back.jpg":"embedded/d6c9e3ecf9a671d094c3.jpg","assets/characters/007-terra-front.jpg":"embedded/7cf858f3fd310ba78bdc.jpg","assets/characters/007-terra-sheet.jpg":"embedded/4cb4fa57a43fbc8ef346.jpg","assets/characters/007-terra-side.jpg":"embedded/164c2b5d97bb6a5c916b.jpg","assets/characters/008-tespero-back.jpg":"embedded/47b761fb944ad147b108.jpg","assets/characters/008-tespero-front.jpg":"embedded/8aad1e363bd0b2c94169.jpg","assets/characters/008-tespero-sheet.jpg":"embedded/59535f82e11464021065.jpg","assets/characters/008-tespero-side.jpg":"embedded/d6265e7efb687a43f529.jpg","assets/game-sprites/001-flare-back.png":"embedded/354070ffdb17341616af.png","assets/game-sprites/001-flare-front.png":"embedded/a8864078eedbbfde767d.png","assets/game-sprites/001-flare-side.png":"embedded/0b577e7dea22f9b787a7.png","assets/game-sprites/002-aqua-back.png":"embedded/1844710c689fe3660b43.png","assets/game-sprites/002-aqua-front.png":"embedded/84fe1d5c99b71dcc04d9.png","assets/game-sprites/002-aqua-side.png":"embedded/537e94c6ecf86864dd1c.png","assets/game-sprites/003-lumina-back.png":"embedded/aadd7adf532ae32d9bbc.png","assets/game-sprites/003-lumina-front.png":"embedded/5c760af4927a42d00151.png","assets/game-sprites/003-lumina-side.png":"embedded/a066acd8c3a6d8abe3b7.png","assets/game-sprites/004-nox-back.png":"embedded/fb53d952de1ec02f6fd7.png","assets/game-sprites/004-nox-front.png":"embedded/b329d935760194cd6aa5.png","assets/game-sprites/004-nox-side.png":"embedded/8f6c367dd86401602cf5.png","assets/game-sprites/006-storm-back.png":"embedded/bc10c663885d9135defd.png","assets/game-sprites/006-storm-front.png":"embedded/35bc2966f6763db60e4b.png","assets/game-sprites/006-storm-side.png":"embedded/33cd29649d6f478fcf0e.png","assets/game-sprites/007-terra-back.png":"embedded/efc0dd06e87aa359c9f3.png","assets/game-sprites/007-terra-front.png":"embedded/f53c872650809a620574.png","assets/game-sprites/007-terra-side.png":"embedded/f604fddd219c89a406f0.png","assets/game-sprites/008-tespero-back.png":"embedded/904385ec97838d4a1a67.png","assets/game-sprites/008-tespero-front.png":"embedded/4d0208f26448a68ea6b7.png","assets/game-sprites/008-tespero-side.png":"embedded/b10ef0e1764b4af421e8.png"};
+  window.__ponyBookUrl = 'book.html';
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const $ = (q) => document.querySelector(q);
+  const screens = { campus: $('#campusScreen'), home: $('#homeScreen'), study: $('#studyScreen'), game: $('#gameScreen'), book: $('#bookScreen') };
+  // 施設や外部リンクを増やすときは、この一覧に1件追加するだけで案内へ反映されます。
+  const CAMPUS_FACILITIES = [
+    { id:'market', name:'虹色ミニマート', shortName:'ミニマート', icon:'🏪', kicker:'収穫・販売・お店づくり', description:'ニンジンやイチゴを育てて、夢のお店を大きくしよう。', action:'game', x:19, y:46 },
+    { id:'library', name:'図書館', shortName:'図書館', icon:'📚', kicker:'えほんと物語の場所', description:'声と絵でポニーランド学園の第1話を楽しめます。', action:'book', x:50, y:34 },
+    { id:'study', name:'自習室', shortName:'自習室', icon:'✏️', kicker:'遊びながら楽しく学ぶ', description:'キャラクター図鑑や、これから増える学習ゲームの部屋です。', action:'study', x:81, y:46 },
+    { id:'games', name:'ゲーム広場', shortName:'ゲーム広場', icon:'🎮', kicker:'あそびとプレゼント', description:'ポニージャンプ、レース、パズル、銀河ガチャへ。', href:'../', x:50, y:59 }
+  ];
+  let selectedFacilityId = 'market';
+  const canvas = $('#gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const STORE_Y_SHIFT = 90;
+  const FIELD_Y_SHIFT = 70;
+  const REGISTER_Y_EXTRA = 70;
+  const SHELF_POS = { x:98, y:263 };
+  const SHELF_WORK_POS = { x:128, y:329 };
+  const SHELF_HELPER_POS = { x:168, y:329 };
+  const REGISTER_POS = { x:365, y:300 };
+  const TRASH_POS = { x:395, y:400 };
+  const OVEN_POS = { x:365, y:548 };
+  const REGISTER_AUTO_RADIUS = 82;
+  const CUSTOMER_MAX = 3;
+  const CUSTOMER_SPEED_RATE = 0.70;
+  const SAVE_KEY = 'ponylandMiniMartSaveV1';
+  const BOOK_PATH = window.__ponyBookUrl;
+  const WORLD_ART_PATHS = [1,2,3,4].map(level=>`ponyland-world-level-${level}.png`);
+  const worldArt = WORLD_ART_PATHS.map(src=>{const image=new Image();image.decoding='async';image.src=src;return image});
+  const ITEM_ART_PATHS = {
+    'carrot-single':'carrot-single.png',
+    'strawberry-single':'strawberry-single.png',
+    'croissant-single':'croissant-single.png',
+    'carrot-field':'carrot-field.png',
+    'strawberry-field':'strawberry-field.png',
+    'croissant-tray':'croissant-tray.png',
+    'carrot-basket':'carrot-basket.png',
+    'strawberry-basket':'strawberry-basket.png',
+    'croissant-basket':'croissant-basket.png'
+  };
+  const itemArt = Object.fromEntries(Object.entries(ITEM_ART_PATHS).map(([key,src])=>{
+    const image=new Image();image.decoding='async';image.src=src;return [key,image];
+  }));
+  const ITEM_STEM = {carrot:'carrot',berry:'strawberry',bread:'croissant'};
+
+  const ui = {
+    day: $('#dayValue'), earned: $('#earnedValue'), goal: $('#goalValue'), goalBar: $('#goalBar'),
+    coin: $('#coinValue'), objective: $('#objective'), carry: $('#carryChip'),
+    stockCarrot: $('#stockCarrot'), stockBerry: $('#stockBerry'), stockBread: $('#stockBread'),
+    stockBerryWrap: $('#stockBerryWrap'), stockBreadWrap: $('#stockBreadWrap'), storeLevel: $('#storeLevelValue'), fullscreen: $('#fullscreenButton'),
+    welcome: $('#welcomeModal'), characters: $('#characterModal'), pause: $('#pauseModal'), clear: $('#dayClearModal'), complete: $('#gameCompleteModal'), toast: $('#toast'),
+    completeCanvas: $('#completionCardCanvas'), completeSerial: $('#completionSerialText'), showCompletion: $('#showCompletionButton'),
+    action: $('#actionButton'), reward: $('#rewardValue'), clearMessage: $('#clearMessage')
+  };
+
+  let state;
+  let running = false;
+  let animationFrameId = 0;
+  let frameErrorShown = false;
+  let lastFrameHeartbeat = 0;
+  let last = 0;
+  let saveClock = 0;
+  let soundOn = true;
+  let audioCtx = null;
+  const keys = new Set();
+  const joy = { x: 0, y: 0, active: false, pointerId: null };
+  const action = { pressed: false };
+  let tapTarget = null;
+
+  const productInfo = {
+    carrot: { name: 'にじいろニンジン', icon: '🥕', price: 5, color: '#ff8a3d' },
+    berry: { name: 'ほしイチゴ', icon: '🍓', price: 9, color: '#ef476f' },
+    bread: { name: 'おひさまパン', icon: '🥐', price: 16, color: '#e6a43d' }
+  };
+
+  const CHARACTER_REGISTRY = [
+    { id:'001', slug:'flare', name:'フレア', en:'FLARE', color:'#ff6a2a', skill:'パンを最速で焼き、一度に3個作る', bonus:{ oven:.55, breadYield:3 } },
+    { id:'002', slug:'aqua', name:'アクア', en:'AQUA', color:'#45bde9', skill:'作物の成長を15%短縮', bonus:{ crop:.85 } },
+    { id:'003', slug:'lumina', name:'ルミナ', en:'LUMINA', color:'#f78ab9', skill:'移動速度10%アップ', bonus:{ speed:1.10 } },
+    { id:'004', slug:'nox', name:'ノクス', en:'NOX', color:'#26375c', skill:'商品棚の容量を3個追加', bonus:{ shelf:3 } },
+    { id:'005', slug:'mewmew', name:'ミュウミュウ', en:'MEWMEW', color:'#e85143', skill:'畑で収穫し、パンを焼き、商品棚まで運んで補充', helper:true },
+    { id:'006', slug:'storm', name:'ストーム', en:'STORM', color:'#2777e8', skill:'移動速度15%アップ', bonus:{ speed:1.15 } },
+    { id:'007', slug:'terra', name:'テラ', en:'TERRA', color:'#64a84e', skill:'収穫時に20%で1個追加', bonus:{ harvestChance:.20 } },
+    { id:'008', slug:'tespero', name:'テスペロ', en:'TESPERO', color:'#6d3baa', skill:'お客さんの待ち時間25%アップ', bonus:{ patience:1.25 } }
+  ];
+  const characterImages = {};
+  const characterSpriteImages = {};
+  let registrySelection = '003';
+  CHARACTER_REGISTRY.forEach(ch => {
+    const views = ch.helper ? ['official'] : ['front','side','back','sheet'];
+    views.forEach(view => {
+      const img = new Image();
+      img.src = characterAsset(ch, view);
+      characterImages[`${ch.id}-${view}`] = img;
+    });
+    const spriteViews = ch.helper ? ['front','side','back','walk'] : ['front','side','back'];
+    spriteViews.forEach(view=>{
+      const sprite=new Image();
+      sprite.src=gameSpriteAsset(ch,view);
+      characterSpriteImages[`${ch.id}-${view}`]=sprite;
+    });
+  });
+
+  function activeCharacter() { return CHARACTER_REGISTRY.find(ch => ch.id === state?.selectedCharacter) || CHARACTER_REGISTRY[2]; }
+  function activeBonus(name, fallback) { return activeCharacter().bonus?.[name] ?? fallback; }
+
+  const goals = [60, 180, 400, 750, 1200];
+  const STORE_RANKS = [
+    { name:'ミニマート', priceRate:1, customerBonus:0, shelfBonus:0 },
+    { name:'にじいろショップ', priceRate:1.1, customerBonus:1, shelfBonus:5 },
+    { name:'にじいろスーパー', priceRate:1.25, customerBonus:2, shelfBonus:10 },
+    { name:'ポニーランド百貨店', priceRate:1.5, customerBonus:4, shelfBonus:18 }
+  ];
+  const STORE_UPGRADE_COSTS = [0, 1000, 5000, 10000];
+  // 初期店舗は小さく、3回の拡張で 1/3 → 2/3 → 最大サイズになる。
+  const STORE_STAGE_SCALE = [.22, 1/3, 2/3, 1];
+  const STORE_STAGE_LABELS = ['初期店舗', '第1段階・1/3', '第2段階・2倍', '第3段階・最大'];
+  const defaultState = () => ({
+    day: 1, coins: 0, earned: 0, stars: 0, tutorial: 0, hasPlayed: false, storeLevel: 1,
+    completionSerial: null, completedAt: null,
+    unlocked: { berry: false, bakery: false, helper: false },
+    upgrades: { capacity: 0, speed: 0, shelf: 0 },
+    selectedCharacter: '003',
+    player: { x: 235, y: 420, carryType: null, carry: 0, facing: 1, view: 'front' },
+    shelf: { carrot: 4, berry: 0, bread: 0 },
+    oven: { timer: 0, ready: 0 },
+    cashPile: 0, totalCustomers: 0, bestCombo: 0
+  });
+
+  let plots = [];
+  let customers = [];
+  let particles = [];
+  let floaters = [];
+  let spawnTimer = 1.2;
+  let interactTimer = 0;
+  let combo = 0;
+  let comboTimer = 0;
+  let registerCooldown = 0;
+  let registerPulse = 0;
+  let storeUpgradeTimer = 0;
+  let dayClearTimer = 0;
+  let dayClearReward = 0;
+  const HELPER_SPEED = 90;
+  const HELPER_BAKE_TIME = .65;
+  let helper = createHelper();
+  let celebration = false;
+
+  function createHelper() {
+    return { x:192, y:350, state:'decide', task:null, harvestType:null, targetPlot:null, need:0, carryType:null, carry:0, timer:.25, status:'仕事を確認中', facing:1, view:'front', isMoving:false };
+  }
+
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
+      state = Object.assign(defaultState(), saved || {});
+      state.unlocked = Object.assign(defaultState().unlocked, saved?.unlocked || {});
+      state.upgrades = Object.assign(defaultState().upgrades, saved?.upgrades || {});
+      state.player = Object.assign(defaultState().player, saved?.player || {});
+      state.shelf = Object.assign(defaultState().shelf, saved?.shelf || {});
+      state.oven = Object.assign(defaultState().oven, saved?.oven || {});
+      state.storeLevel = clamp(Number(state.storeLevel)||1,1,4);
+    } catch { state = defaultState(); }
+    state.giftRunId ||= crypto.randomUUID();
+    saveState();
+    resetWorld();
+    ui.showCompletion.hidden=!state.completionSerial;
+  }
+
+  function saveState() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch {}
+  }
+
+  function resetWorld() {
+    tapTarget = null;
+    plots = [];
+    const makePlots = (type, ox, oy, count=6) => {
+      for (let i = 0; i < count; i++) {
+        const r=Math.floor(i/3), c=i%3;
+        plots.push({ type, x: ox + c * 38, y: oy + r * 40, ready: true, timer: 0, phase: Math.random() * 6 });
+      }
+    };
+    makePlots('carrot', 55, 355 + FIELD_Y_SHIFT, 5);
+    makePlots('berry', 55, 455 + FIELD_Y_SHIFT);
+    customers = [];
+    particles = [];
+    spawnTimer = .8;
+    registerCooldown = 0;
+    registerPulse = 0;
+    dayClearTimer = 0;
+    dayClearReward = 0;
+    helper = createHelper();
+    celebration = false;
+    updateUI();
+  }
+
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  function selectedFacility() {
+    return CAMPUS_FACILITIES.find(facility => facility.id === selectedFacilityId) || CAMPUS_FACILITIES[1];
+  }
+
+  function selectCampusFacility(id) {
+    const facility = CAMPUS_FACILITIES.find(item => item.id === id && item.enabled !== false);
+    if(!facility) { toast('ここには、これから新しい施設が増えるよ！'); return; }
+    selectedFacilityId = facility.id;
+    $('#facilityPreviewIcon').textContent = facility.icon;
+    $('#facilityKicker').textContent = facility.kicker;
+    $('#facilityName').textContent = facility.name;
+    $('#facilityDescription').textContent = facility.description;
+    $('#enterFacilityButton').textContent = `${facility.name}へ入る`;
+    document.querySelectorAll('[data-facility-id]').forEach(button => {
+      const selected = button.dataset.facilityId === facility.id;
+      button.classList.toggle('selected', selected);
+      button.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function openFacility(facility = selectedFacility()) {
+    if(!facility || facility.enabled === false) { toast('新しい施設を準備しています'); return; }
+    if(facility.href) { window.location.assign(facility.href); return; }
+    if(facility.action === 'game') { openGame(); return; }
+    if(facility.action === 'book') { $('#bookFrame').src = BOOK_PATH; showScreen('book'); return; }
+    if(facility.action === 'study') { showScreen('study'); return; }
+    toast('この施設は準備中です');
+  }
+
+  function renderCampus() {
+    const hotspots = $('#facilityHotspots');
+    const medallions = $('#facilityMedallions');
+    hotspots.textContent = '';
+    medallions.textContent = '';
+    CAMPUS_FACILITIES.forEach(facility => {
+      if(facility.enabled !== false) {
+        const hotspot = document.createElement('button');
+        hotspot.className = 'facility-hotspot';
+        hotspot.dataset.facilityId = facility.id;
+        hotspot.style.left = `${facility.x}%`;
+        hotspot.style.top = `${facility.y}%`;
+        hotspot.setAttribute('aria-label', `${facility.name}を選ぶ`);
+        hotspot.setAttribute('aria-pressed', 'false');
+        const label = document.createElement('span');
+        label.textContent = facility.name;
+        hotspot.appendChild(label);
+        hotspot.addEventListener('click',()=>selectCampusFacility(facility.id));
+        hotspots.appendChild(hotspot);
+      }
+      const medallion = document.createElement('button');
+      medallion.className = `facility-medallion${facility.enabled === false ? ' future' : ''}`;
+      medallion.dataset.facilityId = facility.id;
+      medallion.setAttribute('aria-pressed','false');
+      const icon = document.createElement('b'); icon.textContent = facility.icon;
+      const label = document.createElement('span'); label.textContent = facility.shortName;
+      medallion.append(icon,label);
+      medallion.addEventListener('click',()=>selectCampusFacility(facility.id));
+      medallions.appendChild(medallion);
+    });
+    selectCampusFacility(selectedFacilityId);
+  }
+
+  function characterAsset(ch, view) { const rel=`assets/characters/${ch.id}-${ch.slug}-${view}.jpg`;return window.__PONY_ASSETS?.[rel]||rel; }
+  function gameSpriteAsset(ch, view) {
+    if(ch.id==='005') return `mewmew-happy-v8-${view}.png`;
+    const rel=`assets/game-sprites/${ch.id}-${ch.slug}-${view}.png`;
+    return window.__PONY_ASSETS?.[rel]||rel;
+  }
+  function mewMewSpriteSheetAsset() { return 'mewmew-happy-v8-sprite-sheet.png'; }
+  function storeRank(){return STORE_RANKS[(state?.storeLevel||1)-1]||STORE_RANKS[0]}
+  function shelfCapacity(){return 8+state.upgrades.shelf*5+activeBonus('shelf',0)+storeRank().shelfBonus}
+  function salePrice(type){return Math.ceil(productInfo[type].price*storeRank().priceRate)}
+  function formatPoints(value){return Math.floor(Number(value)||0).toLocaleString('ja-JP')}
+
+  function renderCharacterRegistry() {
+    const grid = $('#characterGrid');
+    grid.textContent = '';
+    CHARACTER_REGISTRY.forEach(ch => {
+      const button = document.createElement('button');
+      button.className = `character-choice${ch.id===registrySelection?' selected':''}${ch.helper?' helper':''}`;
+      const img = document.createElement('img');
+      img.src = gameSpriteAsset(ch,'front'); img.alt = `${ch.name}の公式三面図から切り抜いた正面画像`;
+      const name = document.createElement('b'); name.textContent = ch.name;
+      const number = document.createElement('small'); number.textContent = ch.helper ? `No.${ch.id}・お手伝い` : `No.${ch.id}`;
+      button.append(img,name,number);
+      button.addEventListener('click',()=>{registrySelection=ch.id;renderCharacterRegistry();showCharacterPreview(ch)});
+      grid.appendChild(button);
+    });
+    showCharacterPreview(CHARACTER_REGISTRY.find(ch=>ch.id===registrySelection)||CHARACTER_REGISTRY[2]);
+  }
+
+  function showCharacterPreview(ch) {
+    $('#previewName').textContent = `${ch.name} / ${ch.en}`;
+    $('#previewNumber').textContent = `No.${ch.id}`;
+    $('#previewSkill').textContent = ch.helper ? `正式三面図の前・横・後ろと歩行姿を動作用に登録。特技：${ch.skill}` : `特技：${ch.skill}`;
+    $('#characterSheetPreview').src = ch.helper ? mewMewSpriteSheetAsset() : characterAsset(ch,'sheet');
+    $('#characterSheetPreview').alt = `${ch.name}の公式三面図`;
+    const select = $('#selectCharacterButton');
+    select.disabled = !!ch.helper;
+    select.textContent = ch.helper ? 'お手伝いキャラクター' : (ch.id===state.selectedCharacter?'選択中':'このキャラクターで遊ぶ');
+  }
+
+  function updateSelectedCharacterThumb() {
+    const ch=activeCharacter();
+    ['#selectedCharacterThumb','#gameCharacterThumb','#welcomeCharacter'].forEach(selector=>{const img=$(selector);img.src=gameSpriteAsset(ch,'front');img.alt=`${ch.name}の公式三面図から切り抜いた正面画像`});
+  }
+
+  function openGame() {
+    showScreen('game');
+    resizeCanvas();
+    ui.welcome.classList.add('open');
+    if(state.storeLevel===4&&!state.completionSerial){issueCompletionSerial();setTimeout(showGameComplete,450)}
+  }
+
+  function startLoop() {
+    state.hasPlayed = true;
+    ui.welcome.classList.remove('open');
+    ui.pause.classList.remove('open');
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    running = true;
+    frameErrorShown = false;
+    last = performance.now();
+    beep(540, .06, 'sine', .035);
+    animationFrameId = requestAnimationFrame(loop);
+  }
+
+  function stopLoop() {
+    running = false;
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    animationFrameId = 0;
+    saveState();
+  }
+
+  function loop(t) {
+    if (!running) return;
+    lastFrameHeartbeat = performance.now();
+    const dt = Math.min((t - last) / 1000, .035);
+    last = t;
+    try { update(dt); }
+    catch (error) { recoverFrameError('update',error); }
+    try { draw(t / 1000); }
+    catch (error) { recoverFrameError('draw',error); }
+    if (running) animationFrameId = requestAnimationFrame(loop);
+    else animationFrameId = 0;
+  }
+
+  function recoverFrameError(stage,error) {
+    console.error(`Game ${stage} recovered:`,error);
+    action.pressed=false;
+    if(!frameErrorShown){frameErrorShown=true;safeEffect(()=>toast('動きを自動で復旧しました'))}
+  }
+
+  function update(dt) {
+    saveClock += dt;
+    if (saveClock > 4) { saveState(); saveClock = 0; }
+    interactTimer -= dt;
+    comboTimer -= dt;
+    registerCooldown=Math.max(0,registerCooldown-dt);
+    registerPulse=Math.max(0,registerPulse-dt);
+    storeUpgradeTimer=Math.max(0,storeUpgradeTimer-dt);
+    if(dayClearTimer>0){
+      dayClearTimer=Math.max(0,dayClearTimer-dt);
+      if(dayClearTimer<=0&&celebration)advanceDayWithoutStopping();
+    }
+    if (comboTimer <= 0 && combo > 0) combo = 0;
+
+    const p = state.player;
+    let dx = joy.x, dy = joy.y;
+    if (keys.has('arrowleft') || keys.has('a')) dx -= 1;
+    if (keys.has('arrowright') || keys.has('d')) dx += 1;
+    if (keys.has('arrowup') || keys.has('w')) dy -= 1;
+    if (keys.has('arrowdown') || keys.has('s')) dy += 1;
+    const directControl = joy.active || keys.has('arrowleft') || keys.has('a') || keys.has('arrowright') || keys.has('d') || keys.has('arrowup') || keys.has('w') || keys.has('arrowdown') || keys.has('s');
+    if (directControl) tapTarget = null;
+    if (!directControl && tapTarget) {
+      const tx = tapTarget.x - p.x, ty = tapTarget.y - p.y;
+      const td = Math.hypot(tx, ty);
+      if (td < 11) tapTarget = null;
+      else { dx = tx / td; dy = ty / td; }
+    }
+    const mag = Math.hypot(dx, dy);
+    if (mag > 0) {
+      dx /= Math.max(1, mag); dy /= Math.max(1, mag);
+      const speed = (145 + state.upgrades.speed * 18) * activeBonus('speed', 1);
+      p.x = clamp(p.x + dx * speed * dt, 24, W - 24);
+      p.y = clamp(p.y + dy * speed * dt, 115, H - 90);
+      if (Math.abs(dx) > .1) p.facing = Math.sign(dx);
+      if (Math.abs(dx) > Math.abs(dy)) p.view = 'side';
+      else if (dy < -.1) p.view = 'back';
+      else if (dy > .1) p.view = 'front';
+      if (state.tutorial === 0) state.tutorial = 1;
+    }
+
+    if(!celebration&&state.cashPile>0&&registerCooldown<=0&&dist(p,REGISTER_POS)<=REGISTER_AUTO_RADIUS)collectRegisterCash();
+
+    plots.forEach(plot => {
+      plot.phase += dt;
+      if (!plot.ready) { plot.timer -= dt; if (plot.timer <= 0) plot.ready = true; }
+    });
+
+    if (state.unlocked.bakery) updateOven(dt);
+
+    if (state.unlocked.helper) updateHelper(dt);
+
+    spawnTimer -= dt;
+    if (spawnTimer <= 0 && customers.length < CUSTOMER_MAX) {
+      spawnCustomer();
+      spawnTimer = Math.max(.42, 1.05 - state.day * .035 - state.storeLevel * .07) + Math.random() * .22;
+    }
+    updateCustomers(dt);
+    particles.forEach(pt => { pt.life -= dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.vy += 20 * dt; });
+    particles = particles.filter(pt => pt.life > 0);
+
+    if (action.pressed) { tryInteract(); action.pressed = false; }
+    updateObjective();
+    updateUI();
+  }
+
+  function harvest(plot) {
+    const p = state.player;
+    const capacity = 4 + state.upgrades.capacity * 2;
+    if (p.carry > 0 && p.carryType !== plot.type) return;
+    if (p.carry >= capacity) return;
+    const regrowTime = (plot.type === 'berry' ? 5.4 : 4.2) * activeBonus('crop', 1);
+    const removeFromField = target => { target.ready=false; target.timer=regrowTime; };
+    p.carryType = plot.type; p.carry++;
+    removeFromField(plot);
+    if (Math.random() < activeBonus('harvestChance', 0) && p.carry < capacity) {
+      const extraPlot=plots.find(item=>item!==plot&&item.type===plot.type&&item.ready);
+      if(extraPlot){p.carry++;removeFromField(extraPlot);pop(plot.x, plot.y - 42, 'テラの力でもう1個収穫', '#d9ff90');}
+    }
+    interactTimer = .22;
+    pop(plot.x, plot.y - 20, productInfo[plot.type].icon, '#fff');
+    sparkle(plot.x, plot.y, productInfo[plot.type].color);
+    beep(plot.type === 'berry' ? 720 : 620, .045, 'sine', .02);
+    if (state.tutorial < 2) state.tutorial = 2;
+  }
+
+  function updateOven(dt) {
+    const oven = state.oven;
+    if (oven.timer > 0) {
+      oven.timer -= dt;
+      if (oven.timer <= 0) { const baked=activeBonus('breadYield',2);oven.ready+=baked;sparkle(OVEN_POS.x,OVEN_POS.y,'#ffce53',18);pop(OVEN_POS.x,OVEN_POS.y-32,`パンが${baked}個できた！`,'#fff');beep(880,.13,'triangle',.03); }
+    }
+  }
+
+  function unlockedProducts() {
+    const a = ['carrot'];
+    if (state.unlocked.berry) a.push('berry');
+    if (state.unlocked.bakery) a.push('bread');
+    return a;
+  }
+
+  function helperProduct(cap=shelfCapacity()) {
+    return unlockedProducts()
+      .filter(type => state.shelf[type] < cap)
+      .sort((a,b) => state.shelf[a] - state.shelf[b])[0] || null;
+  }
+
+  function findHelperPlot(type) {
+    return plots
+      .filter(plot => plot.type === type && plot.ready)
+      .sort((a,b) => dist(helper,a) - dist(helper,b))[0] || null;
+  }
+
+  function helperMoveTo(x,y,dt) {
+    const beforeX=helper.x, beforeY=helper.y;
+    const arrived=moveTo(helper,x,y,HELPER_SPEED,dt);
+    const dx=helper.x-beforeX, dy=helper.y-beforeY;
+    helper.isMoving=Math.hypot(dx,dy)>.05;
+    if(Math.abs(dx)>.05)helper.facing=Math.sign(dx);
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>.05)helper.view='side';
+    else if(dy<-.05)helper.view='back';
+    else if(dy>.05)helper.view='front';
+    return arrived;
+  }
+
+  function updateHelper(dt) {
+    helper.timer=Math.max(0,helper.timer-dt);
+    helper.isMoving=false;
+    const cap=shelfCapacity();
+
+    if(helper.state==='decide') {
+      if(helper.timer>0)return;
+      const task=helperProduct(cap);
+      if(!task){helper.state='idle';helper.status='✓ 棚はいっぱい';return}
+      helper.task=task;
+      helper.harvestType=task==='bread'?'carrot':task;
+      helper.need=task==='bread'?2:1;
+      helper.carryType=null;helper.carry=0;helper.targetPlot=null;
+      helper.state='toField';
+      helper.status=`${productInfo[helper.harvestType].icon} 収穫へ`;
+      return;
+    }
+
+    if(helper.state==='idle') {
+      helperMoveTo(230,390,dt);
+      if(helperProduct(cap)){helper.state='decide';helper.timer=0;helper.status='仕事を確認中'}
+      return;
+    }
+
+    if(helper.state==='toField') {
+      if(!helper.targetPlot||!helper.targetPlot.ready||helper.targetPlot.type!==helper.harvestType)helper.targetPlot=findHelperPlot(helper.harvestType);
+      if(!helper.targetPlot){helper.status='🌱 成長を待つ';return}
+      helper.status=`${productInfo[helper.harvestType].icon} 収穫へ`;
+      if(helperMoveTo(helper.targetPlot.x,helper.targetPlot.y,dt)){
+        helper.state='harvest';helper.timer=.28;helper.status=`${productInfo[helper.harvestType].icon} 収穫中`;
+      }
+      return;
+    }
+
+    if(helper.state==='harvest') {
+      if(helper.timer>0)return;
+      const plot=helper.targetPlot;
+      if(!plot||!plot.ready){helper.targetPlot=null;helper.state='toField';return}
+      plot.ready=false;
+      plot.timer=(plot.type==='berry'?5.4:4.2)*activeBonus('crop',1);
+      helper.carryType=helper.harvestType;helper.carry++;
+      pop(plot.x,plot.y-25,`${productInfo[plot.type].icon}×1 収穫`,'#fff');sparkle(plot.x,plot.y,productInfo[plot.type].color,7);
+      helper.targetPlot=null;
+      if(helper.carry<helper.need){helper.state='toField';helper.status=`${productInfo[helper.harvestType].icon} あと${helper.need-helper.carry}個`}
+      else if(helper.task==='bread'){helper.state='toOven';helper.status='🥕 パン工房へ'}
+      else {helper.state='toShelf';helper.status=`${productInfo[helper.task].icon} 棚へ運ぶ`}
+      return;
+    }
+
+    if(helper.state==='toOven') {
+      helper.status=state.oven.timer>0?'🔥 オーブン待ち':'🥕 パン工房へ';
+      if(helperMoveTo(OVEN_POS.x,OVEN_POS.y,dt)&&state.oven.timer<=0){
+        helper.carry=0;helper.carryType=null;helper.state='bake';helper.timer=HELPER_BAKE_TIME;helper.status='🥐 焼いてる';
+        pop(OVEN_POS.x,OVEN_POS.y-37,'🥕×2 → 🥐','#fff176');beep(480,.06,'triangle',.018);
+      }
+      return;
+    }
+
+    if(helper.state==='bake') {
+      helper.status='🥐 焼いてる';
+      if(helper.timer>0)return;
+      helper.carryType='bread';helper.carry=2;helper.state='toShelf';helper.status='🥐 棚へ運ぶ';
+      pop(OVEN_POS.x,OVEN_POS.y-37,'パンが2個できた！','#fff');sparkle(OVEN_POS.x,OVEN_POS.y,'#ffce53',12);beep(880,.1,'triangle',.025);
+      return;
+    }
+
+    if(helper.state==='toShelf') {
+      helper.status=`${productInfo[helper.task].icon} 棚へ運ぶ`;
+      if(helperMoveTo(SHELF_HELPER_POS.x,SHELF_HELPER_POS.y,dt)){helper.state='shelve';helper.timer=.28;helper.status=`${productInfo[helper.task].icon} 陳列中`}
+      return;
+    }
+
+    if(helper.state==='shelve') {
+      if(helper.timer>0)return;
+      const moved=Math.min(helper.carry,Math.max(0,cap-state.shelf[helper.task]));
+      if(moved>0){state.shelf[helper.task]+=moved;pop(SHELF_POS.x,SHELF_POS.y-42,`📦 ${productInfo[helper.task].icon} 補充 +${moved}`,'#fff176');sparkle(SHELF_POS.x,SHELF_POS.y-6,productInfo[helper.task].color,10)}
+      helper.carry=0;helper.carryType=null;helper.task=null;helper.state='decide';helper.timer=.2;helper.status='次の仕事へ';
+    }
+  }
+
+  function spawnCustomer() {
+    const types = unlockedProducts();
+    let want = types[Math.floor(Math.random() * types.length)];
+    if (want === 'bread' && Math.random() < .45) want = 'carrot';
+    const visitors = CHARACTER_REGISTRY.filter(ch => !ch.helper && ch.id !== state.selectedCharacter);
+    const visitor = visitors[Math.floor(Math.random() * visitors.length)];
+    const roll=Math.random(),wantQty=state.storeLevel>=4?(roll<.35?3:2):state.storeLevel===3?(roll<.55?2:1):state.storeLevel===2?(roll<.35?2:1):1;
+    customers.push({
+      x: W + 18, y: 118 + STORE_Y_SHIFT + Math.random() * 28, targetX: 82 + Math.random() * 78, targetY: 318 + Math.random() * 28,
+      state: 'shelf', want, wantQty, boughtQty:0, patience: 3.6 * activeBonus('patience', 1), timer: 0, color: visitor.color, characterId: visitor.id,
+      bob: Math.random() * 6, paid: false, sad: false, stateAge: 0
+    });
+  }
+
+  function updateCustomers(dt) {
+    customers.forEach(c => {
+      c.bob += dt * 6 * CUSTOMER_SPEED_RATE;
+      c.stateAge = (c.stateAge || 0) + dt;
+      if (c.state === 'shelf') {
+        moveTo(c, c.targetX, c.targetY, 145 * CUSTOMER_SPEED_RATE, dt);
+        if (Math.hypot(c.x-c.targetX,c.y-c.targetY) < 6) { c.state = 'choose'; c.stateAge = 0; }
+      } else if (c.state === 'choose') {
+        if (state.shelf[c.want] > 0) {
+          c.boughtQty=Math.min(c.wantQty||1,state.shelf[c.want]);state.shelf[c.want]-=c.boughtQty;c.state = 'checkout'; c.targetX = 348 + Math.random()*30; c.targetY = 305 + Math.random()*28;
+          c.stateAge = 0;
+          pop(c.x, c.y - 30, `${productInfo[c.want].icon}×${c.boughtQty}`, '#fff');
+        } else {
+          c.patience -= dt;
+          if (c.patience <= 0) { c.sad = true; c.state = 'leave'; c.targetX = W + 30; c.targetY = 120 + STORE_Y_SHIFT; }
+        }
+      } else if (c.state === 'checkout') {
+        moveTo(c, c.targetX, c.targetY, 170 * CUSTOMER_SPEED_RATE, dt);
+        if (Math.hypot(c.x-c.targetX,c.y-c.targetY) < 7 || c.stateAge > 4) {
+          c.x=c.targetX; c.y=c.targetY; c.state='pay'; c.timer=.08; c.stateAge=0;
+        }
+      } else if (c.state === 'pay') {
+        c.timer -= dt;
+        if (c.timer <= 0) {
+          const pay = salePrice(c.want)*Math.max(1,c.boughtQty||1);
+          state.cashPile += pay; state.totalCustomers++; c.paid = true;
+          combo = comboTimer > 0 ? combo + 1 : 1; comboTimer = 5;
+          state.bestCombo = Math.max(state.bestCombo, combo);
+          pop(REGISTER_POS.x, REGISTER_POS.y-20, `+${pay}⭐`, '#ffe45c'); sparkle(REGISTER_POS.x, REGISTER_POS.y+2, '#ffe45c', 10); beep(920, .06, 'sine', .025);
+          c.state='leave'; c.targetX=W+35; c.targetY=115+STORE_Y_SHIFT+Math.random()*30; c.stateAge=0;
+        }
+      } else if (c.state === 'leave') moveTo(c,c.targetX,c.targetY,190 * CUSTOMER_SPEED_RATE,dt);
+    });
+    customers = customers.filter(c => !(c.state === 'leave' && c.x > W + 20));
+  }
+
+  function moveTo(obj, tx, ty, speed, dt) {
+    const dx=tx-obj.x, dy=ty-obj.y, d=Math.hypot(dx,dy)||1;
+    const step=speed*dt;
+    if (d <= step || d < .01) { obj.x=tx; obj.y=ty; return true; }
+    obj.x += dx/d*step; obj.y += dy/d*step;
+    return false;
+  }
+
+  const upgradePads = [
+    { id:'berry', x:104, y:620, cost:35, label:'イチゴ畑', available:()=>!state.unlocked.berry, buy:()=>state.unlocked.berry=true },
+    { id:'bakery', x:328, y:495, cost:90, label:'パン工房', available:()=>state.unlocked.berry&&!state.unlocked.bakery, buy:()=>state.unlocked.bakery=true },
+    { id:'helper', x:367, y:666, cost:180, label:'ミュウミュウ', available:()=>state.unlocked.bakery&&!state.unlocked.helper, buy:()=>{state.unlocked.helper=true;helper=createHelper()} },
+    { id:'store2', x:367, y:666, cost:STORE_UPGRADE_COSTS[1], label:'お店を1/3へ', available:()=>state.unlocked.helper&&state.storeLevel===1, buy:()=>state.storeLevel=2 },
+    { id:'store3', x:367, y:666, cost:STORE_UPGRADE_COSTS[2], label:'お店を2倍へ', available:()=>state.storeLevel===2, buy:()=>state.storeLevel=3 },
+    { id:'store4', x:367, y:666, cost:STORE_UPGRADE_COSTS[3], label:'最大店舗へ', available:()=>state.storeLevel===3, buy:()=>state.storeLevel=4 },
+    { id:'capacity', x:210, y:680, cost:()=>65+state.upgrades.capacity*60, label:'もてる数＋2', available:()=>state.upgrades.capacity<4, buy:()=>state.upgrades.capacity++ },
+    { id:'shelf', x:80, y:680, cost:()=>80+state.upgrades.shelf*70, label:'棚を大きく', available:()=>state.upgrades.shelf<3, buy:()=>state.upgrades.shelf++ }
+  ];
+
+  function activePads() { return upgradePads.filter(p=>p.available()); }
+
+  function nearestPad() {
+    const p = state.player;
+    let found=null, best=Infinity;
+    activePads().forEach(pad=>{const d=dist(p,pad);if(d<best){best=d;found=pad}});
+    return best < 58 ? found : null;
+  }
+
+  function collectRegisterCash() {
+    if(state.cashPile<=0||registerCooldown>0)return false;
+    const take=state.cashPile;
+    state.cashPile=0;state.coins+=take;state.earned+=take;
+    registerCooldown=.55;registerPulse=.7;action.pressed=false;
+    if(state.tutorial<4)state.tutorial=4;
+    saveState();
+    if(state.earned>=currentGoal()&&!celebration)clearDay();
+    safeEffect(()=>{pop(REGISTER_POS.x+1,REGISTER_POS.y-36,`レジ完了！ +${take}⭐`,'#ffe866');sparkle(REGISTER_POS.x,REGISTER_POS.y,'#ffe45c',24);beep(940,.1,'sine',.03)});
+    safeEffect(()=>toast(`売上 ⭐${take} を受け取りました！`));
+    return true;
+  }
+
+  function tryInteract() {
+    const p = state.player;
+    const nearbyPlots = plots
+      .filter(plot => plot.ready && (plot.type !== 'berry' || state.unlocked.berry) && dist(p, plot) < 54)
+      .sort((a,b) => dist(p,a)-dist(p,b));
+    if (nearbyPlots.length) { harvest(nearbyPlots[0]); return; }
+
+    if (dist(p, SHELF_WORK_POS) < 72 && p.carry > 0 && ['carrot','berry','bread'].includes(p.carryType)) {
+      const type = p.carryType;
+      const cap = shelfCapacity();
+      const moved = Math.min(p.carry, cap - state.shelf[type]);
+      if (moved <= 0) { toast('棚がいっぱいです。右の♻️ゴミ箱で捨てられます'); return; }
+      state.shelf[type] += moved; p.carry -= moved;
+      pop(p.x, p.y - 30, `+${moved} ${productInfo[type].icon}`, '#fff');
+      sparkle(SHELF_POS.x, SHELF_POS.y-6, productInfo[type].color, 12); beep(660, .06, 'triangle', .025);
+      if (!p.carry) p.carryType = null;
+      if (state.tutorial < 3) state.tutorial = 3;
+      return;
+    }
+
+    if (dist(p, TRASH_POS) < 60 && p.carry > 0) {
+      const discarded=p.carry,icon=productInfo[p.carryType].icon;
+      p.carry=0;p.carryType=null;
+      pop(TRASH_POS.x,TRASH_POS.y-35,`${icon}×${discarded} 処分`,'#fff');sparkle(TRASH_POS.x,TRASH_POS.y,'#a7e86f',10);beep(190,.09,'triangle',.018);
+      toast(`${discarded}個をゴミ箱に入れました`);return;
+    }
+
+    if (dist(p, REGISTER_POS) <= REGISTER_AUTO_RADIUS && state.cashPile > 0) { collectRegisterCash(); return; }
+
+    if (state.unlocked.bakery && dist(p, OVEN_POS) < 62) {
+      const oven = state.oven;
+      if(state.unlocked.helper&&helper.state==='bake'){toast('ミュウミュウがパンを焼いています');return}
+      if (oven.ready > 0 && (p.carry === 0 || p.carryType === 'bread')) {
+        const capacity = 4 + state.upgrades.capacity * 2;
+        const moved = Math.min(oven.ready, capacity - p.carry);
+        if (moved > 0) { p.carryType='bread';p.carry+=moved;oven.ready-=moved;pop(OVEN_POS.x,OVEN_POS.y-32,`+${moved} 🥐`,'#fff');beep(760,.07,'triangle',.025); }
+        else toast('これ以上持てません');
+        return;
+      }
+      if (oven.timer <= 0 && p.carryType === 'carrot' && p.carry >= 2) {
+        p.carry -= 2; if (!p.carry) p.carryType = null;
+        oven.timer = .45 * activeBonus('oven', 1); toast('ニンジン2本で、すぐパンを焼きます！'); beep(410, .08, 'square', .018); return;
+      }
+      toast(oven.timer > 0 ? 'パンを焼いています' : 'ニンジンが2本必要です'); return;
+    }
+
+    const pad = nearestPad();
+    if (!pad) { toast('光っている場所の近くで押してね'); return; }
+    const cost = typeof pad.cost === 'function' ? pad.cost() : pad.cost;
+    if (state.coins < cost) { toast(`あと ⭐${formatPoints(cost-state.coins)} で解放できます`); beep(180,.12,'sawtooth',.015); return; }
+    state.coins -= cost; pad.buy(); saveState();
+    sparkle(pad.x,pad.y,'#fff176',28); pop(pad.x,pad.y-30,'OPEN!','#fff'); beep(660,.1,'triangle',.03); setTimeout(()=>beep(920,.14,'sine',.03),90);
+    toast(`${pad.label}をオープン！`);
+    if(pad.id.startsWith('store')){
+      storeUpgradeTimer=2.6;
+      pop(W/2,335,`✨ ${storeRank().name} 完成！`,'#fff7a8');
+      for(let i=0;i<55;i++)particles.push({x:W/2,y:250,vx:(Math.random()-.5)*280,vy:(Math.random()-.7)*250,life:1.8,color:['#ff67a8','#ffe35d','#65d4ff','#8ef18c'][i%4],size:3+Math.random()*5});
+    }
+    if(pad.id==='store4'){issueCompletionSerial();setTimeout(showGameComplete,650)}
+  }
+
+  function issueCompletionSerial(){
+    if(state.completionSerial)return state.completionSerial;
+    const date=new Date(),stamp=`${String(date.getFullYear()).slice(-2)}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}`;
+    const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',bytes=new Uint8Array(6);
+    if(globalThis.crypto?.getRandomValues)crypto.getRandomValues(bytes);else for(let i=0;i<bytes.length;i++)bytes[i]=Math.floor(Math.random()*256);
+    const code=Array.from(bytes,b=>alphabet[b%alphabet.length]).join('');
+    state.completionSerial=`PLA-MM-${stamp}-${code}`;state.completedAt=date.toISOString();ui.showCompletion.hidden=false;saveState();return state.completionSerial;
+  }
+
+  function showGameComplete(){
+    if(!state.completionSerial)issueCompletionSerial();
+    running=false;ui.pause.classList.remove('open');ui.completeSerial.textContent=state.completionSerial;ui.complete.classList.add('open');renderCompletionCard();saveState();
+  }
+
+  function renderCompletionCard(){
+    const card=ui.completeCanvas,c=card.getContext('2d'),w=card.width,h=card.height;
+    const bg=c.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#1d1026');bg.addColorStop(.48,'#611f32');bg.addColorStop(1,'#160d21');c.fillStyle=bg;c.fillRect(0,0,w,h);
+    c.strokeStyle='#f6cf63';c.lineWidth=18;c.beginPath();c.roundRect(28,28,w-56,h-56,42);c.stroke();c.strokeStyle='#b16a24';c.lineWidth=5;c.beginPath();c.roundRect(48,48,w-96,h-96,34);c.stroke();
+    c.fillStyle='#ffe88a';c.textAlign='center';c.font='900 34px "Shippori Mincho", serif';c.fillText('PONYLAND ACADEMY',w/2,105);c.font='900 60px "Shippori Mincho", serif';c.fillText('GAME CLEAR!',w/2,178);
+    c.fillStyle='#fff7dc';c.font='900 41px "Shippori Mincho", serif';c.fillText('ポニーランド百貨店 完成',w/2,238);
+    const mew=characterSpriteImages['005-front'];
+    if(mew&&mew.complete&&mew.naturalWidth){const dh=430,dw=dh*(mew.naturalWidth/mew.naturalHeight);c.save();c.shadowColor='#f6b53a';c.shadowBlur=28;c.drawImage(mew,w/2-dw/2,245,dw,dh);c.restore()}
+    else if(mew)mew.addEventListener('load',renderCompletionCard,{once:true});
+    c.fillStyle='#ffd966';c.font='900 45px "Shippori Mincho", serif';c.fillText('ミュウミュウからの認定証',w/2,710);
+    c.fillStyle='#fff';c.font='700 31px "Shippori Mincho", serif';c.fillText('すべてのお店を成長させました',w/2,772);c.fillText('すばらしい店長に認定します！',w/2,820);
+    c.fillStyle='#f5d781';c.font='700 25px monospace';c.fillText('DEVICE SERIAL',w/2,912);c.font='900 35px monospace';c.fillText(state.completionSerial,w/2,960);
+    const completed=state.completedAt?new Date(state.completedAt):new Date();c.fillStyle='#ddbd74';c.font='700 23px "Shippori Mincho", serif';c.fillText(`${completed.getFullYear()}年${completed.getMonth()+1}月${completed.getDate()}日`,w/2,1012);
+    c.fillStyle='#fff5cf';c.font='900 28px "Shippori Mincho", serif';c.fillText('OFFLINE COLLECTOR CARD',w/2,1090);c.font='700 20px "Shippori Mincho", serif';c.fillText('端末発行記念番号・同じ端末では同じカードを再表示できます',w/2,1132);
+  }
+
+  function downloadCompletionCard(){ui.completeCanvas.toBlob(blob=>{if(!blob){toast('画像を保存できませんでした');return}const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`ポニーランド学園_ゲームクリアカード_${state.completionSerial}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1500);toast('クリアカードを保存しました！')},'image/png')}
+
+  function currentGoal() { return goals[Math.min(state.day-1,goals.length-1)] + Math.max(0,state.day-goals.length)*500; }
+
+  function clearDay() {
+    celebration = true; dayClearTimer = 2.1; action.pressed=false;
+    dayClearReward = 20 + state.day * 10;
+    state.coins += dayClearReward; state.stars += 3;
+    state.giftRunId ||= crypto.randomUUID();
+    saveState();
+    let giftEarned=false;
+    safeEffect(()=>{window.MarketGifts.grant(state.giftRunId, state.day);giftEarned=true;});
+    safeEffect(()=>{ui.reward.textContent=dayClearReward;ui.clearMessage.textContent=`${state.totalCustomers}人のお客さんが来てくれました。最高コンボは${state.bestCombo}回！`;ui.clear.classList.remove('open')});
+    safeEffect(()=>{for(let i=0;i<45;i++)particles.push({x:W/2,y:H/2,vx:(Math.random()-.5)*240,vy:(Math.random()-.7)*260,life:2,color:['#ff6fae','#ffe25a','#63d2ff','#72dc86'][i%4],size:4+Math.random()*5});pop(W/2,H/2-70,'★ DAY CLEAR! ★','#fff5a6')});
+    safeEffect(()=>toast(giftEarned?`目標達成！ ⭐${dayClearReward} ＋ ガチャ券1枚。休けいメニューから受け取れるよ`:`目標達成！ ⭐${dayClearReward}。ガチャ券の保存にはブラウザの保存機能が必要です。`));
+  }
+
+  function advanceDayWithoutStopping() {
+    if(!celebration)return false;
+    state.day++; state.earned=0; state.bestCombo=0; state.totalCustomers=0;
+    celebration=false;dayClearTimer=0;dayClearReward=0;
+    ui.clear.classList.remove('open');
+    spawnTimer=Math.min(spawnTimer,.35);
+    saveState();safeEffect(()=>toast(`DAY ${state.day} スタート！`));
+    return true;
+  }
+
+  function nextDay() { advanceDayWithoutStopping(); }
+
+  function updateObjective() {
+    const p=state.player, pad=nearestPad();
+    let text='';
+    const nearbyPlot = plots.find(plot=>plot.ready&&(plot.type!=='berry'||state.unlocked.berry)&&dist(p,plot)<54);
+    const byShelf = dist(p,SHELF_WORK_POS)<72&&p.carry>0;
+    const byCash = dist(p,REGISTER_POS)<=REGISTER_AUTO_RADIUS&&state.cashPile>0;
+    const byTrash = dist(p,TRASH_POS)<60&&p.carry>0;
+    const byOven = state.unlocked.bakery&&dist(p,OVEN_POS)<62;
+    if (nearbyPlot) {
+      text=`A：${productInfo[nearbyPlot.type].name}を収穫`; ui.action.classList.add('pulse');
+    } else if (byShelf) {
+      text=`A：${productInfo[p.carryType].name}を棚に並べる`; ui.action.classList.add('pulse');
+    } else if (byCash) {
+      text=`レジで売上 ⭐${formatPoints(state.cashPile)} を自動受取中`; ui.action.classList.remove('pulse');
+    } else if (byTrash) {
+      text=`A：手持ちの${productInfo[p.carryType].icon}×${p.carry}をゴミ箱へ`; ui.action.classList.add('pulse');
+    } else if (byOven) {
+      text=state.unlocked.helper&&helper.state==='bake'?'ミュウミュウがパンを焼いています':state.oven.ready>0?'A：焼けたパンを受け取る':'A：パン工房を使う'; ui.action.classList.toggle('pulse',!(state.unlocked.helper&&helper.state==='bake'));
+    } else if (pad) {
+      const cost=typeof pad.cost==='function'?pad.cost():pad.cost;
+      text=`Aボタンで「${pad.label}」を解放 ⭐${formatPoints(cost)}`; ui.action.classList.add('pulse');
+    } else {
+      ui.action.classList.remove('pulse');
+      if (state.tutorial<=1) text='ニンジン畑へ行き、Aで収穫しよう！';
+      else if (state.tutorial===2) text='中央の商品棚の前でAを押そう！';
+      else if (state.tutorial===3) text='売れたら右上のレジへ行こう！ 近づくと自動で受け取れるよ';
+      else if (!state.unlocked.berry) text='⭐35ためて、イチゴ畑を開こう！';
+      else if (!state.unlocked.bakery) text='⭐90ためて、パン工房を開こう！';
+      else if (!state.unlocked.helper) text='商品を切らさず、ミュウミュウを仲間にしよう！';
+      else if(state.storeLevel<4){const next=STORE_UPGRADE_COSTS[state.storeLevel];text=`次はお店ランク${state.storeLevel+1}！ ⭐${formatPoints(next)}で拡張しよう`;}
+      else text='最高ランクの百貨店！ 今日の売上目標を達成しよう！';
+    }
+    ui.objective.textContent=text;
+  }
+
+  function updateUI() {
+    ui.day.textContent=state.day; ui.earned.textContent=Math.floor(state.earned); ui.goal.textContent=currentGoal();
+    ui.goalBar.style.width=`${Math.min(100,state.earned/currentGoal()*100)}%`;
+    ui.coin.textContent=formatPoints(state.coins);
+    const p=state.player;
+    ui.carry.hidden=!p.carry;
+    ui.carry.innerHTML=p.carry?`<img class="stock-icon" src="${ITEM_ART_PATHS[`${ITEM_STEM[p.carryType]}-single`]}" alt="">${p.carry}/${4+state.upgrades.capacity*2}`:'';
+    const shelfMax=shelfCapacity();
+    ui.stockCarrot.textContent=`${state.shelf.carrot}/${shelfMax}`;
+    ui.stockBerry.textContent=`${state.shelf.berry}/${shelfMax}`;
+    ui.stockBread.textContent=`${state.shelf.bread}/${shelfMax}`;
+    ui.stockCarrot.parentElement.title=`ニンジン ${state.shelf.carrot}個／上限${shelfMax}個`;
+    ui.stockBerryWrap.title=`イチゴ ${state.shelf.berry}個／上限${shelfMax}個`;
+    ui.stockBreadWrap.title=`パン ${state.shelf.bread}個／上限${shelfMax}個`;
+    ui.stockBerryWrap.hidden=!state.unlocked.berry;
+    ui.stockBreadWrap.hidden=!state.unlocked.bakery;
+    ui.storeLevel.textContent=state.storeLevel;
+    ui.showCompletion.hidden=!state.completionSerial;
+  }
+
+  function draw(t) {
+    ctx.clearRect(0,0,W,H);
+    drawGround(t); drawStoreBuilding(state.storeLevel,t); drawStations(t); drawPads(t); drawInteractionGlow(t); drawCustomers(t); drawHelper(t); drawTapTarget(t); drawPlayer(t); drawParticles(); drawStoreUpgradeEffect(t); drawDayClearEffect(t);
+  }
+
+  function drawGround(t) {
+    const level=clamp(state.storeLevel||1,1,4),image=worldArt[level-1];
+    if(image&&image.complete&&image.naturalWidth){
+      ctx.drawImage(image,0,0,W,H);
+    }else{
+      const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#71c9ff');g.addColorStop(.42,'#eaf8ff');g.addColorStop(1,'#fff2cf');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+      ctx.fillStyle='#173f88';ctx.textAlign='center';ctx.font='900 16px "Shippori Mincho", serif';ctx.fillText('ポニーランドを準備中…',W/2,H/2);
+    }
+    drawRemovedCarrotGarden(t);
+    ctx.save();ctx.globalAlpha=.45+.25*Math.sin(t*2.2);ctx.fillStyle='#fff5a8';
+    [[24,181],[214,350],[425,180],[261,621]].forEach(([x,y],i)=>{ctx.font=`${12+i%2*5}px "Shippori Mincho", serif`;ctx.fillText('✦',x,y)});ctx.restore();
+  }
+
+  // 背景画像に描かれていた旧ニンジン畑を、自然な庭園の植栽で覆う。
+  // 実際に収穫できるニンジン畑は下側に1か所だけ残す。
+  function drawRemovedCarrotGarden(t){
+    ctx.save();
+    const lawn=ctx.createLinearGradient(18,318,178,412);
+    lawn.addColorStop(0,'#557f39');lawn.addColorStop(.45,'#85ad50');lawn.addColorStop(1,'#a9c968');
+    ctx.fillStyle=lawn;
+    ctx.beginPath();
+    ctx.moveTo(18,331);ctx.bezierCurveTo(34,311,72,308,107,316);ctx.bezierCurveTo(144,311,173,329,181,353);
+    ctx.bezierCurveTo(180,383,160,405,126,413);ctx.bezierCurveTo(83,421,37,410,20,386);ctx.bezierCurveTo(12,368,12,348,18,331);ctx.closePath();ctx.fill();
+    const shrubs=[[30,348,16],[55,331,19],[84,338,18],[116,329,20],[148,345,19],[166,370,17],[138,392,20],[104,402,17],[68,397,20],[35,378,17]];
+    shrubs.forEach(([x,y,r],i)=>{
+      const sway=Math.sin(t*1.5+i)*.8;
+      ctx.fillStyle=i%2?'#2f6e3d':'#46864a';ctx.beginPath();ctx.arc(x+sway,y,r,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#78ad58';ctx.beginPath();ctx.arc(x-4+sway,y-5,r*.62,0,Math.PI*2);ctx.fill();
+    });
+    const flowers=[[26,355,'#fff7d8'],[48,373,'#ff9bc2'],[72,326,'#fff'],[94,391,'#ffd45b'],[119,343,'#ff9bc2'],[143,382,'#fff'],[165,352,'#ffd45b'],[61,404,'#fff']];
+    flowers.forEach(([x,y,color],i)=>{
+      ctx.save();ctx.translate(x,y);ctx.rotate(t*.05+i);
+      ctx.fillStyle=color;
+      for(let p=0;p<5;p++){ctx.rotate(Math.PI*2/5);ctx.beginPath();ctx.ellipse(0,-4,2.2,4,0,0,Math.PI*2);ctx.fill()}
+      ctx.fillStyle='#f3b72f';ctx.beginPath();ctx.arc(0,0,2,0,Math.PI*2);ctx.fill();ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  function drawStoreWindow(x,y,w,h,color='#bcecff'){
+    roundRect(x,y,w,h,7,color);ctx.fillStyle='#fff8';ctx.fillRect(x+5,y+5,w-10,4);ctx.fillStyle='#6b7a9b55';ctx.fillRect(x+w/2-1,y+3,2,h-6);
+  }
+
+  function drawStoreBuilding(level,t){
+    const sizeScale=STORE_STAGE_SCALE[clamp(level,1,4)-1];
+    const anchorX=438,anchorY=304;
+    ctx.save();ctx.translate(0,STORE_Y_SHIFT);ctx.translate(anchorX,anchorY);ctx.scale(sizeScale,sizeScale);ctx.translate(-anchorX,-anchorY);ctx.textAlign='center';
+    if(level===1){
+      roundRect(150,111,286,174,25,'#dfb77e');roundRect(158,119,270,166,21,'#fff0c8');
+      ctx.fillStyle='#e88476';ctx.beginPath();ctx.moveTo(145,124);ctx.lineTo(292,69);ctx.lineTo(441,124);ctx.closePath();ctx.fill();
+      roundRect(215,112,154,31,15,'#fff9dd');ctx.fillStyle='#76516f';ctx.font='900 13px "Shippori Mincho", serif';ctx.fillText('🏪 ミニマート',292,132);
+      drawStoreWindow(169,151,47,39);drawStoreWindow(371,151,45,39);
+      ctx.fillStyle='#d9a868';ctx.fillRect(158,196,270,10);
+    }else if(level===2){
+      roundRect(105,91,330,198,25,'#e6a16f');roundRect(113,99,314,190,20,'#fff0ba');
+      ctx.fillStyle='#f4759f';ctx.beginPath();ctx.moveTo(98,111);ctx.lineTo(270,49);ctx.lineTo(443,111);ctx.closePath();ctx.fill();
+      roundRect(172,77,196,38,18,'#fff');ctx.fillStyle='#b1487f';ctx.font='900 15px "Shippori Mincho", serif';ctx.fillText('🌈 にじいろショップ',270,101);
+      const awning=['#ff7ba9','#ffd85a','#68d3f1','#78d985'];for(let i=0;i<10;i++){ctx.fillStyle=awning[i%4];ctx.fillRect(113+i*31.4,145,32,24);ctx.beginPath();ctx.arc(129+i*31.4,169,16,0,Math.PI);ctx.fill()}
+      drawStoreWindow(125,181,48,43);drawStoreWindow(375,181,40,43);
+      ctx.fillStyle='#69b964';ctx.font='22px "Shippori Mincho", serif';ctx.fillText('🌷',126,268);ctx.fillText('🌼',411,268);
+    }else if(level===3){
+      roundRect(54,58,382,236,22,'#5f9fca');roundRect(62,66,366,228,18,'#dff5ff');
+      roundRect(78,77,334,48,17,'#2d82bd');ctx.fillStyle='#fff';ctx.font='900 18px "Shippori Mincho", serif';ctx.fillText('🌈 にじいろスーパー',245,108);
+      for(let x=78;x<=358;x+=70)drawStoreWindow(x,135,50,34,'#8edcf4');
+      ctx.fillStyle='#ffca55';ctx.fillRect(62,176,366,13);ctx.fillStyle='#ef6f9b';for(let x=62;x<428;x+=46)ctx.fillRect(x,176,23,13);
+      roundRect(334,198,78,90,8,'#7bc9e5');ctx.fillStyle='#fff9';ctx.fillRect(372,201,3,84);ctx.font='20px "Shippori Mincho", serif';ctx.fillStyle='#fff';ctx.fillText('⇆',373,249);
+      roundRect(75,235,54,35,10,'#fff');ctx.fillStyle='#33749a';ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText('大型店舗',102,257);
+      ctx.font='22px "Shippori Mincho", serif';ctx.fillText('🛒',143+Math.sin(t)*5,279);
+    }else{
+      roundRect(14,37,422,267,18,'#3e2855');roundRect(22,45,406,259,15,'#76508d');
+      roundRect(166,18,120,59,18,'#4e3268');ctx.fillStyle='#f5cf65';ctx.beginPath();ctx.moveTo(189,45);ctx.lineTo(202,28);ctx.lineTo(220,45);ctx.lineTo(239,25);ctx.lineTo(257,45);ctx.lineTo(272,30);ctx.lineTo(279,53);ctx.lineTo(183,53);ctx.closePath();ctx.fill();
+      roundRect(64,67,322,48,19,'#f5cf65');ctx.fillStyle='#4b285f';ctx.font='900 19px "Shippori Mincho", serif';ctx.fillText('✨ ポニーランド百貨店 ✨',225,98);
+      for(let row=0;row<2;row++)for(let col=0;col<7;col++){const pulse=(col+row)%3===Math.floor(t*2)%3;drawStoreWindow(40+col*55,130+row*48,39,31,pulse?'#fff0a8':'#a9dff5')}
+      ctx.fillStyle='#f3c95f';ctx.fillRect(22,221,406,8);ctx.fillRect(22,272,406,7);
+      roundRect(334,229,78,72,8,'#b38bc6');ctx.fillStyle='#fff9';ctx.fillRect(372,232,3,66);ctx.fillStyle='#fff';ctx.font='22px "Shippori Mincho", serif';ctx.fillText('✦',373,268);
+      ctx.fillStyle='#ffe578';ctx.font='18px "Shippori Mincho", serif';ctx.fillText('★',35,67+Math.sin(t*3)*3);ctx.fillText('★',415,71+Math.cos(t*3)*3);
+    }
+    ctx.restore();
+  }
+
+  function drawStations(t) {
+    drawField('carrot',31,326+FIELD_Y_SHIFT,140,94,true,t);
+    drawField('berry',31,430+FIELD_Y_SHIFT,140,91,state.unlocked.berry,t);
+
+    ctx.save();ctx.textAlign='center';
+    storyLabel(100,215,'商品棚');
+    drawShelfItem('carrot',49,258,state.shelf.carrot);
+    drawShelfItem(state.unlocked.berry?'berry':'carrot',100,258,state.unlocked.berry?state.shelf.berry:0);
+    if(state.unlocked.bakery)drawShelfItem('bread',151,258,state.shelf.bread);
+    roundRect(30,300,140,23,11,'#173f88e8');ctx.strokeStyle='#f0c44d';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='900 9px "Shippori Mincho", serif';ctx.fillText('▼ 手前で商品をならべる',100,315);
+
+    storyLabel(REGISTER_POS.x,225,'レジ');
+    if(state.cashPile>0||registerPulse>0){ctx.save();ctx.strokeStyle=`rgba(255,224,84,${.72+.25*Math.sin(t*9)})`;ctx.shadowColor='#fff3a3';ctx.shadowBlur=15;ctx.lineWidth=6;ctx.beginPath();ctx.arc(REGISTER_POS.x,REGISTER_POS.y,43+Math.sin(t*7)*3,0,Math.PI*2);ctx.stroke();ctx.restore()}
+    if(state.cashPile>0){roundRect(REGISTER_POS.x-23,REGISTER_POS.y-12,46,25,12,'#173f88e8');ctx.strokeStyle='#f0c44d';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff7a9';ctx.font='900 11px "Shippori Mincho", serif';ctx.fillText(`⭐${Math.floor(state.cashPile)}`,REGISTER_POS.x,REGISTER_POS.y+5)}
+    drawTrashBin(t);
+
+    if(state.unlocked.bakery){
+      const helperBaking=state.unlocked.helper&&helper.state==='bake';
+      storyLabel(OVEN_POS.x,475,'パン工房');
+      if(state.oven.timer>0){const pct=1-state.oven.timer/(.45*activeBonus('oven',1));drawMagicProgress(OVEN_POS.x-38,OVEN_POS.y+46,76,pct)}
+      else if(helperBaking){const pct=1-helper.timer/HELPER_BAKE_TIME;drawMagicProgress(OVEN_POS.x-38,OVEN_POS.y+46,76,pct)}
+      if(state.oven.ready>0){ctx.save();ctx.shadowColor='#ffcf42';ctx.shadowBlur=12;drawCountedProducts('bread',state.oven.ready,OVEN_POS.x-42,OVEN_POS.y-58,84,39);ctx.restore();roundRect(OVEN_POS.x-18,OVEN_POS.y-22,36,17,8,'#173f88e8');ctx.fillStyle='#fff';ctx.font='900 9px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText(`×${state.oven.ready}`,OVEN_POS.x,OVEN_POS.y-10)}
+    }else drawLockedArea(314,488,103,117,'パン工房');
+    ctx.restore();
+  }
+
+  function storyLabel(x,y,text){ctx.save();ctx.textAlign='center';roundRect(x-38,y-12,76,24,12,'#173f88e8');ctx.strokeStyle='#efc44e';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText(text,x,y+4);ctx.restore()}
+  function drawProductAsset(type,variant,x,y,w,h,alpha=1){
+    const key=`${ITEM_STEM[type]||type}-${variant}`,img=itemArt[key];
+    if(!img||!img.complete||!img.naturalWidth)return false;
+    const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight),dw=img.naturalWidth*scale,dh=img.naturalHeight*scale;
+    ctx.save();ctx.globalAlpha*=alpha;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);ctx.restore();return true;
+  }
+  function drawCountedProducts(type,count,x,y,w,h){
+    const qty=Math.max(0,Math.floor(Number(count)||0));if(!qty)return;
+    const cols=Math.max(1,Math.min(qty,Math.ceil(Math.sqrt(qty*w/h))));
+    const rows=Math.ceil(qty/cols),cellW=w/cols,cellH=h/rows;
+    for(let i=0;i<qty;i++){
+      const col=i%cols,row=Math.floor(i/cols),pad=Math.max(.5,Math.min(cellW,cellH)*.06);
+      drawProductAsset(type,'single',x+col*cellW+pad,y+row*cellH+pad,cellW-pad*2,cellH-pad*2);
+    }
+  }
+  function drawMagicProgress(x,y,w,pct){roundRect(x,y,w,9,5,'#173f88dd');roundRect(x+2,y+2,Math.max(0,(w-4)*clamp(pct,0,1)),5,3,'#ffd65a')}
+  function drawTrashBin(t){const near=state.player&&dist(state.player,TRASH_POS)<60;ctx.save();ctx.textAlign='center';if(near&&state.player.carry){ctx.strokeStyle=`rgba(255,229,105,${.75+.2*Math.sin(t*8)})`;ctx.shadowColor='#fff2a0';ctx.shadowBlur=14;ctx.lineWidth=5;ctx.beginPath();ctx.arc(TRASH_POS.x,TRASH_POS.y,35+Math.sin(t*8)*2,0,Math.PI*2);ctx.stroke()}storyLabel(TRASH_POS.x,TRASH_POS.y-48,'ゴミ箱');ctx.restore()}
+
+  function drawField(type,x,y,w,h,open,t){
+    ctx.save();ctx.shadowColor='#7b4d1444';ctx.shadowBlur=8;ctx.shadowOffsetY=5;
+    roundRect(x-2,y-2,w+4,h+4,18,open?'#f4ecddd9':'#173f88df');ctx.strokeStyle='#efc44e';ctx.lineWidth=3;ctx.stroke();
+    if(open){roundRect(x+7,y+9,w-14,h-22,13,'#70452ee8');ctx.strokeStyle='#a8703b';ctx.lineWidth=2;ctx.stroke();}
+    ctx.restore();
+    if(!open){drawLockedArea(x,y,w,h,type==='berry'?'イチゴ畑':'畑');return}
+    plots.filter(p=>p.type===type).forEach(p=>{
+      ctx.save();ctx.globalAlpha=.35;ctx.fillStyle='#29170f';ctx.beginPath();ctx.ellipse(p.x,p.y+9,13,5,0,0,Math.PI*2);ctx.fill();ctx.restore();
+      if(p.ready){const bounce=Math.sin(t*4+p.phase)*1.5;drawProductAsset(type,'single',p.x-15,p.y-18+bounce,30,31);ctx.save();ctx.strokeStyle=`rgba(255,240,154,${.36+.22*Math.sin(t*4+p.phase)})`;ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y+bounce,12,0,Math.PI*2);ctx.stroke();ctx.restore()}
+    });
+    roundRect(x+23,y+h-17,w-46,22,10,'#173f88e8');ctx.strokeStyle='#efc44e';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='900 10px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText(type==='carrot'?'ニンジン畑':'イチゴ畑',x+w/2,y+h-2);
+  }
+
+  function drawShelfItem(type,x,y,count){
+    ctx.save();ctx.shadowColor=count>0?'#f2c64c88':'transparent';ctx.shadowBlur=count>0?7:0;drawCountedProducts(type,count,x-25,y-31,50,48);ctx.restore();
+    roundRect(x-23,y+19,46,20,9,count>0?'#173f88':'#6f7791');ctx.strokeStyle='#efc44e';ctx.lineWidth=1.5;ctx.stroke();ctx.fillStyle='#fff';ctx.font='900 9px "Shippori Mincho", serif';ctx.textAlign='center';ctx.textBaseline='alphabetic';ctx.fillText(`${count}/${shelfCapacity()}`,x,y+33);
+  }
+  function drawLockedArea(x,y,w,h,label){ctx.save();ctx.globalAlpha=.94;roundRect(x,y,w,h,18,'#173f88e8');ctx.strokeStyle='#efc44e';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#fff4a4';ctx.font='23px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText('🔒',x+w/2,y+h/2-4);ctx.fillStyle='#fff';ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText(label,x+w/2,y+h/2+18);ctx.restore()}
+
+  function drawPads(t){
+    activePads().forEach(pad=>{
+      const cost=typeof pad.cost==='function'?pad.cost():pad.cost;const near=dist(state.player,pad)<58;
+      ctx.save();ctx.globalAlpha=.9+.1*Math.sin(t*4);ctx.shadowColor=near?'#fff2a0':'#3b77dd';ctx.shadowBlur=near?18:9;const g=ctx.createRadialGradient(pad.x,pad.y,4,pad.x,pad.y,40);g.addColorStop(0,near?'#fff3a5':'#4e83d4');g.addColorStop(.6,near?'#f3c84d':'#1a4b9a');g.addColorStop(1,'#102a69');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(pad.x,pad.y,41,26,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#f3c94e';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#fff3a5';ctx.font='14px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText('★',pad.x,pad.y-14);ctx.restore();
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText(pad.label,pad.x,pad.y-1);ctx.fillStyle='#fff3a5';ctx.font=`900 ${cost>=10000?8:10}px "Shippori Mincho", serif`;ctx.fillText(`⭐${formatPoints(cost)}`,pad.x,pad.y+13);
+    })
+  }
+
+  function drawInteractionGlow(t){
+    const p=state.player;
+    let target=null;
+    const plot=plots.filter(q=>q.ready&&(q.type!=='berry'||state.unlocked.berry)&&dist(p,q)<54).sort((a,b)=>dist(p,a)-dist(p,b))[0];
+    if(plot) target=plot;
+    else if(dist(p,SHELF_WORK_POS)<72&&p.carry>0) target=SHELF_WORK_POS;
+    else if(dist(p,REGISTER_POS)<=REGISTER_AUTO_RADIUS&&state.cashPile>0) target=REGISTER_POS;
+    else if(dist(p,TRASH_POS)<60&&p.carry>0) target=TRASH_POS;
+    else if(state.unlocked.bakery&&dist(p,OVEN_POS)<62) target=OVEN_POS;
+    else target=nearestPad();
+    if(!target)return;
+    ctx.save();ctx.strokeStyle=`rgba(255,226,104,${.7+.28*Math.sin(t*6)})`;ctx.shadowColor='#fff4ac';ctx.shadowBlur=15;ctx.lineWidth=5;ctx.beginPath();ctx.arc(target.x,target.y,31+Math.sin(t*6)*4,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#fff4ac';ctx.font='15px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText('✦',target.x,target.y-36);ctx.restore();
+  }
+
+  function drawCustomers(t){customers.forEach(c=>{
+    const y=c.y+Math.sin(c.bob)*2;
+    ctx.save();ctx.strokeStyle='#ff83b5';ctx.lineWidth=3;ctx.globalAlpha=.72;ctx.beginPath();ctx.ellipse(c.x,y+19,25,9,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+    drawOfficialToken(c.x,y,c.characterId,'front',1,.72,c.color);
+    roundRect(c.x-31,y+24,62,18,9,c.sad?'#8d7d91':'#fff');ctx.fillStyle=c.sad?'#fff':'#9c356d';ctx.font='900 9px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText('🛒 お客さん',c.x,y+36);
+    const shopping=c.state==='shelf'||c.state==='choose',checkout=c.state==='checkout'||c.state==='pay';
+    const bubble=c.sad?'売切':checkout?'💰':shopping?'product':(c.paid?'✓':'');
+    if(bubble){roundRect(c.x+10,y-47,48,27,12,c.sad?'#75667a':'#fff');ctx.fillStyle=c.sad?'#fff':'#56415f';ctx.textAlign='center';if(bubble==='product'){drawProductAsset(c.want,'single',c.x+14,y-44,25,20);ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText((c.wantQty||1)>1?`×${c.wantQty}`:'',c.x+48,y-29)}else{ctx.font=c.sad?'900 9px "Shippori Mincho", serif':'17px "Shippori Mincho", serif';ctx.fillText(bubble,c.x+34,y-29)}}
+  })}
+
+  function drawHelper(t){
+    if(!state.unlocked.helper)return;
+    const moving=!!helper.isMoving,x=helper.x,y=helper.y+(moving?Math.sin(t*12)*1.5:0);
+    const motionView=moving&&helper.view==='side'&&Math.floor(t*6)%2===1?'walk':(helper.view||'front');
+    ctx.save();ctx.strokeStyle='#ffe469';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x,y+20,27,10,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+    drawOfficialToken(x,y,'005',motionView,helper.facing,.8,'#f04f48');
+    roundRect(x-39,y+26,78,18,9,'#ffe469');ctx.fillStyle='#694c29';ctx.font='900 9px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText('📦 おてつだい',x,y+38);
+    const bx=clamp(x-48,4,W-100),status=helper.status||'仕事中';roundRect(bx,y-54,96,22,11,'#fff');ctx.fillStyle='#56415f';ctx.font='900 9px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText(status,bx+48,y-39);
+    if(helper.carry>0&&helper.carryType){roundRect(x+20,y-28,42,23,11,'#fff8d9');drawProductAsset(helper.carryType,'single',x+23,y-26,21,18);ctx.fillStyle='#56415f';ctx.font='900 10px "Shippori Mincho", serif';ctx.fillText(`×${helper.carry}`,x+51,y-12)}
+  }
+
+  function drawTapTarget(t){if(!tapTarget)return;ctx.save();ctx.strokeStyle=`rgba(255,255,255,${.65+.3*Math.sin(t*8)})`;ctx.fillStyle='rgba(255,117,181,.22)';ctx.lineWidth=4;ctx.beginPath();ctx.arc(tapTarget.x,tapTarget.y,13+Math.sin(t*8)*3,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.restore()}
+
+  function drawPlayer(t){const p=state.player,bob=Math.sin(t*9)*2;drawOfficialToken(p.x,p.y+bob,state.selectedCharacter,p.view,p.facing,1.05,activeCharacter().color);if(p.carry){roundRect(p.x-20,p.y-62,40,27,12,'#fff');drawProductAsset(p.carryType,'single',p.x-17,p.y-59,24,21);ctx.fillStyle='#56415f';ctx.font='900 10px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText(p.carry,p.x+11,p.y-43)}}
+
+  function drawOfficialToken(x,y,id,view,facing,scale,border){
+    if(id==='005'){drawMewMewToken(x,y,view,facing,scale,border);return}
+    const img=characterSpriteImages[`${id}-${view}`]||characterSpriteImages[`${id}-front`]||characterSpriteImages['003-front'];
+    if(!img||!img.complete||!img.naturalWidth){drawPony(x,y,border,'#f4c94c',0,'',facing);return}
+    const size=82*scale,top=y-size*.72;
+    ctx.save();ctx.fillStyle='#3d3048';ctx.globalAlpha=.2;ctx.beginPath();ctx.ellipse(x,y+20*scale,23*scale,8*scale,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.translate(x,0);
+    if(view==='side'&&facing>0)ctx.scale(-1,1);
+    ctx.drawImage(img,-size/2,top,size,size);
+    ctx.restore();
+  }
+
+  function drawMewMewToken(x,y,view,facing,scale,border){
+    const img=characterSpriteImages[`005-${view}`]||characterSpriteImages['005-front'];
+    if(!img||!img.complete||!img.naturalWidth){drawPony(x,y,'#252229','#f04f48',0,'',facing);return}
+    const height=82*scale,width=height*(img.naturalWidth/img.naturalHeight),top=y-height*.72;
+    ctx.save();ctx.fillStyle='#3d3048';ctx.globalAlpha=.2;ctx.beginPath();ctx.ellipse(x,y+20*scale,23*scale,8*scale,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.translate(x,0);if((view==='side'||view==='walk')&&facing>0)ctx.scale(-1,1);ctx.drawImage(img,-width/2,top,width,height);ctx.restore();
+  }
+
+  function drawPony(x,y,body,mane,bob,bubble,facing){
+    ctx.save();ctx.translate(x,y+bob);ctx.scale(facing||1,1);
+    ctx.fillStyle='#4d3c55';ctx.globalAlpha=.18;ctx.beginPath();ctx.ellipse(0,22,23,9,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+    ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(0,2,22,27,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=mane;ctx.beginPath();ctx.arc(-15,-12,8,0,Math.PI*2);ctx.arc(-17,-2,7,0,Math.PI*2);ctx.arc(-15,8,7,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(-13,-19);ctx.lineTo(-8,-35);ctx.lineTo(0,-21);ctx.fill();ctx.beginPath();ctx.moveTo(8,-21);ctx.lineTo(16,-35);ctx.lineTo(18,-16);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(10,2,11,9,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#49364d';ctx.beginPath();ctx.arc(7,-7,2.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=mane;ctx.beginPath();ctx.arc(-25,11,8,0,Math.PI*2);ctx.arc(-29,15,6,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+    if(bubble){roundRect(x-18,y-58,36,27,12,'#fff');ctx.fillStyle='#56415f';ctx.font='16px "Shippori Mincho", serif';ctx.textAlign='center';ctx.fillText(bubble,x,y-39)}
+  }
+
+  function drawParticles(){particles.forEach(p=>{ctx.save();ctx.globalAlpha=Math.min(1,p.life*1.7);ctx.fillStyle=p.color;ctx.translate(p.x,p.y);ctx.rotate(p.life*4);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);ctx.restore()})}
+
+  function drawStoreUpgradeEffect(t){
+    if(storeUpgradeTimer<=0)return;
+    const alpha=Math.min(1,storeUpgradeTimer*1.5),scale=1+Math.sin(t*8)*.025;
+    ctx.save();ctx.globalAlpha=alpha;ctx.translate(W/2,330);ctx.scale(scale,scale);roundRect(-174,-35,348,70,24,'#563b72e8');ctx.strokeStyle='#ffe36b';ctx.lineWidth=5;ctx.beginPath();ctx.roundRect(-174,-35,348,70,24);ctx.stroke();ctx.fillStyle='#fff5a6';ctx.textAlign='center';ctx.font='900 15px "Shippori Mincho", serif';ctx.fillText(`✨ ${STORE_STAGE_LABELS[state.storeLevel-1]}へ拡張！ ✨`,0,-8);ctx.fillStyle='#fff';ctx.font='900 20px "Shippori Mincho", serif';ctx.fillText(storeRank().name,0,20);ctx.restore();
+  }
+
+  function drawDayClearEffect(t){
+    if(dayClearTimer<=0)return;
+    const fade=Math.min(1,dayClearTimer*2),scale=1+Math.sin(t*7)*.018;
+    ctx.save();ctx.globalAlpha=fade;ctx.translate(W/2,350);ctx.scale(scale,scale);
+    roundRect(-184,-61,368,122,27,'#563b72ed');ctx.strokeStyle='#ffe36b';ctx.lineWidth=6;ctx.beginPath();ctx.roundRect(-184,-61,368,122,27);ctx.stroke();
+    ctx.fillStyle='#fff5a6';ctx.textAlign='center';ctx.font='900 26px "Shippori Mincho", serif';ctx.fillText('★ DAY CLEAR! ★',0,-22);
+    ctx.fillStyle='#fff';ctx.font='900 18px "Shippori Mincho", serif';ctx.fillText(`ごほうび ⭐${dayClearReward}`,0,10);ctx.font='800 14px "Shippori Mincho", serif';ctx.fillText('動いたまま、つぎの日へ！',0,39);ctx.restore();
+  }
+
+  function sparkle(x,y,color,count=8){for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,s=25+Math.random()*60;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-20,life:.45+Math.random()*.45,color,size:2+Math.random()*4})}}
+  function safeEffect(effect){try{effect()}catch(error){console.error('Game effect skipped:',error)}}
+  function pop(x,y,text,color){const el=document.createElement('span');el.className='float-text';el.textContent=text;el.style.left=`${x/W*100}%`;el.style.top=`${y/H*100}%`;el.style.color=color;$('#floatingLayer').appendChild(el);setTimeout(()=>el.remove(),950)}
+  function roundRect(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+  function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+  function toast(message){ui.toast.textContent=message;ui.toast.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>ui.toast.classList.remove('show'),1800)}
+  function beep(freq,duration,type='sine',volume=.02){if(!soundOn)return;try{audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(volume,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+duration);o.connect(g).connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+duration)}catch{}}
+
+  function resizeCanvas(){const rect=canvas.getBoundingClientRect();canvas.dataset.scaleX=W/rect.width;canvas.dataset.scaleY=H/rect.height}
+  function joyMove(e){const r=$('#joystick').getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const max=r.width*.32,d=Math.hypot(dx,dy);if(d>max){dx=dx/d*max;dy=dy/d*max}joy.x=dx/max;joy.y=dy/max;$('#joystickKnob').style.transform=`translate(${dx}px,${dy}px)`}
+  function resetJoy(){joy.x=joy.y=0;joy.active=false;joy.pointerId=null;$('#joystickKnob').style.transform='translate(0,0)'}
+  function joyEnd(e){if(joy.pointerId!==null&&e?.pointerId!==joy.pointerId)return;resetJoy()}
+  function setTapTarget(clientX,clientY){
+    if(!running)return false;
+    const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return false;
+    const x=clamp((clientX-r.left)*W/r.width,24,W-24),y=clamp((clientY-r.top)*H/r.height,115,H-90);
+    const tappedShelf=x>=24&&x<=180&&y>=205&&y<=355;
+    tapTarget=tappedShelf&&state.player.carry?{...SHELF_WORK_POS}:{x,y};
+    return true;
+  }
+
+  async function toggleFullscreen(){
+    try{
+      const isFullscreen=document.fullscreenElement||document.webkitFullscreenElement;
+      if(!isFullscreen){
+        const request=document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen;
+        if(!request){toast('この端末ではブラウザの「ホーム画面に追加」を使ってください');return}
+        await request.call(document.documentElement);
+      }else{
+        const exit=document.exitFullscreen||document.webkitExitFullscreen;
+        if(exit)await exit.call(document);
+      }
+    }catch{toast('ブラウザのメニューから全画面表示を選んでください')}
+  }
+
+  function updateFullscreenButton(){const active=document.fullscreenElement||document.webkitFullscreenElement;ui.fullscreen.textContent=active?'↙':'⛶';ui.fullscreen.setAttribute('aria-label',active?'全画面を終了':'全画面表示')}
+
+  $('#openGame').addEventListener('click',openGame);
+  $('#openBook').addEventListener('click',()=>{$('#bookFrame').src=BOOK_PATH;showScreen('book')});
+  $('#openCharacters').addEventListener('click',()=>{registrySelection=state.selectedCharacter;renderCharacterRegistry();ui.characters.classList.add('open')});
+  $('#enterFacilityButton').addEventListener('click',()=>openFacility());
+  $('#studyBack').addEventListener('click',()=>showScreen('campus'));
+  $('#studyCharacters').addEventListener('click',()=>{registrySelection=state.selectedCharacter;renderCharacterRegistry();ui.characters.classList.add('open')});
+  $('#closeCharacters').addEventListener('click',()=>ui.characters.classList.remove('open'));
+  $('#selectCharacterButton').addEventListener('click',()=>{const ch=CHARACTER_REGISTRY.find(item=>item.id===registrySelection);if(!ch||ch.helper)return;state.selectedCharacter=ch.id;state.player.view='front';saveState();updateSelectedCharacterThumb();renderCharacterRegistry();toast(`${ch.name}を選びました！`)});
+  $('#closeBook').addEventListener('click',()=>{$('#bookFrame').src='about:blank';showScreen('campus')});
+  $('#backHome').addEventListener('click',()=>{stopLoop();showScreen('campus')});
+  $('#startGameButton').addEventListener('click',startLoop);
+  ui.fullscreen.addEventListener('click',toggleFullscreen);
+  $('#pauseButton').addEventListener('click',()=>{stopLoop();ui.pause.classList.add('open')});
+  $('#resumeButton').addEventListener('click',startLoop);
+  ui.showCompletion.addEventListener('click',showGameComplete);
+  $('#downloadCompletionCard').addEventListener('click',downloadCompletionCard);
+  $('#continueAfterComplete').addEventListener('click',()=>{ui.complete.classList.remove('open');startLoop()});
+  $('#pauseHomeButton').addEventListener('click',()=>{ui.pause.classList.remove('open');showScreen('campus')});
+  $('#nextDayButton').addEventListener('click',nextDay);
+  $('#resetButton').addEventListener('click',()=>{if(confirm('集めたコインや強化もすべて最初に戻しますか？')){localStorage.removeItem(SAVE_KEY);state=defaultState();state.giftRunId=crypto.randomUUID();saveState();resetWorld();updateSelectedCharacterThumb();renderCharacterRegistry();ui.pause.classList.remove('open');ui.welcome.classList.add('open')}});
+  const actionEl=$('#actionButton');
+  let lastDirectAction=-Infinity,lastCanvasTouch=-Infinity;
+  function pressAction(e,fromClick=false){if(e?.cancelable)e.preventDefault();const now=performance.now();if(fromClick&&now-lastDirectAction<800)return;if(!fromClick&&now-lastDirectAction<70)return;if(!fromClick)lastDirectAction=now;action.pressed=true;beep(360,.035,'sine',.018)}
+  actionEl.addEventListener('pointerdown',e=>pressAction(e));
+  actionEl.addEventListener('touchstart',e=>pressAction(e),{passive:false});
+  actionEl.addEventListener('click',e=>pressAction(e,true));
+  const joyEl=$('#joystick');
+  joyEl.addEventListener('pointerdown',e=>{e.preventDefault();tapTarget=null;joy.active=true;joy.pointerId=e.pointerId;try{joyEl.setPointerCapture(e.pointerId)}catch{}joyMove(e)});
+  joyEl.addEventListener('pointermove',e=>{if(joy.active){e.preventDefault();joyMove(e)}});
+  joyEl.addEventListener('pointerup',joyEnd);joyEl.addEventListener('pointercancel',joyEnd);
+  joyEl.addEventListener('touchstart',e=>{e.preventDefault();const p=e.touches[0];if(!p)return;tapTarget=null;joy.active=true;joy.pointerId=null;joyMove(p)},{passive:false});
+  joyEl.addEventListener('touchmove',e=>{e.preventDefault();const p=e.touches[0];if(joy.active&&p)joyMove(p)},{passive:false});
+  joyEl.addEventListener('touchend',e=>{e.preventDefault();resetJoy()},{passive:false});
+  joyEl.addEventListener('touchcancel',resetJoy,{passive:false});
+  canvas.addEventListener('pointerdown',e=>{e.preventDefault();setTapTarget(e.clientX,e.clientY)});
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();const p=e.touches[0];if(!p)return;lastCanvasTouch=performance.now();setTapTarget(p.clientX,p.clientY)},{passive:false});
+  canvas.addEventListener('click',e=>{if(performance.now()-lastCanvasTouch<800)return;setTapTarget(e.clientX,e.clientY)});
+  addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowleft','arrowright','arrowup','arrowdown',' ','w','a','s','d','e'].includes(k))e.preventDefault();keys.add(k);if(k===' '||k==='e')action.pressed=true;if(k==='escape'&&running){stopLoop();ui.pause.classList.add('open')}});
+  addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+  addEventListener('resize',resizeCanvas);
+  document.addEventListener('fullscreenchange',updateFullscreenButton);document.addEventListener('webkitfullscreenchange',updateFullscreenButton);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){stopLoop();ui.pause.classList.add('open')}});
+
+
+  setInterval(()=>{
+    if(document.hidden||!screens.game.classList.contains('active'))return;
+    const intentionallyStopped=[ui.welcome,ui.pause,ui.complete].some(modal=>modal.classList.contains('open'));
+    if(intentionallyStopped)return;
+    const now=performance.now();
+    if(!running||now-lastFrameHeartbeat>1600){
+      if(animationFrameId)cancelAnimationFrame(animationFrameId);
+      running=true;last=now;lastFrameHeartbeat=now;frameErrorShown=false;
+      animationFrameId=requestAnimationFrame(loop);
+      safeEffect(()=>toast('ゲームを自動で再開しました'));
+    }
+  },1000);
+
+  document.querySelectorAll('.market-gift-link').forEach(link=>link.addEventListener('click',()=>stopLoop()));
+  function refreshGiftLinks(){let count=0;try{count=window.MarketGifts.pending().length;}catch{}document.querySelectorAll('.market-gift-link').forEach(link=>{link.textContent=count?`🎁 ガチャ券 ${count}枚`:'🎁 ミュウミュウのガチャ';});}
+  window.addEventListener('market-gifts',refreshGiftLinks);
+  window.addEventListener('pageshow',refreshGiftLinks);
+  loadState();
+  refreshGiftLinks();
+  renderCampus();
+  updateSelectedCharacterThumb();
+  renderCharacterRegistry();
+  draw(0);
+})();
+
+</script>
+</body>
+</html>
