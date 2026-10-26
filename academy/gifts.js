@@ -17,7 +17,7 @@
     const {pending}=refresh();
     $('result').hidden=true;$('scene').hidden=false;$('scene').className='gacha-scene';$('turn').hidden=false;$('turn').disabled=!pending.length;
     if(pending.length){setReceipt(pending[0].id);$('status').textContent='クリア、おめでとう！ ミュウミュウがプレゼントを選ぶよ。';}
-    else {$('status').textContent='ミニマートの一日の目標を達成すると、ガチャ券が1枚もらえるよ。';}
+    else {$('status').textContent='ミニマートの一日の目標、またはアイス屋さんで6人へのお届けを達成すると、ガチャ券が1枚もらえるよ。';}
   }
   function showResult(award,celebrate){
     const card=award.art;
@@ -42,7 +42,7 @@
     finally{busy=false;}
   };
   $('next').onclick=()=>{if(!busy)prepare();};
-  $('backup').onclick=()=>{try{const data={format:'ponyland-backup-v1',createdAt:new Date().toISOString(),market:JSON.parse(localStorage.getItem('ponylandMiniMartSaveV1')||'null'),gifts:store.all()},blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ponyland-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('backupStatus').textContent='バックアップの保存を開始しました。';}catch{$('backupStatus').textContent='保存できませんでした。ブラウザの保存設定を確認してください。';}};
+  $('backup').onclick=()=>{try{const data={format:'ponyland-backup-v1',createdAt:new Date().toISOString(),market:JSON.parse(localStorage.getItem('ponylandMiniMartSaveV1')||'null'),iceCream:JSON.parse(localStorage.getItem('ponyland-ice-cream-v1')||'null'),gifts:store.all()},blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ponyland-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('backupStatus').textContent='バックアップの保存を開始しました。';}catch{$('backupStatus').textContent='保存できませんでした。ブラウザの保存設定を確認してください。';}};
   for(let i=0;i<24;i++){const star=document.createElement('i'),angle=i*Math.PI*2/24;star.textContent='✦';star.style.setProperty('--dx',Math.cos(angle)*145+'px');star.style.setProperty('--dy',Math.sin(angle)*125+'px');$('stars').append(star);}
   try{
     const id=new URL(location.href).searchParams.get('ticket'),data=refresh(),ticket=data.tickets.find(t=>t.id===id);
