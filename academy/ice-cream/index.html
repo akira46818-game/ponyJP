@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fdf5e6">
+  <meta name="description" content="ルミナ、フレア、アクア、ミュウミュウ、テラ、ストームにアイスを作ろう。時間制限のない、ポニーランド学園の無料ゲーム。">
+  <title>にじいろアイス屋さん｜ポニーランド学園</title>
+  <link rel="stylesheet" href="style.css?v=1">
+  <script src="../market-gifts.js"></script>
+  <script type="module" src="game.mjs?v=1"></script>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar" aria-label="ページメニュー">
+      <a href="../">← がくえん</a>
+      <span class="brand">PONYLAND ACADEMY</span>
+      <button id="sound" aria-pressed="false" aria-label="音声案内と効果音をオンにする">♪ おと OFF</button>
+    </nav>
+    <header class="shop-heading">
+      <p class="eyebrow"><span></span> ミュウミュウと、いらっしゃいませ！ <span></span></p>
+      <h1>にじいろ<span>アイス屋さん</span><span class="title-star" aria-hidden="true">✦</span></h1>
+      <p class="intro">すきな いろを かさねて、えがおを おとどけ。</p>
+    </header>
+    <div class="toolbar">
+      <div class="modes" role="group" aria-label="あそびかた">
+        <button id="orderMode" aria-pressed="true">🏪 おみせやさん</button>
+        <button id="freeMode" aria-pressed="false">🎨 じゆうにつくる</button>
+      </div>
+      <div class="stamp-count"><span aria-hidden="true">♡</span> おとどけ <b id="count">0 / 6</b></div>
+    </div>
+    <main>
+      <section class="shop" aria-label="アイスのおみせ">
+        <div class="awning" aria-hidden="true"><span>made with a little magic</span></div>
+        <div class="shop-scene">
+          <div class="window-scene" aria-hidden="true"><i class="cloud one"></i><i class="cloud two"></i><div class="rainbow"></div><div class="hills"></div></div>
+          <div class="customer-side">
+            <div class="speech"><p id="greeting">きらきらの アイス、たべたいな！</p><button id="readOrder" aria-label="ちゅうもんを きく">♪ きく</button></div>
+            <div class="customer-art"><img id="customerImage" src="assets/lumina.png" alt="ルミナ" width="640" height="640"><span class="heart" aria-hidden="true">♥</span></div>
+            <span class="customer-name" id="customerName">ルミナ</span>
+          </div>
+          <div class="ice-side">
+            <div class="order-ticket" id="orderTicket">
+              <div class="ticket-heading"><span>おてほん</span><span id="orderStep">したから じゅんばんに</span></div>
+              <div id="recipe" class="recipe"></div>
+            </div>
+            <div class="free-note" id="freeNote" hidden>どんな アイスに しよう？<br><small>すきな いろで、4だんまで！</small></div>
+            <div id="ice" class="ice-art" role="img" aria-label="アイスがまだのっていないコーン"></div>
+            <span id="conePrompt" class="cone-prompt">↓ ボタンで アイスを のせよう</span>
+          </div>
+        </div>
+        <div class="counter"><span aria-hidden="true">✦</span><p id="guidance" aria-live="polite">① いちごを おしてね</p><span aria-hidden="true">✦</span></div>
+        <section class="workbench" aria-label="アイスをつくる">
+          <div class="step-title"><h2><b>1</b> アイスを のせる</h2><span id="layerCount">あと 2だん</span></div>
+          <div class="flavors" id="flavors"></div>
+          <div class="step-title topping-title"><h2><b>2</b> かざりを えらぶ</h2><span>すきな かざりを タップ</span></div>
+          <div class="toppings" id="toppings"></div>
+          <div class="actions">
+            <button id="undo" class="undo" disabled>↶ ひとつ もどす</button>
+            <button id="serve" class="serve" disabled>できた！ どうぞ <span aria-hidden="true">→</span></button>
+          </div>
+          <div id="servedPanel" class="served-panel" hidden>
+            <p id="thanks" tabindex="-1">ありがとう！</p>
+            <button id="next" class="serve">つぎの おきゃくさん →</button>
+          </div>
+        </section>
+      </section>
+      <aside class="friends" aria-labelledby="friendsTitle">
+        <div class="friends-heading"><h2 id="friendsTitle">きょうの おきゃくさん</h2><span>おかおを おすと あえるよ</span></div>
+        <div class="friend-list" id="friends"></div>
+      </aside>
+      <section id="complete" class="complete" hidden aria-labelledby="completeTitle">
+        <span class="complete-icon" aria-hidden="true">🎉</span><h2 id="completeTitle" tabindex="-1">6にんに おとどけ！</h2>
+        <p>みんなが えがおに なったね。<br>すてきな アイスやさん、ありがとう！</p>
+        <p id="rewardStatus" aria-live="polite"></p>
+        <div class="complete-actions"><a id="giftLink" href="../gifts.html" hidden>🎁 プレゼントを もらう</a><button id="retryReward" hidden>プレゼントを ほぞんする</button><button id="newRound">もういちど あそぶ</button></div>
+      </section>
+    </main>
+    <footer><p>じかんせいげん なし。なんどでも やりなおせるよ。</p><p class="parent-note">無料で遊べます。進み具合と特典は、このブラウザに保存されます。</p><p id="saveStatus" class="storage-status" role="status"></p><a href="../gifts.html">カードコレクションへ</a></footer>
+    <noscript><p class="noscript">あそぶには、ブラウザの JavaScript を有効にしてください。</p></noscript>
+  </div>
+  <div class="confetti" id="confetti" aria-hidden="true"></div>
+</body>
+</html>
