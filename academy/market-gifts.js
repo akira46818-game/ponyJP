@@ -3,7 +3,7 @@
   const KEY='ponyland-market-gifts-v1';
   const cards=Object.freeze([
     {id:'lumina',name:'ルミナ',file:'lumina.png',label:'SR ✨',style:'sr',weight:8},
-    {id:'nox',name:'ノックス',file:'nox.png',label:'SSR 👑',style:'ssr',weight:14},
+    {id:'nox',name:'ノクス',file:'nox.png',label:'SSR 👑',style:'ssr',weight:14},
     {id:'flare',name:'フレア',file:'flare.png',label:'SSR 🔥',style:'ssr',weight:18},
     {id:'storm',name:'ストーム',file:'storm.png',label:'SSR ⚡',style:'ssr',weight:18},
     {id:'aqua',name:'アクア',file:'aqua.png',label:'SSR 💧',style:'ssr',weight:18},

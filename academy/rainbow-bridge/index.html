@@ -6,22 +6,23 @@
   <meta name="theme-color" content="#f5f7ed">
   <meta name="description" content="虹の橋を描いて、ポニーランドのなかまとおさんぽ。指やマウスで遊べる、時間制限のない無料ゲームです。">
   <title>にじのはしを かこう｜ポニーランド学園</title>
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="style.css?v=2">
   <script src="../market-gifts.js"></script>
-  <script type="module" src="game.mjs?v=1"></script>
+  <script type="module" src="game.mjs?v=2"></script>
 </head>
 <body>
   <div class="page">
     <nav class="topbar" aria-label="ページメニュー"><a href="../">← がくえん</a><span>PONYLAND · LITTLE ADVENTURES</span><button id="sound" aria-pressed="false">♪ おと OFF</button></nav>
-    <header><p class="eyebrow">ちいさな ひとふで、おおきな ぼうけん。</p><h1><span>にじのはし</span>を かこう<i aria-hidden="true">✦</i></h1><p class="intro">きみの かいた はしを、なかまが とことこ わたるよ。</p></header>
+    <header><p class="eyebrow">ちいさな ひとふで、おおきな ぼうけん。</p><h1><span>にじのはし</span>を かこう<i aria-hidden="true">✦</i></h1><p class="intro">なみなみ、ぐるりん！ ほしを むすんで おさんぽしよう。</p></header>
     <main>
       <section class="adventure" aria-label="虹の橋ゲーム">
-        <div class="chapter"><div><span class="chapter-kicker" id="chapterNumber">STAGE 01 / 06</span><h2 id="levelTitle">はじめての はし</h2></div><ol id="stages" aria-label="ステージの進み具合"></ol></div>
+        <div class="chapter"><div><span class="chapter-kicker" id="chapterNumber">COURSE 01 / 06</span><h2 id="levelTitle">なみなみ さんぽ</h2><p class="course-note">すきな コースを えらべるよ</p></div><ol id="stages" aria-label="好きなコースを選ぶ"></ol></div>
         <div class="scene-wrap">
           <svg id="board" viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="おはなから旗へ、指やマウスで橋を描く画面" aria-describedby="drawHelp"><defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#cbe9eb"/><stop offset="1" stop-color="#f4f5dd"/></linearGradient><linearGradient id="river" x2=".9" y2="1"><stop stop-color="#b0dbdd"/><stop offset="1" stop-color="#74b9cc"/></linearGradient><linearGradient id="bank" x2="0" y2="1"><stop stop-color="#c7dbc0"/><stop offset=".13" stop-color="#b0c999"/><stop offset=".16" stop-color="#c9b28b"/><stop offset="1" stop-color="#e7d6b5"/></linearGradient><filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="5" stdDeviation="3" flood-color="#3a6973" flood-opacity=".16"/></filter></defs>
-            <g id="landscape"></g><g id="obstacles"></g><path id="guide" fill="none" stroke="#fffdf3" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 17" opacity=".9"/><g id="bridge" filter="url(#shadow)"></g><g id="markers"></g><g id="walker" pointer-events="none"><ellipse cx="0" cy="1" rx="29" ry="7" fill="#51644a" opacity=".15"/><g id="walkerBody"><image id="walkerImage" x="-57" y="-124" width="114" height="128" preserveAspectRatio="xMidYMax meet" href="../ice-cream/assets/lumina.png"/></g></g><g id="sparkles" pointer-events="none"></g>
+            <g id="landscape"></g><g id="obstacles"></g><path id="guide" fill="none" stroke="#fffdf3" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 17" opacity=".9"/><g id="bridge" filter="url(#shadow)"></g><g id="markers"></g><g id="routeStars" pointer-events="none"></g><g id="walker" pointer-events="none"><ellipse cx="0" cy="1" rx="29" ry="7" fill="#51644a" opacity=".15"/><g id="walkerBody"><image id="walkerImage" x="-57" y="-124" width="114" height="128" preserveAspectRatio="xMidYMax meet" href="../ice-cream/assets/lumina.png"/></g></g><g id="sparkles" pointer-events="none"></g>
           </svg>
-          <div class="scene-label" id="sceneLabel"><span aria-hidden="true">✎</span> おはなから はたへ、すーっと かこう</div>
+          <div class="scene-label" id="sceneLabel"><span aria-hidden="true">✎</span> ほしを とおって はたへ いこう</div>
+          <span id="starCount" class="star-count" aria-label="とおった ほしの かず">★ 0 / 3</span>
           <div id="celebration" class="celebration" hidden><span aria-hidden="true">✦</span><strong>わたれたね！</strong><p id="thanks">ルミナも うれしそう！</p></div>
         </div>
         <div class="instruction" id="message" role="status">おはなと はたを、せんで つなごう。</div>
