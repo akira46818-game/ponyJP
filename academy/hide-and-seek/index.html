@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f8f6ee">
+  <meta name="description" content="お花畑・おもちゃ部屋・星の森で、ポニーランドの6人を見つけよう。時間制限なし、ヒント付きの無料かくれんぼゲーム。">
+  <title>みーつけた！ ポニーランドのかくれんぼ</title>
+  <link rel="stylesheet" href="style.css?v=1">
+  <script src="../market-gifts.js?v=3" defer></script>
+  <script type="module" src="game.mjs?v=1"></script>
+</head>
+<body>
+  <div class="page">
+    <nav class="topbar" aria-label="ページメニュー"><a href="../">← がくえんへ</a><span>PONYLAND · LITTLE DISCOVERIES</span><button id="sound" aria-pressed="false">♪ おと OFF</button></nav>
+    <header class="hero"><p class="eyebrow">きょうは、なかまと かくれんぼ。</p><h1>みーつけた<span>！</span><i aria-hidden="true">✿</i></h1><p>ポニーランドの かくれんぼ</p></header>
+    <main>
+      <section class="adventure" aria-label="かくれんぼゲーム">
+        <div class="chapter"><div><span id="chapter" class="eyebrow">ばしょ 1 / 3</span><h2 id="sceneTitle">おはなばたけ</h2></div><div id="sceneTabs" class="scene-tabs" aria-label="遊ぶ場所"></div></div>
+        <div class="play-layout">
+          <div class="play-main">
+            <div id="scene" class="scene" data-theme="garden" data-mode="easy"><div id="landscape" class="landscape"></div><p id="sceneCaption" class="scene-caption">おはなの かげに、だれか いるかな？</p><div id="spots" class="spots" role="group" aria-label="隠れ場所をタップして調べる"></div><div id="foundBanner" class="found-banner" aria-hidden="true" hidden></div></div>
+            <p id="message" class="message" role="status">きになる ところを タップしてね。</p>
+            <div class="actions"><button id="hint" class="hint">✧ ヒントを みる</button><button id="next" class="primary" hidden>つぎの ばしょへ →</button><span id="gentleNote">あわてなくて だいじょうぶ。</span></div>
+          </div>
+          <aside class="notebook" aria-labelledby="rosterTitle"><div class="notebook-title"><span class="eyebrow">なかまの てちょう</span><h2 id="rosterTitle">だれが かくれた？</h2><p><b id="count">0</b><span> / 6にん みつけた</span></p></div><div id="roster" class="roster"></div><p class="notebook-note">みんな みつけると<br>おはなの スタンプ！</p></aside>
+        </div>
+        <div class="settings"><span>かくれかた</span><div class="mode-switch" role="group" aria-label="かくれかた"><button id="easy" aria-pressed="true">やさしい</button><button id="challenge" aria-pressed="false">ちょうせん</button></div><p id="modeNote">おかおが ちらり。よく みてみよう。</p></div>
+      </section>
+      <section class="stamp-book" aria-labelledby="stampTitle"><div><span class="eyebrow">ちいさな はっけんの きろく</span><h2 id="stampTitle">かくれんぼ スタンプ</h2></div><div id="stamps" class="stamps"></div><p>3つの ばしょで みんなを みつけよう。</p></section>
+      <section id="complete" class="complete" hidden><span aria-hidden="true">✿ ✦ ✿</span><h2 id="completeTitle" tabindex="-1">みんな みーつけた！</h2><p>なかまたちも、きみと あそべて うれしいね。</p><p id="rewardStatus" role="status"></p><div><a id="gift" class="primary" href="../gifts.html" hidden>🎁 ミュウミュウの プレゼントへ</a><button id="retryReward" hidden>プレゼントを ほぞんする</button><button id="again">もういちど かくれんぼ</button></div></section>
+    </main>
+    <footer><p>じかんせいげん なし。まちがえても だいじょうぶ。</p><p class="parent-note">無料で遊べます。進み具合と特典は、このブラウザに保存されます。</p><p id="saveStatus" role="status"></p><a href="../rainbow-bridge/">🌈 にじのはし</a><span> · </span><a href="../ice-cream/">🍦 アイス屋さん</a><span> · </span><a href="../gifts.html">カードコレクション</a></footer>
+    <noscript>あそぶには、ブラウザの JavaScript を有効にしてください。</noscript>
+  </div>
+</body>
+</html>
